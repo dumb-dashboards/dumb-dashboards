@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TROLLEY TRACKS — the impossible dilemma dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --coal:#141110; --coal-2:#1c1815; --steel:#8c877d; --wood:#3a2e24;
+    --hazard:#f2b705; --danger:#b3251e; --teal:#4f8a86; --olive:#82a15c;
+    --cream:#efe7d8; --cream-dim:#a89e8c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;background:var(--coal);color:var(--cream);font-family:'Space Mono',monospace;overflow-x:hidden;}
+
+  .rail-bg{position:fixed;top:0;left:50%;transform:translateX(-50%);width:140px;height:100%;z-index:0;pointer-events:none;opacity:.85;}
+  .rail-bg svg{width:100%;height:100%;}
+
+  .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:0 18px 80px;}
+
+  header{padding:30px 18px 14px;text-align:center;}
+  .eyebrow{font-size:11px;letter-spacing:.28em;color:var(--hazard);text-transform:uppercase;font-weight:700;}
+  h1{font-family:'Anton',sans-serif;font-size:clamp(36px,9.5vw,54px);line-height:.95;margin:8px 0 6px;letter-spacing:.01em;text-transform:uppercase;color:var(--cream);}
+  h1 span{color:var(--danger);}
+  .sub{color:var(--cream-dim);font-size:12.5px;max-width:360px;margin:0 auto 16px;line-height:1.5;}
+
+  /* live KPI dashboard strip */
+  .kpi-strip{
+    position:sticky;top:0;z-index:5;display:flex;gap:8px;
+    background:rgba(20,17,16,.92);backdrop-filter:blur(6px);
+    border:1px solid #2b241d;border-radius:8px;padding:10px 12px;margin-bottom:22px;
+  }
+  .kpi{flex:1;text-align:center;}
+  .kpi .lbl{font-size:8.5px;letter-spacing:.1em;color:var(--steel);text-transform:uppercase;display:block;margin-bottom:3px;}
+  .kpi .val{font-family:'Anton',sans-serif;font-size:20px;color:var(--hazard);}
+  .kpi .val small{font-size:11px;color:var(--cream-dim);font-family:'Space Mono',monospace;}
+  .kpi.mid{border-left:1px solid #2b241d;border-right:1px solid #2b241d;padding:0 6px;}
+
+  /* tour mode controls */
+  .tour-controls{
+    display:flex;align-items:center;gap:10px;justify-content:center;
+    margin:0 0 16px;flex-wrap:wrap;
+  }
+  .tour-btn{
+    background:var(--coal-2);border:1px solid var(--hazard);color:var(--hazard);
+    font-family:'Space Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.06em;
+    padding:9px 16px;border-radius:20px;cursor:pointer;text-transform:uppercase;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .tour-btn.stopping{border-color:var(--danger);color:var(--danger);}
+  .tour-hint{font-size:10px;color:var(--steel);letter-spacing:.02em;max-width:220px;text-align:left;line-height:1.4;}
+
+  /* fake cursor for tour mode */
+  .tour-cursor{
+    position:fixed;top:0;left:0;width:44px;height:44px;margin:-22px 0 0 -22px;
+    border-radius:50%;background:radial-gradient(circle, rgba(242,183,5,.5) 0%, rgba(242,183,5,.12) 60%, transparent 72%);
+    border:2px solid var(--hazard);opacity:0;z-index:9999;pointer-events:none;
+    transition:left .5s cubic-bezier(.4,0,.2,1), top .5s cubic-bezier(.4,0,.2,1), opacity .3s;
+  }
+  .tour-cursor::after{content:'';position:absolute;inset:15px;border-radius:50%;background:var(--hazard);}
+  .tour-cursor.tap{animation:cursorTap .45s ease-out;}
+  @keyframes cursorTap{
+    0%{transform:scale(1);box-shadow:0 0 0 0 rgba(242,183,5,.4);}
+    45%{transform:scale(1.7);box-shadow:0 0 0 16px rgba(242,183,5,0);}
+    100%{transform:scale(1);box-shadow:0 0 0 0 rgba(242,183,5,0);}
+  }
+  body.touring .choice{pointer-events:none;}
+  body.touring .btn.restart{pointer-events:none;opacity:.35;}
+
+  .station{position:relative;margin:0 0 44px;}
+  .card{background:var(--coal-2);border:1px solid #2b241d;border-radius:4px;padding:20px 18px 18px;position:relative;box-shadow:0 12px 30px -12px rgba(0,0,0,.6);}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--cat-color, var(--hazard));opacity:.9;}
+
+  .icon-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
+  .num{font-family:'Anton',sans-serif;font-size:12px;color:var(--coal);background:var(--hazard);display:inline-block;padding:3px 8px;border-radius:3px;letter-spacing:.05em;white-space:nowrap;}
+  .cat-tag{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:3px;border:1px solid currentColor;white-space:nowrap;}
+
+  .title{font-family:'Anton',sans-serif;font-size:21px;text-transform:uppercase;color:var(--cream);margin:0 0 10px;letter-spacing:.01em;}
+  .scenario{font-size:13px;line-height:1.6;color:var(--cream-dim);margin:0 0 16px;}
+  .scenario b{color:var(--cream);}
+
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .choice{background:var(--wood);border:1px solid #4a3a2a;color:var(--cream);font-family:'Space Mono',monospace;font-weight:700;font-size:12px;padding:13px 8px;border-radius:3px;cursor:pointer;text-align:center;line-height:1.3;transition:transform .12s, background .12s;}
+  .choice:active{transform:scale(.97);}
+  .choice.a{border-left:4px solid var(--steel);}
+  .choice.b{border-left:4px solid var(--danger);}
+  .station.answered .choice{opacity:.35;pointer-events:none;}
+  .station.answered .choice.picked{opacity:1;background:#4a3a2a;border-color:var(--hazard);}
+
+  .verdict{margin-top:14px;padding:13px 14px;background:var(--coal);border-left:3px solid var(--hazard);border-radius:2px;font-size:12px;line-height:1.6;color:var(--cream);display:none;}
+  .verdict.show{display:block;animation:stamp .28s ease-out;}
+  .verdict .tag{display:block;font-family:'Anton',sans-serif;font-size:10.5px;letter-spacing:.1em;color:var(--hazard);text-transform:uppercase;margin-bottom:6px;}
+  @keyframes stamp{0%{opacity:0;transform:scale(1.15) rotate(-2deg);}100%{opacity:1;transform:scale(1) rotate(0);}}
+
+  /* crowd split mini bar chart, revealed with verdict */
+  .crowd{margin-top:12px;display:none;}
+  .crowd.show{display:block;}
+  .crowd .clbl{font-size:9px;letter-spacing:.1em;color:var(--steel);text-transform:uppercase;margin-bottom:5px;}
+  .crowd-bar{display:flex;height:16px;border-radius:3px;overflow:hidden;background:var(--wood);}
+  .crowd-bar .seg-a{background:var(--steel);}
+  .crowd-bar .seg-b{background:var(--danger);}
+  .crowd-nums{display:flex;justify-content:space-between;font-size:9.5px;color:var(--cream-dim);margin-top:4px;}
+  .crowd-foot{font-size:8px;color:#544a3c;letter-spacing:.05em;margin-top:3px;text-transform:uppercase;}
+
+  .final{text-align:center;padding:26px 20px;background:var(--coal-2);border:1px solid #2b241d;border-radius:4px;display:none;}
+  .final.show{display:block;}
+  .final h2{font-family:'Anton',sans-serif;font-size:24px;color:var(--hazard);text-transform:uppercase;margin:0 0 12px;}
+  .final .profile{font-family:'Anton',sans-serif;font-size:19px;color:var(--cream);text-transform:uppercase;margin-bottom:10px;}
+  .final p.desc{font-size:12.5px;color:var(--cream-dim);line-height:1.6;margin:0 0 18px;}
+
+  .scorecard{background:var(--coal);border:1px solid #2b241d;border-radius:4px;padding:16px;margin-bottom:18px;}
+  .sc-row{display:flex;gap:10px;margin-bottom:12px;}
+  .sc-tile{flex:1;background:var(--coal-2);border:1px solid #2b241d;border-radius:4px;padding:10px 8px;text-align:left;}
+  .sc-tile .lbl{font-size:8.5px;letter-spacing:.08em;color:var(--steel);text-transform:uppercase;display:block;margin-bottom:4px;}
+  .sc-tile .num{font-family:'Anton',sans-serif;font-size:24px;color:var(--hazard);line-height:1;}
+  .sc-bar{height:6px;border-radius:3px;background:var(--wood);margin-top:6px;overflow:hidden;}
+  .sc-bar i{display:block;height:100%;background:var(--hazard);}
+
+  /* identikit / case file card */
+  .identikit{background:var(--coal);border:1px solid #2b241d;border-radius:4px;overflow:hidden;margin-bottom:18px;text-align:left;}
+  .id-topband{height:5px;background:repeating-linear-gradient(45deg,var(--hazard) 0 10px,var(--coal) 10px 20px);}
+  .id-header{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid #2b241d;}
+  .id-header .case{font-size:9px;letter-spacing:.1em;color:var(--steel);text-transform:uppercase;}
+  .id-header .status{font-size:9px;letter-spacing:.1em;color:var(--danger);text-transform:uppercase;font-weight:700;}
+  .id-illustration{padding:16px 16px 4px;display:flex;justify-content:center;background:var(--coal);}
+  .id-illustration svg{width:100%;max-width:280px;height:auto;}
+  .id-caption{text-align:center;font-size:9.5px;color:#6b6255;letter-spacing:.04em;padding:4px 16px 12px;text-transform:uppercase;}
+  .id-alias{text-align:center;padding:0 16px 14px;}
+  .id-alias .lbl{font-size:9px;letter-spacing:.12em;color:var(--steel);text-transform:uppercase;}
+  .id-alias .name{font-family:'Anton',sans-serif;font-size:23px;color:var(--hazard);text-transform:uppercase;margin-top:2px;}
+  .id-stats{display:flex;gap:10px;padding:0 16px 16px;}
+  .id-radar{padding:0 16px 18px;display:flex;flex-direction:column;align-items:center;}
+  .id-radar .radar-lbl{font-size:9px;letter-spacing:.1em;color:var(--steel);text-transform:uppercase;margin-bottom:10px;text-align:center;}
+  .id-radar svg{width:100%;max-width:250px;height:auto;}
+  .id-footer{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-top:1px solid #2b241d;background:var(--coal-2);}
+  .id-footer .brandchip{background:var(--coal);border:1px solid #33291f;padding:4px 10px;border-radius:20px;font-family:'Anton',sans-serif;font-size:9.5px;letter-spacing:.08em;color:var(--steel);text-transform:uppercase;}
+  .id-footer .filenum{font-size:9px;color:#544a3c;letter-spacing:.05em;text-transform:uppercase;}
+
+  .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .btn{border:none;padding:12px 20px;font-family:'Space Mono',monospace;font-weight:700;font-size:11.5px;border-radius:3px;letter-spacing:.05em;cursor:pointer;text-transform:uppercase;}
+  .btn.restart{background:var(--danger);color:var(--cream);}
+  .btn.download{background:var(--hazard);color:var(--coal);}
+
+  footer{text-align:center;font-size:10.5px;color:#544a3c;letter-spacing:.1em;padding:20px 0 40px;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<div class="rail-bg">
+  <svg viewBox="0 0 140 2600" preserveAspectRatio="none">
+    <defs><pattern id="sleepers" width="140" height="40" patternUnits="userSpaceOnUse"><rect x="14" y="10" width="112" height="8" rx="1" fill="#241f1a"/></pattern></defs>
+    <rect x="0" y="0" width="140" height="2600" fill="url(#sleepers)"/>
+    <line x1="35" y1="0" x2="35" y2="2600" stroke="#4a453d" stroke-width="4"/>
+    <line x1="105" y1="0" x2="105" y2="2600" stroke="#4a453d" stroke-width="4"/>
+    <g fill="#f2b705" stroke="#141110" stroke-width="3">
+      <g transform="translate(35,200)"><rect x="-30" y="-24" width="60" height="30" rx="6"/><rect x="-22" y="-18" width="16" height="12" fill="#141110"/><rect x="4" y="-18" width="16" height="12" fill="#141110"/><circle cx="-16" cy="8" r="6" fill="#141110"/><circle cx="16" cy="8" r="6" fill="#141110"/></g>
+      <g transform="translate(70,1100)"><rect x="-30" y="-24" width="60" height="30" rx="6"/><rect x="-22" y="-18" width="16" height="12" fill="#141110"/><rect x="4" y="-18" width="16" height="12" fill="#141110"/><circle cx="-16" cy="8" r="6" fill="#141110"/><circle cx="16" cy="8" r="6" fill="#141110"/></g>
+      <g transform="translate(35,2000)"><rect x="-30" y="-24" width="60" height="30" rx="6"/><rect x="-22" y="-18" width="16" height="12" fill="#141110"/><rect x="4" y="-18" width="16" height="12" fill="#141110"/><circle cx="-16" cy="8" r="6" fill="#141110"/><circle cx="16" cy="8" r="6" fill="#141110"/></g>
+    </g>
+  </svg>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Dumb Dashboards presents</div>
+    <h1>TROLLEY<br>TRA<span>C</span>KS</h1>
+    <p class="sub">12 impossible dilemmas across 4 flavors of chaos. No right answers, just live KPIs on how questionable your morals are. Built for parties.</p>
+
+    <div class="tour-controls">
+      <button class="tour-btn" id="tourBtn" onclick="toggleTour()">▶ Start tour mode</button>
+      <span class="tour-hint">Auto-plays the whole dashboard on its own, tapping buttons for you. Made for screen-recording a demo.</span>
+    </div>
+  </header>
+
+  <div class="kpi-strip">
+    <div class="kpi"><span class="lbl">Station</span><span class="val" id="kpiStation">0<small>/12</small></span></div>
+    <div class="kpi mid"><span class="lbl">Utilitarian Score</span><span class="val" id="kpiScore">—</span></div>
+    <div class="kpi"><span class="lbl">Crowd Align</span><span class="val" id="kpiCrowd">—</span></div>
+  </div>
+
+  <div id="stations"></div>
+
+  <div class="final" id="final">
+    <h2>End of the line.</h2>
+    <div class="profile" id="profileText">—</div>
+    <p class="desc" id="profileDesc">—</p>
+
+    <div class="scorecard" id="identikit">
+      <div class="id-topband"></div>
+      <div class="id-header">
+        <span class="case" id="idCase">CASE FILE — TT/001</span>
+        <span class="status">CASE CLOSED</span>
+      </div>
+
+      <div class="id-illustration">
+        <svg viewBox="0 0 280 130">
+          <line x1="0" y1="100" x2="280" y2="100" stroke="#8c877d" stroke-width="4"/>
+          <line x1="0" y1="114" x2="280" y2="114" stroke="#8c877d" stroke-width="4"/>
+          <g stroke="#3a2e24" stroke-width="6">
+            <line x1="10" y1="94" x2="10" y2="120"/><line x1="40" y1="94" x2="40" y2="120"/><line x1="70" y1="94" x2="70" y2="120"/>
+            <line x1="100" y1="94" x2="100" y2="120"/><line x1="130" y1="94" x2="130" y2="120"/><line x1="160" y1="94" x2="160" y2="120"/>
+            <line x1="190" y1="94" x2="190" y2="120"/><line x1="220" y1="94" x2="220" y2="120"/><line x1="250" y1="94" x2="250" y2="120"/>
+          </g>
+          <g stroke="#efe7d8" stroke-width="5" stroke-linecap="round" fill="none">
+            <line x1="90" y1="90" x2="190" y2="90"/>
+            <line x1="100" y1="90" x2="95" y2="75"/>
+            <line x1="100" y1="90" x2="95" y2="105"/>
+            <line x1="180" y1="90" x2="205" y2="78"/>
+            <line x1="180" y1="90" x2="205" y2="102"/>
+          </g>
+          <circle cx="78" cy="90" r="14" fill="#efe7d8" stroke="#141110" stroke-width="3"/>
+          <circle cx="73" cy="87" r="1.6" fill="#141110"/>
+          <circle cx="83" cy="87" r="1.6" fill="#141110"/>
+          <path d="M72,95 Q78,91 84,95" stroke="#141110" stroke-width="2" fill="none"/>
+          <g stroke="#b3251e" stroke-width="3" stroke-dasharray="4 3">
+            <line x1="95" y1="78" x2="95" y2="102"/>
+            <line x1="140" y1="78" x2="140" y2="102"/>
+            <line x1="175" y1="78" x2="175" y2="102"/>
+          </g>
+        </svg>
+      </div>
+      <div class="id-caption">Exhibit A — subject, apparently</div>
+
+      <div class="id-alias">
+        <span class="lbl">Alias</span>
+        <div class="name" id="scProfile">—</div>
+      </div>
+
+      <div class="sc-row" style="padding:0 16px;">
+        <div class="sc-tile">
+          <span class="lbl">Utilitarian Score</span>
+          <div class="num" id="scUtil">0%</div>
+          <div class="sc-bar"><i id="scUtilBar" style="width:0%"></i></div>
+        </div>
+        <div class="sc-tile">
+          <span class="lbl">Crowd Alignment</span>
+          <div class="num" id="scCrowd">0%</div>
+          <div class="sc-bar"><i id="scCrowdBar" style="width:0%"></i></div>
+        </div>
+      </div>
+
+      <div class="id-radar">
+        <div class="radar-lbl">Behavior by category</div>
+        <div id="radarChart"></div>
+      </div>
+
+      <div class="id-footer">
+        <div class="brandchip">@dumbdashboards · trolley tracks</div>
+        <div class="filenum" id="idPlayCount">Run No. 1</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn restart" onclick="restart()">Ride again</button>
+      <button class="btn download" onclick="downloadCard()">Download my identikit</button>
+    </div>
+  </div>
+
+  <footer>@dumbdashboards — no trolleys were actually diverted</footer>
+</div>
+
+<div class="tour-cursor" id="tourCursor"></div>
+
+<script>
+const MINI_TRACK = `<svg width="46" height="24" viewBox="0 0 100 50"><line x1="0" y1="38" x2="100" y2="38" stroke="#8c877d" stroke-width="3"/><line x1="0" y1="46" x2="100" y2="46" stroke="#8c877d" stroke-width="3"/><path d="M55,42 Q78,42 100,14" stroke="#8c877d" stroke-width="2" fill="none" stroke-dasharray="3 4"/><g fill="#f2b705" stroke="#141110" stroke-width="2.5"><rect x="6" y="14" width="36" height="20" rx="4"/><rect x="10" y="18" width="10" height="8" fill="#141110"/><rect x="26" y="18" width="10" height="8" fill="#141110"/><circle cx="15" cy="36" r="4" fill="#141110"/><circle cx="33" cy="36" r="4" fill="#141110"/></g></svg>`;
+
+const CATS = {
+  CLASSIC:  {color:'#4f8a86', label:'Philosophy Classic'},
+  ABSURD:   {color:'#f2b705', label:'Absurd'},
+  MODERN:   {color:'#b3251e', label:'Modern Life'},
+  PARTY:    {color:'#82a15c', label:'Party Chaos'}
+};
+
+const DATA = [
+{ cat:'CLASSIC', title:"The Switch",
+  scenario:"A runaway trolley is about to hit <b>5 people</b> tied to the main track. Pull the lever and it diverts onto a side track with <b>1 person</b> tied down.",
+  a:{label:"DON'T PULL", tag:"Fatalist with a clean conscience", verdict:"5 people die, but you didn't touch a thing. You just discovered ethics has a loophole: if you don't act, it's not your fault. The law might disagree. Your gut, less so."},
+  b:{label:"PULL THE LEVER", tag:"Textbook utilitarian", verdict:"1 dies, 5 live. You did the math in half a second. Welcome back to Philosophy 101, chapter 'numbers save lives, one at a time, in the negative'."},
+  stat:{a:34,b:66} },
+
+{ cat:'CLASSIC', title:"The Footbridge",
+  scenario:"Same 5 people on the track. But now you're on a footbridge with a large stranger next to you: pushing him off would stop the train with his body.",
+  a:{label:"DON'T PUSH HIM", tag:"Physical contact bothers you more than ethics", verdict:"You just discovered killing via a lever is fine, but killing with your hands isn't. Philosophers call this 'psychological distance'. You call it 'I froze up'."},
+  b:{label:"PUSH HIM OFF", tag:"No issue with manual labor", verdict:"Same outcome as the lever, much more hands-on method. You've got the logical consistency of a philosopher and the stomach of a butcher."},
+  stat:{a:88,b:12} },
+
+{ cat:'CLASSIC', title:"The Surgeon",
+  scenario:"5 patients on the transplant list will die tonight without organs. In the waiting room sits one healthy person, a perfect match for all five.",
+  a:{label:"LEAVE THEM BE", tag:"You honored the Hippocratic oath", verdict:"Or maybe you just have a healthy fear of prison. 'First, do no harm' doesn't say 'do the math on who deserves to live'. Five die, you sleep fine tonight."},
+  b:{label:"HARVEST THEIR ORGANS", tag:"Most efficient hospital in the country", verdict:"You just cleared the transplant waitlist with a scalpel. Five patients build you a statue. The sixth doesn't, because he's dead."},
+  stat:{a:91,b:9} },
+
+{ cat:'CLASSIC', title:"The Loop",
+  scenario:"The side track loops back and rejoins the main line further down. The one person there is heavy enough that hitting them alone would stop the trolley before it ever reaches the loop.",
+  a:{label:"DON'T PULL", tag:"Avoided the physics debate entirely", verdict:"5 people die and the loop track was, strictly speaking, irrelevant to your decision. Congrats on staying out of a geometry argument at a funeral."},
+  b:{label:"PULL THE LEVER", tag:"You understood the assignment, technically", verdict:"You just used a human body as an emergency train brake because the track happens to loop like a cul-de-sac. Mathematically identical to every other version. Deeply weird outcome."},
+  stat:{a:41,b:59} },
+
+{ cat:'ABSURD', title:"The Time Traveler",
+  scenario:"Pulling the lever saves the 5, but the person on the side track is your own grandfather, decades before you were born.",
+  a:{label:"DON'T PULL", tag:"You preserve your own existence", verdict:"5 people die, but you're still around to tell the story. The grandfather paradox thanks you. Your conscience, slightly less so."},
+  b:{label:"PULL THE LEVER", tag:"You risk unraveling the universe", verdict:"You saved 5 lives and possibly erased yourself from history. If this text still exists, you probably got lucky. Probably."},
+  stat:{a:57,b:43} },
+
+{ cat:'ABSURD', title:"The Clone Army",
+  scenario:"On the main track: <b>5 identical clones of you</b>, same memories and all. On the side track: a total stranger.",
+  a:{label:"SAVE THE CLONES", tag:"Narcissism, quantified x5", verdict:"You picked 5 versions of yourself over someone you've never met. No court would convict you, but we all know exactly what this choice says."},
+  b:{label:"SAVE THE STRANGER", tag:"The only true altruist on this list", verdict:"You sacrificed 5 copies of yourself for a total stranger. Either you're a saint, or you genuinely can't stand yourself even in quintuplicate."},
+  stat:{a:61,b:39} },
+
+{ cat:'ABSURD', title:"The Simulation",
+  scenario:"A philosophy grad student appears on the side track, mid-lecture, insisting none of this is real and your choice carries zero moral weight because you're probably in a simulation. The 5 on the main track look unconvinced.",
+  a:{label:"PULL ANYWAY", tag:"Hedging your bets across possible realities", verdict:"You decided that even simulated ethics deserve your best effort. Pascal's Wager, but make it a trolley."},
+  b:{label:"STAY, HEAR HIM OUT", tag:"You've never left a seminar early in your life", verdict:"5 people died while you nodded along to an unfalsifiable argument about consciousness. Great material for your next dinner party, though."},
+  stat:{a:73,b:27} },
+
+{ cat:'ABSURD', title:"The Future Dictator",
+  scenario:"An infallible oracle tells you the child on the side track grows up to be a dictator responsible for millions of deaths. On the main track: 5 ordinary people.",
+  a:{label:"SAVE THE CHILD", tag:"The future isn't written, you say", verdict:"5 innocent people die today for certain, against a hypothetical future you could still change a thousand other ways. Bold leap of faith, practically terrifying."},
+  b:{label:"SACRIFICE THE CHILD", tag:"Minority Report, home edition", verdict:"You just sentenced a child for a crime he hasn't committed yet, based entirely on trusting an oracle. If the oracle's wrong, congratulations, you're the dictator now."},
+  stat:{a:38,b:62} },
+
+{ cat:'MODERN', title:"The Group Chat",
+  scenario:"On the main track: <b>5 people</b> from your group chat who read every message and never reply. On the side track: the one friend who triple-texts \"hello???\" within 90 seconds of any silence.",
+  a:{label:"SAVE THE SILENT 5", tag:"You value peace over closure", verdict:"The chat goes quiet forever. No more read receipts, no more anxiety. You'll never know if they were mad at you. Some might call that hell."},
+  b:{label:"SAVE THE TRIPLE-TEXTER", tag:"You need the validation more than you admit", verdict:"The chat is safe. It will never, ever be quiet again. You chose chaos and constant notifications over silence. Growth, arguably backwards."},
+  stat:{a:47,b:53} },
+
+{ cat:'MODERN', title:"The Package",
+  scenario:"On the main track: 5 strangers you'll never meet. On the side track: your own package, currently 'out for delivery', two days late.",
+  a:{label:"SAVE THE 5 STRANGERS", tag:"Basic human decency, allegedly", verdict:"You did the objectively correct thing and you know it. The package can wait. You'll still check the tracking app four more times today, though."},
+  b:{label:"SAVE THE PACKAGE", tag:"Porch pirate of morality", verdict:"Five people died so your package could arrive on time. It better be something good. It's protein powder, isn't it."},
+  stat:{a:80,b:20} },
+
+{ cat:'PARTY', title:"The WiFi Password",
+  scenario:"On the main track: 5 strangers at this exact party, right now. On the side track: the host, the only person who knows the WiFi password.",
+  a:{label:"SAVE THE 5 GUESTS", tag:"Noble, but you're on mobile data now", verdict:"The party survives morally intact and loses internet access forever. Someone's hotspotting off their phone for the rest of the night. Good luck."},
+  b:{label:"SAVE THE HOST", tag:"Priorities: correctly ordered", verdict:"WiFi secured. Five fewer guests at the party, but the group photos will upload instantly. A pragmatic, if chilling, choice."},
+  stat:{a:29,b:71} },
+
+{ cat:'PARTY', title:"The Vegan Cousin",
+  scenario:"On the main track: 5 people who just want to eat dinner in peace. On the side track: your cousin, who will explain \"actually, per capita emissions...\" for the rest of the night if saved.",
+  a:{label:"SAVE THE 5 DINERS", tag:"You chose silence over blood relation", verdict:"Dinner proceeds peacefully. You'll have to explain to your aunt what happened. This comes up at every holiday for the next decade."},
+  b:{label:"SAVE YOUR COUSIN", tag:"Family loyalty over dinner peace", verdict:"Your cousin lives, and so does the lecture. Five strangers are gone, but someone's getting the full breakdown of oat milk's carbon footprint tonight."},
+  stat:{a:64,b:36} }
+];
+
+let idx = 0;
+let tally = {a:0,b:0};
+let crowdMatches = 0;
+let tallyByCat = {CLASSIC:{a:0,b:0}, ABSURD:{a:0,b:0}, MODERN:{a:0,b:0}, PARTY:{a:0,b:0}};
+let sessionPlays = 1;
+const container = document.getElementById('stations');
+const kpiStation = document.getElementById('kpiStation');
+const kpiScore = document.getElementById('kpiScore');
+const kpiCrowd = document.getElementById('kpiCrowd');
+
+function render(){
+  container.innerHTML = '';
+  DATA.forEach((d, i)=>{
+    const cat = CATS[d.cat];
+    const el = document.createElement('div');
+    el.className = 'station';
+    el.id = 'station'+i;
+    el.innerHTML = `
+      <div class="card" style="--cat-color:${cat.color}">
+        <div class="icon-row">
+          <span class="num">STATION ${i+1}/${DATA.length}</span>
+          <span class="cat-tag" style="color:${cat.color}">${cat.label}</span>
+          ${MINI_TRACK}
+        </div>
+        <h3 class="title">${d.title}</h3>
+        <p class="scenario">${d.scenario}</p>
+        <div class="choices">
+          <div class="choice a" onclick="pick(${i},'a')">${d.a.label}</div>
+          <div class="choice b" onclick="pick(${i},'b')">${d.b.label}</div>
+        </div>
+        <div class="verdict" id="verdict${i}"></div>
+        <div class="crowd" id="crowd${i}"></div>
+      </div>`;
+    container.appendChild(el);
+  });
+}
+
+function updateKpis(){
+  kpiStation.innerHTML = idx + '<small>/'+DATA.length+'</small>';
+  if(idx===0){ kpiScore.textContent='—'; kpiCrowd.textContent='—'; return; }
+  kpiScore.textContent = Math.round((tally.b/idx)*100) + '%';
+  kpiCrowd.textContent = Math.round((crowdMatches/idx)*100) + '%';
+}
+
+function pick(i, choice){
+  const station = document.getElementById('station'+i);
+  if(station.classList.contains('answered')) return;
+  station.classList.add('answered');
+  const btn = station.querySelector('.choice.'+choice);
+  btn.classList.add('picked');
+  tally[choice]++;
+
+  const d = DATA[i];
+  const picked = d[choice];
+  const v = document.getElementById('verdict'+i);
+  v.innerHTML = `<span class="tag">${picked.tag}</span>${picked.verdict}`;
+  v.classList.add('show');
+
+  tallyByCat[d.cat][choice]++;
+
+  const majority = d.stat.a >= d.stat.b ? 'a' : 'b';
+  if(choice === majority) crowdMatches++;
+
+  const c = document.getElementById('crowd'+i);
+  c.innerHTML = `
+    <div class="clbl">Community split</div>
+    <div class="crowd-bar"><div class="seg-a" style="width:${d.stat.a}%"></div><div class="seg-b" style="width:${d.stat.b}%"></div></div>
+    <div class="crowd-nums"><span>Track A ${d.stat.a}%</span><span>Track B ${d.stat.b}%</span></div>
+    <div class="crowd-foot">sample size: vibes</div>`;
+  c.classList.add('show');
+
+  idx++;
+  updateKpis();
+  if(idx === DATA.length){
+    setTimeout(()=>{
+      showFinal();
+      document.getElementById('final').scrollIntoView({behavior:'smooth', block:'center'});
+    }, 400);
+  }
+}
+
+function buildRadar(pcts){
+  // pcts: {CLASSIC:0-100, ABSURD:0-100, MODERN:0-100, PARTY:0-100}
+  const order = ['CLASSIC','ABSURD','MODERN','PARTY'];
+  const cx = 110, cy = 105, maxR = 68;
+  const angleFor = i => (-90 + i*90) * Math.PI/180;
+
+  const gridRing = (pct) => order.map((_,i)=>{
+    const a = angleFor(i);
+    const r = (pct/100)*maxR;
+    return (cx + r*Math.cos(a)) + ',' + (cy + r*Math.sin(a));
+  }).join(' ');
+
+  const dataPoints = order.map((cat,i)=>{
+    const a = angleFor(i);
+    const r = (pcts[cat]/100)*maxR;
+    return (cx + r*Math.cos(a)) + ',' + (cy + r*Math.sin(a));
+  }).join(' ');
+
+  const axisLines = order.map((_,i)=>{
+    const a = angleFor(i);
+    const x2 = cx + maxR*Math.cos(a), y2 = cy + maxR*Math.sin(a);
+    return `<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#33291f" stroke-width="1.5"/>`;
+  }).join('');
+
+  const labels = order.map((cat,i)=>{
+    const a = angleFor(i);
+    const lx = cx + (maxR+26)*Math.cos(a), ly = cy + (maxR+26)*Math.sin(a);
+    const anchor = i===1 ? 'start' : (i===3 ? 'end' : 'middle');
+    const dy = i===0 ? -2 : (i===2 ? 8 : 3);
+    return `<text x="${lx}" y="${ly+dy}" text-anchor="${anchor}" font-family="Space Mono, monospace" font-size="8.5" fill="#8c877d" letter-spacing="0.5">${CATS[cat].label.toUpperCase()}</text>
+            <text x="${lx}" y="${ly+dy+11}" text-anchor="${anchor}" font-family="Anton, sans-serif" font-size="12" fill="#f2b705">${Math.round(pcts[cat])}%</text>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 220 210">
+    <polygon points="${gridRing(100)}" fill="none" stroke="#2b241d" stroke-width="1"/>
+    <polygon points="${gridRing(66)}" fill="none" stroke="#2b241d" stroke-width="1"/>
+    <polygon points="${gridRing(33)}" fill="none" stroke="#2b241d" stroke-width="1"/>
+    ${axisLines}
+    <polygon points="${dataPoints}" fill="rgba(242,183,5,0.28)" stroke="#f2b705" stroke-width="2.5"/>
+    ${labels}
+  </svg>`;
+}
+
+function showFinal(){
+  const f = document.getElementById('final');
+  const utilPct = Math.round((tally.b/DATA.length)*100);
+  const crowdPct = Math.round((crowdMatches/DATA.length)*100);
+  let profile, desc;
+  if(utilPct >= 66){
+    profile = "Ruthless Utilitarian";
+    desc = "You pulled levers, pushed strangers, sacrificed clones of yourself without blinking. The math is on your side. Family dinners, maybe less so.";
+  } else if(utilPct >= 34){
+    profile = "Chronically Undecided";
+    desc = "One foot on the lever, one on the brake of your own morals. You're the ideal person to keep an after-dinner argument going for another hour.";
+  } else {
+    profile = "Rule-Bound Deontologist";
+    desc = "You don't touch anything, you don't push anyone, you sleep fine. The numbers don't convince you: some lines just don't get crossed.";
+  }
+  document.getElementById('profileText').textContent = profile;
+  document.getElementById('profileDesc').textContent = desc + ` Utilitarian picks: ${tally.b}/${DATA.length}.`;
+
+  document.getElementById('scUtil').textContent = utilPct+'%';
+  document.getElementById('scUtilBar').style.width = utilPct+'%';
+  document.getElementById('scCrowd').textContent = crowdPct+'%';
+  document.getElementById('scCrowdBar').style.width = crowdPct+'%';
+  document.getElementById('scProfile').textContent = profile;
+
+  const catPcts = {};
+  ['CLASSIC','ABSURD','MODERN','PARTY'].forEach(cat=>{
+    const c = tallyByCat[cat];
+    const total = c.a + c.b;
+    catPcts[cat] = total ? (c.b/total)*100 : 0;
+  });
+  document.getElementById('radarChart').innerHTML = buildRadar(catPcts);
+  document.getElementById('idPlayCount').textContent = 'Run No. ' + sessionPlays;
+  document.getElementById('idCase').textContent = 'CASE FILE — TT/' + String(sessionPlays).padStart(3,'0');
+
+  f.classList.add('show');
+}
+
+function downloadCard(){
+  const node = document.getElementById('identikit');
+  html2canvas(node, {backgroundColor:'#141110', scale:2}).then(canvas=>{
+    const link = document.createElement('a');
+    link.download = 'trolley-tracks-identikit.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+function restart(){
+  idx = 0; tally = {a:0,b:0}; crowdMatches = 0;
+  tallyByCat = {CLASSIC:{a:0,b:0}, ABSURD:{a:0,b:0}, MODERN:{a:0,b:0}, PARTY:{a:0,b:0}};
+  sessionPlays++;
+  updateKpis();
+  document.getElementById('final').classList.remove('show');
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- TOUR MODE ---------- */
+let touring = false;
+const sleep = ms => new Promise(r=>setTimeout(r, ms));
+
+// scripted picks so the demo tells a little story (mixes majority & minority picks)
+const TOUR_SCRIPT = ['b','a','b','b','a','b','a','b','a','b','b','a'];
+
+function toggleTour(){
+  if(touring){ stopTour(); } else { startTour(); }
+}
+
+function setTourBtn(active){
+  const btn = document.getElementById('tourBtn');
+  if(active){ btn.textContent = '■ Stop tour'; btn.classList.add('stopping'); }
+  else { btn.textContent = '▶ Start tour mode'; btn.classList.remove('stopping'); }
+}
+
+function moveCursor(x, y){
+  const c = document.getElementById('tourCursor');
+  c.style.opacity = '1';
+  c.style.left = x+'px';
+  c.style.top = y+'px';
+}
+
+async function moveCursorToEl(el){
+  const rect = el.getBoundingClientRect();
+  moveCursor(rect.left + rect.width/2, rect.top + rect.height/2);
+  await sleep(560);
+}
+
+function tapCursor(){
+  const c = document.getElementById('tourCursor');
+  c.classList.remove('tap'); void c.offsetWidth; c.classList.add('tap');
+}
+
+function hideCursor(){
+  document.getElementById('tourCursor').style.opacity = '0';
+}
+
+async function startTour(){
+  if(touring) return;
+  touring = true;
+  document.body.classList.add('touring');
+  setTourBtn(true);
+  restart();
+  window.scrollTo({top:0, behavior:'smooth'});
+  await sleep(700);
+
+  for(let i=0; i<DATA.length; i++){
+    if(!touring) return;
+    const station = document.getElementById('station'+i);
+    station.scrollIntoView({behavior:'smooth', block:'center'});
+    await sleep(900);
+    if(!touring) return;
+    await sleep(1300); // reading time for the scenario
+    if(!touring) return;
+
+    const choice = TOUR_SCRIPT[i] || (Math.random() < 0.5 ? 'a' : 'b');
+    const btn = station.querySelector('.choice.'+choice);
+    await moveCursorToEl(btn);
+    if(!touring) return;
+    tapCursor();
+    await sleep(180);
+    pick(i, choice);
+    await sleep(2100); // reading time for verdict + crowd chart
+  }
+
+  if(!touring) return;
+  const finalEl = document.getElementById('final');
+  finalEl.scrollIntoView({behavior:'smooth', block:'center'});
+  await sleep(1300);
+  if(!touring) return;
+
+  const dlBtn = document.querySelector('.btn.download');
+  await moveCursorToEl(dlBtn);
+  if(!touring) return;
+  tapCursor();
+  await sleep(200);
+  downloadCard();
+  await sleep(1200);
+
+  stopTour();
+}
+
+function stopTour(){
+  touring = false;
+  document.body.classList.remove('touring');
+  hideCursor();
+  setTourBtn(false);
+}
+
+render();
+updateKpis();
+</script>
+</body>
+</html>
