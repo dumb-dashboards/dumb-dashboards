@@ -1,5 +1,7 @@
 ## Hi there 👋
 
+All of my dashboards are free to use and download, and are created without any commercial purposes! 
+Please mention @dumbdashboards if you refer to any of my projects.
 <!--
 **dumb-dashboards/dumb-dashboards** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
