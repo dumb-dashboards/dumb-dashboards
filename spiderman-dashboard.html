@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SPIDEY-METRICS — Three Eras, Compared</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Archivo+Black&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f0e9d6; --paper-2:#e6dcc0;
+    --ink:#161616; --ink-soft:#3a3630;
+    --red:#e0242b; --red-dark:#a5181d;
+    --blue:#1b3e8c; --blue-dark:#12285e;
+    --green:#1f7a4d; --green-dark:#155434;
+    --yellow:#ffd400; --yellow-dark:#c9a800;
+    --white:#f7f3e8;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;overflow-x:hidden;}
+  body{
+    background-image:radial-gradient(var(--ink) 1px, transparent 1.4px);
+    background-size:14px 14px;
+    background-color:var(--paper);
+    background-blend-mode:multiply;
+    opacity:1;
+  }
+  body::before{content:'';position:fixed;inset:0;background:var(--paper);opacity:.86;z-index:-1;}
+
+  .wrap{position:relative;max-width:680px;margin:0 auto;padding:0 16px 70px;}
+
+  .comic-border{border:4px solid var(--ink);border-radius:4px;box-shadow:6px 6px 0 var(--ink);}
+
+  header{padding:30px 10px 18px;text-align:center;position:relative;}
+  .kicker{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.18em;color:var(--red);text-transform:uppercase;-webkit-text-stroke:0;}
+  h1{
+    font-family:'Bangers',cursive;font-size:clamp(38px,10vw,58px);line-height:.95;
+    margin:8px 0 6px;color:var(--ink);text-transform:uppercase;letter-spacing:.02em;
+    text-shadow:3px 3px 0 var(--yellow), 5px 5px 0 var(--ink);
+  }
+  .sub{font-size:14.5px;color:var(--ink-soft);max-width:420px;margin:10px auto 0;line-height:1.5;font-weight:600;}
+
+  /* filter chips */
+  .filters{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:22px 0 10px;}
+  .chip{
+    font-family:'Archivo Black',sans-serif;font-size:12.5px;letter-spacing:.02em;
+    padding:10px 18px;border-radius:24px;border:3px solid var(--ink);cursor:pointer;
+    background:var(--white);color:var(--ink);transition:transform .12s;text-transform:uppercase;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  .chip.off{opacity:.35;background:var(--paper-2);box-shadow:2px 2px 0 var(--ink);}
+  .chip[data-era="raimi"].on{background:var(--red);color:var(--white);}
+  .chip[data-era="garfield"].on{background:var(--blue);color:var(--white);}
+  .chip[data-era="holland"].on{background:var(--green);color:var(--white);}
+
+  .tabs{display:flex;gap:8px;justify-content:center;margin:18px 0 26px;}
+  .tab{font-family:'Bangers',cursive;font-size:18px;letter-spacing:.03em;padding:9px 22px;border:3px solid var(--ink);border-radius:6px;background:var(--white);cursor:pointer;box-shadow:3px 3px 0 var(--ink);text-transform:uppercase;}
+  .tab.active{background:var(--yellow);}
+
+  /* tour mode */
+  .tour-controls{display:flex;align-items:center;gap:10px;justify-content:center;margin:16px 0 0;flex-wrap:wrap;}
+  .tour-btn{font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.02em;padding:10px 18px;border-radius:24px;border:3px solid var(--ink);cursor:pointer;background:var(--yellow);color:var(--ink);box-shadow:3px 3px 0 var(--ink);text-transform:uppercase;}
+  .tour-btn.stopping{background:var(--red);color:var(--white);}
+  .tour-hint{font-size:10.5px;color:var(--ink-soft);font-weight:600;max-width:220px;text-align:left;line-height:1.4;}
+  .tour-cursor{position:fixed;top:0;left:0;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:radial-gradient(circle, rgba(224,36,43,.55) 0%, rgba(224,36,43,.12) 60%, transparent 72%);border:3px solid var(--ink);opacity:0;z-index:9999;pointer-events:none;transition:left .5s cubic-bezier(.4,0,.2,1), top .5s cubic-bezier(.4,0,.2,1), opacity .3s;}
+  .tour-cursor::after{content:'';position:absolute;inset:15px;border-radius:50%;background:var(--red);}
+  .tour-cursor.tap{animation:cursorTap .45s ease-out;}
+  @keyframes cursorTap{0%{transform:scale(1);}45%{transform:scale(1.7);}100%{transform:scale(1);}}
+  body.touring .chip, body.touring .tab{pointer-events:none;}
+
+  /* trading cards */
+  .cards-row{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 14px;margin-bottom:6px;}
+  .tcard{flex:0 0 auto;width:180px;background:var(--white);border:3px solid var(--ink);border-radius:8px;padding:12px;box-shadow:4px 4px 0 var(--ink);transition:opacity .2s;}
+  .tcard.dim{opacity:.3;}
+  .tcard .badge{width:100%;aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;border:3px solid var(--ink);}
+  .tcard .badge svg{width:60%;height:60%;}
+  .tcard[data-era="raimi"] .badge{background:var(--red);}
+  .tcard[data-era="garfield"] .badge{background:var(--blue);}
+  .tcard[data-era="holland"] .badge{background:var(--green);}
+  .tcard .era-name{font-family:'Bangers',cursive;font-size:19px;text-transform:uppercase;text-align:center;}
+  .tcard .years{font-family:'Archivo Black',sans-serif;font-size:10px;text-align:center;color:var(--ink-soft);margin-bottom:8px;}
+  .tcard .stat-row{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;border-top:1.5px dashed var(--ink-soft);}
+  .tcard .stat-row b{font-family:'Archivo Black',sans-serif;font-size:12px;}
+
+  /* chart cards */
+  .panel{background:var(--white);border:4px solid var(--ink);border-radius:8px;padding:20px 18px;margin-bottom:22px;box-shadow:6px 6px 0 var(--ink);}
+  .panel-head{margin-bottom:16px;text-align:center;}
+  .panel-head .pt{font-family:'Bangers',cursive;font-size:26px;color:var(--ink);text-transform:uppercase;}
+  .panel-head .ps{font-size:13px;color:var(--ink-soft);font-weight:600;margin-top:2px;}
+  .panel svg{width:100%;height:auto;display:block;}
+  .panel-foot{text-align:center;font-size:11.5px;color:var(--ink-soft);margin-top:10px;font-style:italic;font-weight:600;}
+
+  .disclaimer{text-align:center;font-size:11px;color:var(--ink-soft);background:var(--yellow);border:2px solid var(--ink);border-radius:6px;padding:8px 14px;margin:0 0 20px;font-weight:700;}
+
+  footer{text-align:center;font-size:11px;color:var(--ink-soft);letter-spacing:.06em;padding:20px 0;text-transform:uppercase;font-family:'Archivo Black',sans-serif;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Dumb Dashboards presents</div>
+    <h1>Spidey-Metrics</h1>
+    <p class="sub">Three actors. Three timelines. One extremely specific set of KPIs, triggered entirely by "Brand New Day" breaking box office records this week.</p>
+    <div class="tour-controls">
+      <button class="tour-btn" id="tourBtn" onclick="toggleTour()">▶ Start tour mode</button>
+      <span class="tour-hint">Auto-plays the whole dashboard, filters and all. Made for screen-recording a demo.</span>
+    </div>
+  </header>
+
+  <div class="filters" id="filters">
+    <div class="chip on" data-era="raimi">🕷️ Raimi (2002–07)</div>
+    <div class="chip on" data-era="garfield">🕷️ Garfield (2012–14)</div>
+    <div class="chip on" data-era="holland">🕷️ Holland (2017–26)</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="serious">THE NUMBERS</div>
+    <div class="tab" data-tab="fun">THE NONSENSE</div>
+  </div>
+
+  <div class="cards-row" id="cardsRow"></div>
+
+  <div id="seriousPanels"></div>
+  <div id="funPanels" style="display:none;"></div>
+
+  <div class="disclaimer">Box office and Rotten Tomatoes scores are real. Everything under "The Nonsense" is real plot events, counted by us, with zero peer review.</div>
+
+  <footer>@dumbdashboards — no radioactive spiders were harmed</footer>
+</div>
+
+<div class="tour-cursor" id="tourCursor"></div>
+
+<script>
+const COLORS = { raimi:'#e0242b', garfield:'#1b3e8c', holland:'#1f7a4d' };
+const COLORS_DARK = { raimi:'#a5181d', garfield:'#12285e', holland:'#155434' };
+const ERA_NAMES = { raimi:'Raimi', garfield:'Garfield', holland:'Holland' };
+
+const FILMS = [
+  {era:'raimi', name:'Spider-Man', year:2002, boxoffice:825, budget:139, rt:90, runtime:121, villains:1},
+  {era:'raimi', name:'Spider-Man 2', year:2004, boxoffice:788, budget:200, rt:93, runtime:127, villains:1},
+  {era:'raimi', name:'Spider-Man 3', year:2007, boxoffice:891, budget:258, rt:66, runtime:139, villains:3},
+  {era:'garfield', name:'Amazing Spider-Man', year:2012, boxoffice:757, budget:230, rt:71, runtime:136, villains:1},
+  {era:'garfield', name:'Amazing Spider-Man 2', year:2014, boxoffice:709, budget:255, rt:51, runtime:142, villains:3},
+  {era:'holland', name:'Homecoming', year:2017, boxoffice:880, budget:175, rt:92, runtime:133, villains:1},
+  {era:'holland', name:'Far From Home', year:2019, boxoffice:1131, budget:160, rt:91, runtime:129, villains:1},
+  {era:'holland', name:'No Way Home', year:2021, boxoffice:1921, budget:200, rt:93, runtime:148, villains:5},
+  {era:'holland', name:'Brand New Day', year:2026, boxoffice:932, budget:225, rt:90, runtime:145, villains:1, ongoing:true},
+];
+
+const ERA_META = {
+  raimi:    { label:'The Raimi Trilogy',   years:'2002–2007', films:3, actor:'Tobey Maguire' },
+  garfield: { label:'The Garfield Duology', years:'2012–2014', films:2, actor:'Andrew Garfield' },
+  holland:  { label:'The Holland Saga',    years:'2017–2026', films:4, actor:'Tom Holland' },
+};
+
+const VILLAIN_TYPES = {
+  raimi:    { tech:2, mutated:2, symbiote:1, multiverse:0 },
+  garfield: { tech:2, mutated:2, symbiote:0, multiverse:0 },
+  holland:  { tech:4, mutated:3, symbiote:0, multiverse:1 },
+};
+
+const FUN_STATS = {
+  heartbreak:  { raimi:4, garfield:2, holland:2, label:'Heartbreak Count', sub:'Breakups, forced separations, and one very devastating memory-erasing spell.' },
+  gwendeaths:  { raimi:0, garfield:1, holland:0, label:'Gwen Stacys Lost', sub:'Exactly the number you think it is, and exactly why.' },
+  cities:      { raimi:0, garfield:0, holland:6, label:'Cities Visited Beyond NYC', sub:'One European school trip did all the work here.' },
+  mockery:     { raimi:5, garfield:2, holland:6, label:'Public Mockery Received', sub:'Daily Bugle headlines, playground bullying, and one very loud podcast host.' },
+  beatdown:    { raimi:8, garfield:6, holland:4, label:'Beatdown Index (out of 10)', sub:'Subjective. Vibes-based. Raimi still hits the hardest.' },
+  unmasked:    { raimi:2, garfield:1, holland:3, label:'Identity Reveal Moments', sub:'From "one girlfriend finds out" to "the entire world finds out."' },
+  damage:      { raimi:35, garfield:28, holland:62, label:'NYC Property Damage (est. buildings)', sub:'A completely unofficial insurance-adjuster guess. Holland wins by inviting five villains from other universes.' },
+};
+
+let activeEras = new Set(['raimi','garfield','holland']);
+
+function eraFilms(era){ return FILMS.filter(f=>f.era===era); }
+function eraTotal(era, key){ return eraFilms(era).reduce((s,f)=>s+f[key],0); }
+function eraAvg(era, key){ const fs=eraFilms(era); return fs.reduce((s,f)=>s+f[key],0)/fs.length; }
+
+/* ---------- trading cards ---------- */
+function renderCards(){
+  const row = document.getElementById('cardsRow');
+  row.innerHTML = '';
+  const SPIDER_ICON = `<svg viewBox="0 0 100 100" fill="none" stroke="#161616" stroke-width="5"><circle cx="50" cy="42" r="20" fill="#f7f3e8"/><path d="M50 42 L20 20 M50 42 L14 42 M50 42 L20 64 M50 42 L30 85 M50 42 L80 20 M50 42 L86 42 M50 42 L80 64 M50 42 L70 85" stroke-linecap="round"/><path d="M40 38 h5 M55 38 h5" stroke-width="4"/></svg>`;
+  Object.keys(ERA_META).forEach(era=>{
+    const m = ERA_META[era];
+    const totalBO = eraTotal(era,'boxoffice');
+    const avgRT = Math.round(eraAvg(era,'rt'));
+    const c = document.createElement('div');
+    c.className = 'tcard' + (activeEras.has(era) ? '' : ' dim');
+    c.dataset.era = era;
+    c.innerHTML = `
+      <div class="badge">${SPIDER_ICON}</div>
+      <div class="era-name">${m.label}</div>
+      <div class="years">${m.years} · ${m.films} FILMS</div>
+      <div class="stat-row"><span>Box Office</span><b>$${totalBO.toLocaleString()}M</b></div>
+      <div class="stat-row"><span>Avg RT Score</span><b>${avgRT}%</b></div>
+      <div class="stat-row"><span>Villains Fought</span><b>${eraTotal(era,'villains')}</b></div>
+    `;
+    row.appendChild(c);
+  });
+}
+
+/* ---------- svg helpers ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+
+function groupedBarChart(containerId, opts){
+  const {films, valueKey, unit, fmt} = opts;
+  const activeFilms = films.filter(f=>activeEras.has(f.era));
+  const W=620, H=300, padL=50, padR=20, padT=20, padB=70;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const maxV = Math.max(...activeFilms.map(f=>f[valueKey])) * 1.15;
+  const gap = plotW/activeFilms.length, barW = gap*0.62;
+
+  const svg = el('svg',{viewBox:`0 0 ${W} ${H}`});
+  svg.appendChild(el('line',{x1:padL,y1:H-padB,x2:W-padR,y2:H-padB,stroke:'#161616','stroke-width':2.5}));
+
+  activeFilms.forEach((f,i)=>{
+    const h = Math.max((f[valueKey]/maxV)*plotH, 4);
+    const x = padL+i*gap+(gap-barW)/2, y = H-padB-h;
+    svg.appendChild(el('rect',{x,y,width:barW,height:h,fill:COLORS[f.era],stroke:'#161616','stroke-width':2.5,rx:3}));
+    const vtxt = fmt ? fmt(f[valueKey]) : f[valueKey];
+    const v = el('text',{x:x+barW/2,y:y-8,'text-anchor':'middle','font-family':'Archivo Black','font-size':13,fill:'#161616'});
+    v.textContent = vtxt; svg.appendChild(v);
+    const lbl = el('text',{x:x+barW/2,y:H-padB+16,'text-anchor':'end','font-family':'Inter','font-weight':700,'font-size':10.5,fill:'#3a3630'});
+    lbl.textContent = f.name + (f.ongoing?' *':'');
+    lbl.setAttribute('transform',`rotate(-38 ${x+barW/2} ${H-padB+16})`);
+    svg.appendChild(lbl);
+  });
+  const c = document.getElementById(containerId);
+  c.innerHTML=''; c.appendChild(svg);
+}
+
+function rtLineChart(containerId){
+  const activeFilms = FILMS.filter(f=>activeEras.has(f.era));
+  const W=620, H=280, padL=44, padR=20, padT=24, padB=68;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const stepX = activeFilms.length>1 ? plotW/(activeFilms.length-1) : 0;
+  const svg = el('svg',{viewBox:`0 0 ${W} ${H}`});
+  [50,70,90,100].forEach(v=>{
+    const y = padT+plotH-((v-40)/60)*plotH;
+    svg.appendChild(el('line',{x1:padL,y1:y,x2:W-padR,y2:y,stroke:'#c9bfa3','stroke-width':1,'stroke-dasharray':'3 3'}));
+    const t = el('text',{x:padL-8,y:y+4,'text-anchor':'end','font-family':'Inter','font-size':10,fill:'#3a3630'}); t.textContent=v+'%'; svg.appendChild(t);
+  });
+  const pts = activeFilms.map((f,i)=>[padL+i*stepX, padT+plotH-((f.rt-40)/60)*plotH]);
+  let d = `M${pts[0][0]},${pts[0][1]} `;
+  for(let i=1;i<pts.length;i++) d += `L${pts[i][0]},${pts[i][1]} `;
+  svg.appendChild(el('path',{d, fill:'none', stroke:'#161616','stroke-width':3,'stroke-linejoin':'round'}));
+  activeFilms.forEach((f,i)=>{
+    const [x,y] = pts[i];
+    svg.appendChild(el('circle',{cx:x,cy:y,r:7,fill:COLORS[f.era],stroke:'#161616','stroke-width':2.5}));
+    const v = el('text',{x,y:y-14,'text-anchor':'middle','font-family':'Archivo Black','font-size':12,fill:'#161616'}); v.textContent=f.rt+'%'; svg.appendChild(v);
+    const lbl = el('text',{x,y:H-padB+16,'text-anchor':'end','font-family':'Inter','font-weight':700,'font-size':10.5,fill:'#3a3630'});
+    lbl.textContent = f.name;
+    lbl.setAttribute('transform',`rotate(-38 ${x} ${H-padB+16})`);
+    svg.appendChild(lbl);
+  });
+  const c = document.getElementById(containerId);
+  c.innerHTML=''; c.appendChild(svg);
+}
+
+function stackedBarChart(containerId){
+  const eras = Object.keys(VILLAIN_TYPES).filter(e=>activeEras.has(e));
+  const cats = [['tech','Tech-Based','#ffd400'],['mutated','Mutated / Enhanced','#e0242b'],['symbiote','Symbiote / Alien','#161616'],['multiverse','Multiverse / Mystery','#1b3e8c']];
+  const W=560, H=320, padL=50, padR=20, padT=20, padB=50;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const totals = eras.map(e=>Object.values(VILLAIN_TYPES[e]).reduce((a,b)=>a+b,0));
+  const maxV = Math.max(...totals)*1.15;
+  const gap = plotW/eras.length, barW = gap*0.5;
+
+  const svg = el('svg',{viewBox:`0 0 ${W} ${H}`});
+  svg.appendChild(el('line',{x1:padL,y1:H-padB,x2:W-padR,y2:H-padB,stroke:'#161616','stroke-width':2.5}));
+
+  eras.forEach((era,i)=>{
+    let yCursor = H-padB;
+    const x = padL+i*gap+(gap-barW)/2;
+    cats.forEach(([key,label,color])=>{
+      const val = VILLAIN_TYPES[era][key];
+      if(val===0) return;
+      const h = (val/maxV)*plotH;
+      const y = yCursor - h;
+      svg.appendChild(el('rect',{x,y,width:barW,height:h,fill:color,stroke:'#161616','stroke-width':2,rx:2}));
+      if(h>16){
+        const t = el('text',{x:x+barW/2,y:y+h/2+4,'text-anchor':'middle','font-family':'Archivo Black','font-size':11,fill: key==='symbiote'?'#f7f3e8':'#161616'});
+        t.textContent = val; svg.appendChild(t);
+      }
+      yCursor = y;
+    });
+    const total = totals[i];
+    const ttxt = el('text',{x:x+barW/2,y:yCursor-8,'text-anchor':'middle','font-family':'Archivo Black','font-size':13,fill:'#161616'});
+    ttxt.textContent = total; svg.appendChild(ttxt);
+    const lbl = el('text',{x:x+barW/2,y:H-padB+22,'text-anchor':'middle','font-family':'Bangers','font-size':14,fill:COLORS[era]});
+    lbl.textContent = ERA_NAMES[era]; svg.appendChild(lbl);
+  });
+  const c = document.getElementById(containerId);
+  c.innerHTML=''; c.appendChild(svg);
+
+  const legend = document.getElementById(containerId+'Legend');
+  if(legend){
+    legend.innerHTML = cats.map(([k,label,color])=>`<span style="display:inline-flex;align-items:center;gap:5px;margin:0 10px 4px 0;"><span style="width:12px;height:12px;background:${color};border:2px solid #161616;display:inline-block;"></span>${label}</span>`).join('');
+  }
+}
+
+function funStatBar(containerId, statKey){
+  const stat = FUN_STATS[statKey];
+  const eras = Object.keys(ERA_META).filter(e=>activeEras.has(e));
+  const W=560, H=220, padL=140, padR=60, padT=16, padB=16;
+  const plotW = W-padL-padR;
+  const maxV = Math.max(...eras.map(e=>stat[e]), 1) * 1.2;
+  const rowH = (H-padT-padB)/eras.length;
+
+  const svg = el('svg',{viewBox:`0 0 ${W} ${H}`});
+  eras.forEach((era,i)=>{
+    const y = padT + i*rowH + rowH*0.2;
+    const h = rowH*0.6;
+    const w = (stat[era]/maxV)*plotW;
+    const lbl = el('text',{x:padL-12,y:y+h/2+5,'text-anchor':'end','font-family':'Bangers','font-size':16,fill:COLORS[era]});
+    lbl.textContent = ERA_NAMES[era]; svg.appendChild(lbl);
+    svg.appendChild(el('rect',{x:padL,y,width:Math.max(w,3),height:h,fill:COLORS[era],stroke:'#161616','stroke-width':2.5,rx:4}));
+    const v = el('text',{x:padL+Math.max(w,3)+10,y:y+h/2+5,'font-family':'Archivo Black','font-size':17,fill:'#161616'});
+    v.textContent = stat[era]; svg.appendChild(v);
+  });
+  const c = document.getElementById(containerId);
+  c.innerHTML=''; c.appendChild(svg);
+}
+
+function roiChart(containerId){
+  const activeFilms = FILMS.filter(f=>activeEras.has(f.era));
+  const W=620, H=290, padL=44, padR=20, padT=20, padB=70;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const ratios = activeFilms.map(f=>f.boxoffice/f.budget);
+  const maxV = Math.max(...ratios)*1.15;
+  const gap = plotW/activeFilms.length, barW = gap*0.6;
+
+  const svg = el('svg',{viewBox:`0 0 ${W} ${H}`});
+  svg.appendChild(el('line',{x1:padL,y1:H-padB,x2:W-padR,y2:H-padB,stroke:'#161616','stroke-width':2.5}));
+  [2,4,6,8].forEach(v=>{
+    const y = H-padB-(v/maxV)*plotH;
+    svg.appendChild(el('line',{x1:padL,y1:y,x2:W-padR,y2:y,stroke:'#c9bfa3','stroke-width':1,'stroke-dasharray':'3 3'}));
+    const t = el('text',{x:padL-8,y:y+4,'text-anchor':'end','font-family':'Inter','font-size':10,fill:'#3a3630'}); t.textContent=v+'\u00d7'; svg.appendChild(t);
+  });
+  activeFilms.forEach((f,i)=>{
+    const ratio = f.boxoffice/f.budget;
+    const h = (ratio/maxV)*plotH;
+    const x = padL+i*gap+(gap-barW)/2, y = H-padB-h;
+    svg.appendChild(el('rect',{x,y,width:barW,height:h,fill:COLORS[f.era],stroke:'#161616','stroke-width':2.5,rx:3}));
+    const v = el('text',{x:x+barW/2,y:y-8,'text-anchor':'middle','font-family':'Archivo Black','font-size':13,fill:'#161616'});
+    v.textContent = ratio.toFixed(1)+'\u00d7'; svg.appendChild(v);
+    const lbl = el('text',{x:x+barW/2,y:H-padB+16,'text-anchor':'end','font-family':'Inter','font-weight':700,'font-size':10.5,fill:'#3a3630'});
+    lbl.textContent = f.name;
+    lbl.setAttribute('transform',`rotate(-38 ${x+barW/2} ${H-padB+16})`);
+    svg.appendChild(lbl);
+  });
+  const c = document.getElementById(containerId);
+  c.innerHTML=''; c.appendChild(svg);
+}
+
+function runtimeChart(containerId){
+  const activeFilms = FILMS.filter(f=>activeEras.has(f.era));
+  const W=620, H=280, padL=44, padR=20, padT=20, padB=68;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const stepX = activeFilms.length>1 ? plotW/(activeFilms.length-1) : 0;
+  const minR=110, maxR=155;
+  const svg = el('svg',{viewBox:`0 0 ${W} ${H}`});
+  [110,120,130,140,150].forEach(v=>{
+    const y = padT+plotH-((v-minR)/(maxR-minR))*plotH;
+    svg.appendChild(el('line',{x1:padL,y1:y,x2:W-padR,y2:y,stroke:'#c9bfa3','stroke-width':1,'stroke-dasharray':'3 3'}));
+    const t = el('text',{x:padL-8,y:y+4,'text-anchor':'end','font-family':'Inter','font-size':10,fill:'#3a3630'}); t.textContent=v; svg.appendChild(t);
+  });
+  const pts = activeFilms.map((f,i)=>[padL+i*stepX, padT+plotH-((f.runtime-minR)/(maxR-minR))*plotH]);
+  let d = `M${pts[0][0]},${pts[0][1]} `;
+  for(let i=1;i<pts.length;i++) d += `L${pts[i][0]},${pts[i][1]} `;
+  svg.appendChild(el('path',{d, fill:'none', stroke:'#161616','stroke-width':3,'stroke-linejoin':'round'}));
+  activeFilms.forEach((f,i)=>{
+    const [x,y] = pts[i];
+    svg.appendChild(el('circle',{cx:x,cy:y,r:7,fill:COLORS[f.era],stroke:'#161616','stroke-width':2.5}));
+    const v = el('text',{x,y:y-14,'text-anchor':'middle','font-family':'Archivo Black','font-size':12,fill:'#161616'}); v.textContent=f.runtime+"'"; svg.appendChild(v);
+    const lbl = el('text',{x,y:H-padB+16,'text-anchor':'end','font-family':'Inter','font-weight':700,'font-size':10.5,fill:'#3a3630'});
+    lbl.textContent = f.name;
+    lbl.setAttribute('transform',`rotate(-38 ${x} ${H-padB+16})`);
+    svg.appendChild(lbl);
+  });
+  const c = document.getElementById(containerId);
+  c.innerHTML=''; c.appendChild(svg);
+}
+
+/* ---------- panel scaffolding ---------- */
+function buildSeriousPanels(){
+  const wrap = document.getElementById('seriousPanels');
+  wrap.innerHTML = `
+    <div class="panel">
+      <div class="panel-head"><div class="pt">Box Office, By Film</div><div class="ps">Worldwide gross, in millions USD</div></div>
+      <div id="chartBoxOffice"></div>
+      <div class="panel-foot">* Brand New Day is one week old and still climbing.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="pt">Critical Reception</div><div class="ps">Rotten Tomatoes critic score, chronological</div></div>
+      <div id="chartRT"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="pt">Villains Fought, By Type</div><div class="ps">Stacked by category, totalled per era</div></div>
+      <div id="chartVillains"></div>
+      <div id="chartVillainsLegend" style="text-align:center;font-size:11px;font-weight:700;margin-top:10px;"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="pt">Bang For Buck</div><div class="ps">Box office \u00f7 budget \u2014 how many times each film paid for itself</div></div>
+      <div id="chartROI"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="pt">Runtime Creep</div><div class="ps">Minutes per film, chronological \u2014 they are not getting shorter</div></div>
+      <div id="chartRuntime"></div>
+    </div>
+  `;
+  groupedBarChart('chartBoxOffice', {films:FILMS, valueKey:'boxoffice', fmt:v=>'$'+v+'M'});
+  rtLineChart('chartRT');
+  stackedBarChart('chartVillains');
+  roiChart('chartROI');
+  runtimeChart('chartRuntime');
+}
+
+function buildFunPanels(){
+  const wrap = document.getElementById('funPanels');
+  wrap.innerHTML = Object.entries(FUN_STATS).map(([key,stat])=>`
+    <div class="panel">
+      <div class="panel-head"><div class="pt">${stat.label}</div><div class="ps">${stat.sub}</div></div>
+      <div id="chart_${key}"></div>
+    </div>
+  `).join('');
+  Object.keys(FUN_STATS).forEach(key => funStatBar('chart_'+key, key));
+}
+
+function refreshAll(){
+  renderCards();
+  buildSeriousPanels();
+  buildFunPanels();
+}
+
+document.getElementById('filters').addEventListener('click', (e)=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  const era = chip.dataset.era;
+  if(activeEras.has(era)){
+    if(activeEras.size===1) return; // keep at least one
+    activeEras.delete(era);
+    chip.classList.remove('on'); chip.classList.add('off');
+  } else {
+    activeEras.add(era);
+    chip.classList.add('on'); chip.classList.remove('off');
+  }
+  refreshAll();
+});
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const which = tab.dataset.tab;
+    document.getElementById('seriousPanels').style.display = which==='serious' ? 'block':'none';
+    document.getElementById('funPanels').style.display = which==='fun' ? 'block':'none';
+  });
+});
+
+refreshAll();
+
+/* ---------- TOUR MODE ---------- */
+let touring = false;
+const sleep = ms => new Promise(r=>setTimeout(r, ms));
+
+function setTourBtn(active){
+  const btn = document.getElementById('tourBtn');
+  if(active){ btn.textContent = '■ Stop tour'; btn.classList.add('stopping'); }
+  else { btn.textContent = '▶ Start tour mode'; btn.classList.remove('stopping'); }
+}
+async function moveCursorToEl(elm){
+  const rect = elm.getBoundingClientRect();
+  const c = document.getElementById('tourCursor');
+  c.style.opacity = '1';
+  c.style.left = (rect.left+rect.width/2)+'px';
+  c.style.top = (rect.top+rect.height/2)+'px';
+  await sleep(500);
+}
+function tapCursor(){
+  const c = document.getElementById('tourCursor');
+  c.classList.remove('tap'); void c.offsetWidth; c.classList.add('tap');
+}
+function hideCursor(){ document.getElementById('tourCursor').style.opacity='0'; }
+
+async function toggleTour(){
+  if(touring){ touring=false; hideCursor(); setTourBtn(false); return; }
+  touring = true;
+  document.body.classList.add('touring');
+  setTourBtn(true);
+  window.scrollTo({top:0, behavior:'smooth'});
+  await sleep(700);
+
+  // demo the filter chips: turn Garfield off, then back on
+  const garfieldChip = document.querySelector('.chip[data-era="garfield"]');
+  if(!touring) return;
+  await moveCursorToEl(garfieldChip);
+  tapCursor(); garfieldChip.click();
+  await sleep(1100);
+  if(!touring) return;
+  await moveCursorToEl(garfieldChip);
+  tapCursor(); garfieldChip.click();
+  await sleep(900);
+
+  const cardsRow = document.getElementById('cardsRow');
+  cardsRow.scrollIntoView({behavior:'smooth', block:'center'});
+  await sleep(1400);
+
+  const seriousPanels = Array.from(document.querySelectorAll('#seriousPanels .panel'));
+  for(const p of seriousPanels){
+    if(!touring) return;
+    p.scrollIntoView({behavior:'smooth', block:'center'});
+    await sleep(1750);
+  }
+
+  if(!touring) return;
+  const funTab = document.querySelector('.tab[data-tab="fun"]');
+  funTab.scrollIntoView({behavior:'smooth', block:'center'});
+  await sleep(400);
+  await moveCursorToEl(funTab);
+  tapCursor(); funTab.click();
+  await sleep(600);
+
+  const funPanels = Array.from(document.querySelectorAll('#funPanels .panel'));
+  for(const p of funPanels){
+    if(!touring) return;
+    p.scrollIntoView({behavior:'smooth', block:'center'});
+    await sleep(1500);
+  }
+
+  if(!touring) return;
+  touring = false;
+  document.body.classList.remove('touring');
+  hideCursor();
+  setTourBtn(false);
+}
+</script>
+</body>
+</html>
