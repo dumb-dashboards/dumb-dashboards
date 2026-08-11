@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONE PIECE — BOUNTY BOARD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&family=Arvo:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --sea:#0c2438; --sea2:#0a1c2c; --sea-deep:#071420;
+    --paper:#e8dcbb; --paper2:#ddcda2;
+    --ink:#241c12; --ink-dim:#5c5040;
+    --red:#a3271f; --red-lt:#c94a3a;
+    --gold:#b8863b; --rope:#8a6a3f;
+    --line: rgba(36,28,18,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -20%, rgba(184,134,59,0.08), transparent 50%),
+      linear-gradient(180deg, var(--sea) 0%, var(--sea2) 60%, var(--sea-deep) 100%);
+    color:var(--paper);
+    font-family:'Arvo',serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--gold);}
+  h1,h2,h3{font-family:'Rye',serif; font-weight:400; margin:0;}
+  .mono{font-family:'Special Elite',monospace;}
+  .eyebrow{font-family:'Special Elite',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold);}
+
+  .hero{ max-width:920px; margin:22px auto 10px; padding:24px 24px 20px; text-align:center; }
+  .hero h1{font-size:clamp(30px,6.4vw,50px); color:var(--paper); line-height:1.1;}
+  .hero .sub{ font-family:'Special Elite',monospace; font-size:12.5px; color:#a9b8c4; margin-top:8px; max-width:600px; margin-left:auto; margin-right:auto; line-height:1.6;}
+  .disclaimer{
+    max-width:700px; margin:14px auto 0; background:rgba(163,39,31,0.12); border:1px solid rgba(163,39,31,0.4);
+    border-radius:6px; padding:10px 16px; font-family:'Special Elite',monospace; font-size:11px; color:#e8c4bc; line-height:1.6;
+  }
+
+  .nav{ max-width:920px; margin:16px auto 18px; display:flex; gap:8px; padding:0 24px; flex-wrap:wrap; justify-content:center;}
+  .tab-btn{ font-family:'Special Elite',monospace; font-weight:400; font-size:12px; letter-spacing:0.5px;
+    background:rgba(255,255,255,0.06); color:#a9b8c4; border:1px solid rgba(255,255,255,0.15); border-radius:20px; padding:9px 16px; cursor:pointer; }
+  .tab-btn.active{ background:var(--gold); color:var(--ink); border-color:var(--gold);}
+
+  .panel{ display:none; max-width:920px; margin:0 auto; padding:0 24px; }
+  .panel.active{ display:block; }
+
+  /* ===== Wanted poster card ===== */
+  .poster{
+    position:relative; background:var(--paper);
+    background-image: radial-gradient(rgba(36,28,18,0.05) 1px, transparent 1px);
+    background-size:4px 4px;
+    color:var(--ink); border:3px solid var(--ink);
+    border-radius:2px; padding:20px 20px 18px; margin-bottom:16px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  }
+  .poster::before{
+    content:""; position:absolute; inset:8px; border:1px solid var(--ink); opacity:0.4; pointer-events:none;
+  }
+  .poster h2{ font-size:24px; color:var(--ink); margin-bottom:2px;}
+  .poster h2 .num{ font-family:'Special Elite'; font-size:12px; color:var(--red); margin-right:6px;}
+  .poster p{ font-size:14px; line-height:1.6; color:var(--ink);}
+  .poster .note{ font-family:'Special Elite',monospace; font-size:11px; color:var(--ink-dim); margin-top:8px; line-height:1.6;}
+  .poster .src{ font-family:'Special Elite',monospace; font-size:9.5px; color:var(--ink-dim); opacity:0.75; margin-top:4px;}
+  .stamp{
+    flex:0 0 auto; border:2.5px solid var(--red); color:var(--red);
+    font-family:'Rye'; font-size:12px; padding:4px 9px; transform:rotate(-6deg); border-radius:3px; opacity:0.85;
+    white-space:nowrap; margin-top:3px;
+  }
+  .poster-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .poster-head h2{ flex:1 1 auto; min-width:0; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  canvas{ max-width:100%; }
+
+  .rope-divider{ height:16px; margin:12px 0; opacity:0.5;
+    background-image: repeating-linear-gradient(-45deg, var(--rope) 0 3px, transparent 3px 7px); }
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'Special Elite',monospace; color:var(--ink); }
+  th{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; color:var(--ink-dim); border-bottom:2px solid var(--red);}
+  td.big{ font-family:'Rye'; font-size:16px; }
+
+  .chip{ display:inline-block; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15);
+    border-radius:14px; padding:5px 12px; font-family:'Special Elite',monospace; font-size:11px; margin:3px 4px 3px 0; color:#a9b8c4;}
+  .chip b{ color:var(--gold); }
+
+  .quirk-grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:10px; }
+  .quirk{ background:rgba(163,39,31,0.06); border-left:3px solid var(--red); border-radius:4px; padding:12px 16px; }
+  .quirk .who{ font-family:'Rye'; font-size:17px; color:var(--red); }
+  .quirk p{ font-size:13px; color:var(--ink); line-height:1.6; margin:4px 0 0; font-family:'Arvo';}
+  .quirk .ep{ font-family:'Special Elite'; font-size:10px; color:var(--ink-dim); }
+
+  details summary{ font-family:'Special Elite'; font-size:11px; color:#a9b8c4; cursor:pointer; }
+  details p{ font-size:11.5px; color:#a9b8c4; line-height:1.6; }
+
+  footer{ max-width:920px; margin:20px auto 0; padding:0 24px; font-family:'Special Elite',monospace; font-size:10px; color:#7f8f9c; text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">@dumbdashboards — ep. 07</div>
+  <h1>ONE PIECE<br>The Bounty Board</h1>
+  <div class="sub">29 years, 600M+ copies, and a captain whose bounty went from 30 million to 3 billion berries. Every chart below, counted and cross-checked by hand.</div>
+  <div class="disclaimer">⚠ SPOILER CUTOFF: everything here stops at Viz Media Volume 111 (Wano → early Egghead). Nothing from the Elbaph arc or beyond. If Japan is ahead of you, you're safe here too.</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="bounty">Bounties</button>
+  <button class="tab-btn" data-tab="fruit">Fruits & Fame</button>
+  <button class="tab-btn" data-tab="quirks">Character Quirks</button>
+</div>
+
+<!-- ===================== OVERVIEW ===================== -->
+<div class="panel active" id="panel-overview">
+
+  <div class="poster">
+    <div class="poster-head">
+      <h2><span class="num">01</span>The best-selling comic ever made by one person</h2>
+      <div class="stamp">RECORD</div>
+    </div>
+    <p>600 million+ copies in circulation worldwide (450M in Japan, 150M+ overseas) — a Guinness World Record for "most copies published for the same comic book series by a single author." Volume 114 alone crossed 1 million copies in Japan within a month of release in March 2026, the only manga to do that in 2026 so far.</p>
+    <canvas id="chartSales" height="200"></canvas>
+    <p class="note">Source: Shueisha (obi-strip announcement), Guinness World Records, GameRant.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="poster">
+      <h2 style="font-size:17px;">29 years, one story</h2>
+      <canvas id="chartPace" height="180"></canvas>
+      <p class="note">Chapters serialized since July 1997. The anime just cut its own pace too — from 30+ episodes/year down to a 26/year cap, announced in 2026.</p>
+    </div>
+    <div class="poster">
+      <h2 style="font-size:17px;">Live-action, at actual scale</h2>
+      <canvas id="chartLiveAction" height="180"></canvas>
+      <p class="note">Two Netflix seasons so far: 15.5 hours total. The anime alone is over 1,150 episodes — roughly 290+ times longer.</p>
+    </div>
+  </div>
+
+  <div class="poster">
+    <h2 style="font-size:17px;">The longest sagas, by episode count</h2>
+    <canvas id="chartArcLength" height="200"></canvas>
+    <p class="note">Wano alone runs 197 episodes — more than Zou, Marineford, and Skypiea combined. Dressrosa is the runner-up, and famously contains zero filler despite the length.</p>
+  </div>
+
+</div>
+
+<!-- ===================== BOUNTIES ===================== -->
+<div class="panel" id="panel-bounty">
+
+  <div class="poster">
+    <div class="poster-head">
+      <h2><span class="num">02</span>Luffy's bounty, all seven of them</h2>
+      <div class="stamp">WANTED</div>
+    </div>
+    <canvas id="chartLuffy" height="220"></canvas>
+    <p class="note">Log scale — the jump from 30M to 3B doesn't fit any other way. Flat stretches (Skypiea, Thriller Bark) mean the world simply didn't find out about anything new.</p>
+  </div>
+
+  <div class="poster">
+    <h2 style="font-size:17px;">The whole crew, post-Wano</h2>
+    <canvas id="chartCrew" height="220"></canvas>
+    <p class="note">Chopper's bounty doubled after Wano — from 500 to 1,000 berries. He remains, canonically, the least-threatening 3-billion-berry captain's crewmate in the world.</p>
+  </div>
+
+  <div class="poster">
+    <h2 style="font-size:17px;">How scary the final boss got, arc by arc</h2>
+    <canvas id="chartVillain" height="240"></canvas>
+    <p class="note">Using each arc's main antagonist bounty as a rough power proxy. Arlong (East Blue) to Kaido (Wano): a 230,000x increase across the story so far.</p>
+  </div>
+
+  <div class="poster">
+    <h2 style="font-size:17px;">Who Luffy actually fights, by category</h2>
+    <canvas id="chartEnemyType" height="220"></canvas>
+    <p class="note">Independent pirate captains (Buggy, Kuro, Krieg, Arlong, Hordy Jones) make up most of his fight record by sheer count. The higher tiers — Warlords, government agents, Yonko-crew executives, and a Yonko himself — come later and far less often, which is exactly the point.</p>
+  </div>
+
+  <div class="poster">
+    <div class="poster-head">
+      <h2 style="font-size:17px;">Luffy's transformations, deep dive</h2>
+      <div class="stamp">GEAR UP</div>
+    </div>
+    <div class="quirk-grid">
+      <div class="quirk">
+        <div class="who">Gear 2nd &amp; 3rd — Enies Lobby ('07)</div>
+        <p><b>Does:</b> Gear 2 pumps blood like a turbocharger for a hard spike in speed and power. Gear 3 inflates his bones for a giant-sized bruiser mode.</p>
+        <p><b>Catch:</b> Gear 2 burns stamina fast and canonically shortens his life a little each use. Gear 3 shrinks him to a small child right after.</p>
+      </div>
+      <div class="quirk">
+        <div class="who">Gear 4th — Dressrosa ('16)</div>
+        <p><b>Does:</b> Haki + rubber armor hybrid, with sub-forms (Boundman, Tankman, Snakeman) for different fights.</p>
+        <p><b>Catch:</b> Needs recovery time afterward — can't chain it back-to-back.</p>
+      </div>
+      <div class="quirk">
+        <div class="who">Gear 5th — Wano ('22)</div>
+        <p><b>Does:</b> Awakens his fruit's true identity — cartoon-physics, reality-bending power.</p>
+        <p><b>Catch:</b> Long-term cost still unknown; visibly exhausts him harder than any Gear before it.</p>
+      </div>
+    </div>
+    <canvas id="chartGears" height="160" style="margin-top:14px;"></canvas>
+    <p class="note">Real-world years between each unlock: 9 years from Gear 2/3 to Gear 4, then only 6 years to Gear 5 — the power-ups are arriving faster, not slower, as the story nears its end.</p>
+  </div>
+
+</div>
+
+<!-- ===================== FRUITS & FAME ===================== -->
+<div class="panel" id="panel-fruit">
+
+  <div class="poster">
+    <h2><span class="num">03</span>Devil Fruits, by type</h2>
+    <canvas id="chartFruit" height="200"></canvas>
+    <p class="note">13 canonical Logia, 54 canonical Zoan — both well-documented. Paramecia is the largest category by far, but total counts across all sources range from just over 100 to 200+ depending on whether background/unnamed fruits are included, so it's shown as a range, not a fake-precise number.</p>
+  </div>
+
+  <div class="poster">
+    <div class="poster-head">
+      <h2 style="font-size:17px;">The 2021 global popularity poll (12M votes)</h2>
+      <div class="stamp">TOP 10</div>
+    </div>
+    <canvas id="chartPoll" height="220"></canvas>
+    <p class="note">Shueisha's first-ever global poll, celebrating chapter 1000. Voting was open worldwide for the first time.</p>
+  </div>
+
+  <div class="poster">
+    <h2 style="font-size:17px;">2021 vs. 2026: Sanji is closing in</h2>
+    <table>
+      <tr><th>Character</th><th>2021 final</th><th>2026 midterm</th><th>Change</th></tr>
+      <tr><td class="big">Luffy</td><td>#1</td><td>#1</td><td>–</td></tr>
+      <tr><td class="big">Zoro</td><td>#2</td><td>#2</td><td>–</td></tr>
+      <tr><td class="big">Sanji</td><td>#4</td><td>#3</td><td>▲ 1</td></tr>
+      <tr><td class="big">Nami</td><td>#3</td><td>#4</td><td>▼ 1</td></tr>
+      <tr><td class="big">Law</td><td>#5</td><td>#5</td><td>–</td></tr>
+    </table>
+    <p class="note">A second global poll is running right now — results land Aug 22–23, 2026 at ONE PIECE DAY. Sanji and Nami are the only swap in the top 5 so far.</p>
+  </div>
+
+  <div class="poster">
+    <div class="poster-head">
+      <h2 style="font-size:17px;">Conqueror's Haki: the exclusive list</h2>
+      <div class="stamp">RARE</div>
+    </div>
+    <p style="font-size:13px;">Of the three Haki types, Observation and Armament are trainable and fairly common among strong fighters. Conqueror's Haki is different — it's an innate trait, and only a handful of named characters in the entire story are confirmed to have it.</p>
+    <div style="margin-top:8px;">
+      <span class="chip"><b>Luffy</b></span><span class="chip"><b>Shanks</b></span><span class="chip"><b>Whitebeard</b></span><span class="chip"><b>Big Mom</b></span><span class="chip"><b>Kaido</b></span><span class="chip"><b>Katakuri</b></span><span class="chip"><b>Rayleigh</b></span><span class="chip"><b>Hancock</b></span><span class="chip"><b>Yamato</b></span>
+    </div>
+    <p class="note">Nine confirmed users through Wano/Egghead. Notably: four of the last five Yonko-tier figures on this list, plus exactly one Straw Hat.</p>
+  </div>
+
+</div>
+
+<!-- ===================== QUIRKS ===================== -->
+<div class="panel" id="panel-quirks">
+
+  <div class="poster">
+    <h2><span class="num">04</span>The running gags, greatest hits</h2>
+    <p style="font-size:12.5px; color:var(--ink-dim);">No wiki keeps an official tally of these, so instead of inventing a fake precise count, here are the standout moments — curated, not counted.</p>
+    <div class="quirk-grid">
+      <div class="quirk">
+        <div class="who">Sanji's nosebleeds</div>
+        <p>His worst-ever recorded case: seeing a mermaid on Fish-Man Island triggers a nosebleed so severe it's described as nearly life-threatening, with blood spraying in the shape of a mermaid. Doctor's orders afterward: stay away from beautiful women. It doesn't take.</p>
+        <div class="ep">Chapter 609, Fish-Man Island Arc</div>
+      </div>
+      <div class="quirk">
+        <div class="who">Usopp's lies that came true</div>
+        <p>"I have giant friends" — years before anyone believed him, he actually did (Dorry and Brogy). "There's a floating island in the sky" — Skypiea turned out to be real too. Nearly every tall tale he's told has eventually happened.</p>
+        <div class="ep">Running motif since East Blue</div>
+      </div>
+      <div class="quirk">
+        <div class="who">Zoro vs. Sanji, the nicknames</div>
+        <p>Zoro calls him "ero-cook" and "Prince of Dumbass Kingdom." Sanji calls him "marimo" (moss-head). They argue constantly, fight side by side without hesitation, and would each deny respecting the other under torture.</p>
+        <div class="ep">Ongoing since crew formation</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="poster">
+    <h2 style="font-size:17px;">Luffy's meat consumption, very roughly</h2>
+    <canvas id="chartMeat" height="160"></canvas>
+    <p class="note">This one is not sourced — nobody has ever tallied it. It's our own napkin math: story time spans roughly 3 in-universe years; assume Luffy eats meat at nearly every meal, several servings at a time. That's the whole methodology. Treat it as a joke with a bar chart, not a fact.</p>
+  </div>
+
+  <div class="poster">
+    <h2 style="font-size:17px;">Devil Fruit users on the crew</h2>
+    <canvas id="chartCrewFruit" height="160"></canvas>
+    <p class="note">Half the ten-person crew has eaten a Devil Fruit. The other half gets by on swordsmanship, cooking, navigation, and one very well-built ship.</p>
+  </div>
+
+</div>
+
+<footer>ONE PIECE — THE BOUNTY BOARD · @dumbdashboards · data collected August 2026, capped at Viz Vol. 111</footer>
+
+<script>
+const C = { paper:'#e8dcbb', ink:'#241c12', red:'#a3271f', redLt:'#c94a3a', gold:'#b8863b', rope:'#8a6a3f', sea:'#0c2438' };
+Chart.defaults.font.family = "'Special Elite', monospace";
+Chart.defaults.color = '#241c12';
+Chart.defaults.borderColor = 'rgba(36,28,18,0.15)';
+
+const chartInstances = {};
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+/* Berry number formatter + log-tick filter, so huge raw numbers don't clutter mobile-width axes.
+   Filters the actual tick array (not just labels) so stray gridlines don't pile up either. */
+function fmtBerry(v){
+  if(v>=1e9) return (v/1e9).toFixed(v%1e9===0?0:1)+'B';
+  if(v>=1e6) return (v/1e6).toFixed(v%1e6===0?0:1)+'M';
+  if(v>=1e3) return (v/1e3).toFixed(v%1e3===0?0:1)+'K';
+  return String(v);
+}
+function isCleanBerryTick(v, strict){
+  if(v<=0) return false;
+  const exp = Math.floor(Math.log10(v));
+  const base = v / Math.pow(10, exp);
+  const isPowerOf10 = Math.abs(base-1) < 0.001;
+  if(strict) return isPowerOf10;
+  return isPowerOf10 || Math.abs(base-2) < 0.001 || Math.abs(base-5) < 0.001;
+}
+function berryLogAxis(strict){
+  return {
+    type:'logarithmic',
+    afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => isCleanBerryTick(t.value, strict)); },
+    ticks:{ callback:v=>fmtBerry(Number(v)), font:{size:10} }
+  };
+}
+
+/* ===== Overview ===== */
+makeChart('chartSales', {
+  type:'bar',
+  data:{ labels:['One Piece','Dragon Ball','Naruto','Bleach'],
+    datasets:[{ label:'Copies in circulation (millions)', data:[600,260,250,130], backgroundColor:[C.red,'#7d8a94','#7d8a94','#7d8a94'] }]},
+  options:{ plugins:{legend:{display:false}}, indexAxis:'y' }
+});
+
+makeChart('chartPace', {
+  type:'line',
+  data:{ labels:['1997','2005','2013','2021','2026'],
+    datasets:[{ label:'Cumulative chapters (approx.)', data:[10,300,700,1000,1176], borderColor:C.gold, backgroundColor:'rgba(184,134,59,0.15)', fill:true, tension:0.25 }]},
+  options:{ plugins:{legend:{display:false}} }
+});
+
+makeChart('chartLiveAction', {
+  type:'bar',
+  data:{ labels:[['Netflix live-action','(2 seasons)'],['Anime','(since 1999)']],
+    datasets:[{ label:'Hours of story so far', data:[15.5, 480], backgroundColor:[C.gold, C.red] }]},
+  options:{ plugins:{legend:{display:false}}, scales:{ y:{ type:'logarithmic' } } }
+});
+
+/* ===== Bounties ===== */
+makeChart('chartLuffy', {
+  type:'line',
+  data:{ labels:['East Blue','Alabasta','Enies Lobby','Marineford','Dressrosa','Whole Cake','Post-Wano'],
+    datasets:[{ label:'Berries', data:[30000000,100000000,300000000,400000000,500000000,1500000000,3000000000],
+      borderColor:C.red, backgroundColor:'rgba(163,39,31,0.15)', fill:true, tension:0.2, pointRadius:5, pointBackgroundColor:C.red }]},
+  options:{ scales:{
+      y: berryLogAxis(false),
+      x:{ ticks:{ maxRotation:40, minRotation:40, font:{size:10} } }
+    }, plugins:{legend:{display:false}} }
+});
+
+makeChart('chartCrew', {
+  type:'bar',
+  data:{ labels:['Luffy','Zoro','Jinbe','Sanji','Robin','Usopp','Franky','Brook','Nami','Chopper'],
+    datasets:[{ label:'Current bounty (berries)', data:[3000000000,1111000000,1100000000,1032000000,930000000,500000000,394000000,383000000,366000000,1000],
+      backgroundColor:C.gold }]},
+  options:{ indexAxis:'y', scales:{ x: berryLogAxis(true) }, plugins:{legend:{display:false}} }
+});
+
+makeChart('chartVillain', {
+  type:'bar',
+  data:{ labels:['Arlong','Crocodile','Rob Lucci','Moria','Doflamingo','Katakuri','Kaido'],
+    datasets:[{ label:'Bounty (berries)', data:[20000000,81000000,140000000,320000000,340000000,1057000000,4611100000], backgroundColor:C.red }]},
+  options:{ indexAxis:'y', scales:{ x: berryLogAxis(false) }, plugins:{legend:{display:false}} }
+});
+
+makeChart('chartEnemyType', {
+  type:'bar',
+  data:{ labels:['Pirate captains','Warlords','CP / gov. agents','Yonko-crew execs','A Yonko himself'],
+    datasets:[{ label:'Notable defeats', data:[6,3,1,1,1], backgroundColor:[C.gold,C.red,'#7d8a94','#7d8a94',C.red] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{ x:{ ticks:{ precision:0 } } } }
+});
+
+makeChart('chartGears', {
+  type:'bar',
+  data:{ labels:['Gear 2/3 \u2192 Gear 4','Gear 4 \u2192 Gear 5'],
+    datasets:[{ label:'Real-world years between unlocks', data:[9,6], backgroundColor:C.gold }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartArcLength', {
+  type:'bar',
+  data:{ labels:['Wano','Dressrosa','Whole Cake Island','Alabasta','Fish-Man Island','Skypiea','Marineford','Zou'],
+    datasets:[{ label:'Anime episodes', data:[197,118,95,74,52,43,31,29], backgroundColor:C.red }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+/* ===== Fruits & Fame ===== */
+makeChart('chartFruit', {
+  type:'bar',
+  data:{ labels:['Paramecia (~60-140+)','Zoan (54 canonical)','Logia (13 canonical)'],
+    datasets:[{ label:'Confirmed fruits', data:[100,54,13], backgroundColor:[C.gold, '#7d8a94', C.red] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartPoll', {
+  type:'bar',
+  data:{ labels:['Luffy','Zoro','Nami','Sanji','Law','Robin','Hancock','Carrot','Ace','Sabo'],
+    datasets:[{ data:[10,9,8,7,6,5,4,3,2,1], backgroundColor:C.gold }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{ x:{ display:false } } }
+});
+
+makeChart('chartMeat', {
+  type:'bar',
+  data:{ labels:['Luffy (joke estimate)','Average adult human'],
+    datasets:[{ label:'Meat eaten, story-to-date (kg, not real data)', data:[8000, 25], backgroundColor:[C.red, '#7d8a94'] }]},
+  options:{ plugins:{legend:{display:false}}, scales:{ y:{ type:'logarithmic' } } }
+});
+
+makeChart('chartCrewFruit', {
+  type:'bar',
+  data:{ labels:['Devil Fruit users','No Devil Fruit'],
+    datasets:[{ data:[5,5], backgroundColor:[C.red, C.gold] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+/* ===== Tabs ===== */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
