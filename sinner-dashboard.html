@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SINNER — COURT VISION</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#111214; --bg2:#0a0b0c;
+    --panel:#1a1c1f; --panel2:#0e0f11;
+    --clay:#c1622d; --clay-lt:#e08e5c;
+    --grass:#4a8f3c; --grass-lt:#7ec26a;
+    --hard:#2f7fc1; --hard-lt:#5fa8e0;
+    --ball:#d7e34a;
+    --text:#eceef0; --text-dim:#8b9096;
+    --line: rgba(215,227,74,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, transparent 1px, transparent 3px),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--text);
+    font-family:'Barlow',sans-serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--ball);}
+  h1,h2,h3{font-family:'Teko',sans-serif; font-weight:600; letter-spacing:0.3px; margin:0;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--ball);}
+
+  .court-line{ height:2px; background:repeating-linear-gradient(90deg, rgba(255,255,255,0.35) 0 10px, transparent 10px 16px); margin:10px 0; }
+
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    padding:20px 20px 18px; margin-bottom:16px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .card h2{ font-size:26px; margin-bottom:2px; color:var(--text); text-transform:uppercase;}
+  .card h2 .num{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ball); margin-right:8px; text-transform:none;}
+  .card p{ font-size:14.5px; line-height:1.65; font-family:'Barlow';}
+  .card .note{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-dim); margin-top:8px; line-height:1.65;}
+  .card .src{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim); opacity:0.7; margin-top:4px;}
+
+  .hero{ max-width:940px; margin:22px auto 16px; padding:26px 24px 22px; text-align:center; }
+  .hero h1{ font-size:clamp(38px,8vw,64px); color:var(--text); line-height:0.95;}
+  .hero h1 em{ font-style:normal; color:var(--ball);}
+  .hero .sub{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--text-dim); margin-top:10px; max-width:620px; margin-left:auto; margin-right:auto; line-height:1.7;}
+
+  .nav{ max-width:940px; margin:0 auto 18px; display:flex; gap:8px; padding:0 24px; flex-wrap:wrap; justify-content:center;}
+  .tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:500; font-size:12px; letter-spacing:0.5px;
+    background:rgba(255,255,255,0.04); color:var(--text-dim); border:1px solid var(--line); border-radius:20px; padding:9px 16px; cursor:pointer; text-transform:uppercase;}
+  .tab-btn.active{ background:var(--ball); color:#14121a; border-color:var(--ball);}
+
+  .panel{ display:none; max-width:940px; margin:0 auto; padding:0 24px; }
+  .panel.active{ display:block; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  canvas{ max-width:100%; }
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace; }
+  th{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-dim); border-bottom:1px solid var(--ball);}
+  td.big{ font-family:'Teko'; font-weight:600; font-size:19px; color:var(--text);}
+
+  .chip{ display:inline-block; background:var(--panel2); border:1px solid var(--line); border-radius:14px;
+    padding:6px 13px; font-family:'JetBrains Mono',monospace; font-size:11px; margin:3px 4px 3px 0; color:var(--text-dim);}
+  .chip b{ color:var(--ball); font-size:13px;}
+
+  details summary{ font-family:'JetBrains Mono'; font-size:11px; color:var(--text-dim); cursor:pointer;}
+  details p{ font-size:11.5px; color:var(--text-dim); line-height:1.6;}
+
+  footer{ max-width:940px; margin:20px auto 0; padding:0 24px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim); text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hero card">
+  <div class="eyebrow">@dumbdashboards — ep. 07</div>
+  <h1>SINNER<br><em>COURT VISION</em></h1>
+  <div class="court-line"></div>
+  <div class="sub">World No. 1, 5 straight Masters 1000 titles, and a return-game number that statistically shouldn't exist alongside his serve numbers. A technical breakdown of the 2026 season.</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="season">2026 Season</button>
+  <button class="tab-btn" data-tab="serve">Serve & Return</button>
+  <button class="tab-btn" data-tab="pressure">Under Pressure</button>
+  <button class="tab-btn" data-tab="career">Career</button>
+</div>
+
+<!-- ===================== 2026 SEASON ===================== -->
+<div class="panel active" id="panel-season">
+
+  <div class="card">
+    <h2><span class="num">01</span>Five Masters in a row, zero sets dropped in three</h2>
+    <p style="font-size:13.5px;">Sinner won a record five consecutive ATP Masters 1000 titles in 2026 (Indian Wells, Miami, Monte Carlo, Madrid, Rome), becoming the youngest player — at 24 years, 9 months — to complete the Career Golden Masters (all 9 active Masters 1000 titles). Only Djokovic had done it before, at 31.</p>
+    <canvas id="chartMasters" height="180"></canvas>
+    <p class="note">29–0 at Masters 1000 level in 2026. He did not lose a single match at that tier all season.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">Surface breakdown, 2026</h2>
+    <canvas id="chartSurface" height="200"></canvas>
+    <p class="note">100% on grass, 94.7% on clay — the surface long considered his weakest — and 90.5% on hard. There is no longer a surface where he's beatable more than 1 time in 10.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Cross-surface comparison — filterable</h2>
+    <div id="surfaceToggles" style="display:flex; gap:14px; margin-bottom:10px; font-family:'JetBrains Mono'; font-size:12px;">
+      <label style="cursor:pointer;"><input type="checkbox" data-surface="0" checked> <span style="color:var(--hard-lt);">Hard</span></label>
+      <label style="cursor:pointer;"><input type="checkbox" data-surface="1" checked> <span style="color:var(--clay-lt);">Clay</span></label>
+      <label style="cursor:pointer;"><input type="checkbox" data-surface="2" checked> <span style="color:var(--grass-lt);">Grass</span></label>
+    </div>
+    <canvas id="chartSurfaceCross" height="240"></canvas>
+    <p class="note">Same three metrics, all three surfaces, one chart. Untick a surface to isolate the others — useful for seeing that clay, once his weakest surface by reputation, now edges out hard courts on both 2026 and career win rate.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">The season in chips</h2>
+    <div class="chip">Season record <b>44–3</b> (93.6%)</div>
+    <div class="chip">Best win streak <b>30</b> matches</div>
+    <div class="chip">Titles in 2026 <b>6</b></div>
+    <div class="chip">vs Top 10 <b>10–1</b></div>
+    <div class="chip">Weeks at No. 1 <b>72+</b></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">Every surface, three years running</h2>
+    <canvas id="chartSurfaceYears" height="220"></canvas>
+    <p class="note">Hard has always been elite and stays flat near the ceiling. Grass ticks up to a perfect season. Clay is the one that actually moves — from "good, not great" in 2024–25 to nearly untouchable in 2026, the year he finally won a Masters title on it.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Career win % by surface, including indoor</h2>
+    <canvas id="chartCareerSurface" height="200"></canvas>
+    <p class="note">Indoor hard courts are actually his best career surface by win rate (82.1%) — it just gets less attention because so few big titles are played on it.</p>
+  </div>
+
+</div>
+
+<!-- ===================== SERVE & RETURN ===================== -->
+<div class="panel" id="panel-serve">
+
+  <div class="card">
+    <h2><span class="num">02</span>The number that shouldn't coexist with the other number</h2>
+    <canvas id="chartAnomaly" height="260"></canvas>
+    <p class="note">Since 1991, no player with a service-hold rate this high has ever also broken serve this often. Nick Kyrgios held 92.9% of service games in 2022 — similar territory — but won only 19.5% of his return games. Sinner is winning nearly double that, without giving up any serve dominance.</p>
+    <p class="src">Source: ATP Tour, "Beyond the Numbers," May 2026.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">Serve evolution: 2025 → 2026</h2>
+    <canvas id="chartServeEvo" height="220"></canvas>
+    <p class="note">First-serve percentage jumped over 9 points in a single season — a huge swing for a player already at the top of the game — without sacrificing first-serve win rate, which also hit a career best (81%).</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Not a big server — just a precise one</h2>
+    <canvas id="chartAceContext" height="200"></canvas>
+    <p class="note">Reilly Opelka averages 18.5 aces a match. Sinner averages 6.8. He still sits at No. 2 in the ATP composite serve rating — built on precision and hold consistency, not raw power.</p>
+  </div>
+  <div class="card">
+    <h2 style="font-size:20px;">Forehand vs. backhand: speed and spin</h2>
+    <canvas id="chartShotSpeed" height="200"></canvas>
+    <canvas id="chartShotSpin" height="200" style="margin-top:16px;"></canvas>
+    <p class="note">Both wings sit well above Tour average — forehand at 78 mph (Tour: 73), backhand at 73 mph (Tour: 66) — but the forehand edges it out as the primary weapon: it's rated the best shot quality on Tour (8.8/10 vs. 8.48/10 for the backhand).</p>
+    <p class="src">Source: ATP Tour "Tennis Insights" data, 2024 season (most complete side-by-side dataset available).</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">First serve: built for placement, not radar guns</h2>
+    <p style="font-size:32px; font-family:'Teko'; color:var(--ball); margin:6px 0;">~200 KM/H</p>
+    <p class="note">Sinner's first serve regularly clocks around 200 km/h — fast, but not the tour's biggest weapon (several players sit well above that). The difference is what happens after: his second serve is considered one of the hardest on Tour to attack, built on placement rather than raw pace.</p>
+  </div>
+
+</div>
+
+<!-- ===================== UNDER PRESSURE ===================== -->
+<div class="panel" id="panel-pressure">
+
+  <div class="card">
+    <h2><span class="num">03</span>Full game profile, 2026</h2>
+    <canvas id="chartRadar" height="280"></canvas>
+    <p class="note">Six metrics on the same 0–100 scale. The shape is unusually round for a top server — most players have at least one visible dent (usually second-serve points won, or break-point conversion). Sinner's doesn't.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">Beating the field, ranked tier by tier</h2>
+    <canvas id="chartTiers" height="220"></canvas>
+    <p class="note">The last-52-weeks numbers are a different player from his own career averages — particularly against Top 10 opponents, where his win rate has jumped nearly 25 points.</p>
+  </div>
+
+</div>
+
+<!-- ===================== CAREER ===================== -->
+<div class="panel" id="panel-career">
+
+  <div class="card">
+    <h2><span class="num">04</span>Grand Slam record</h2>
+    <table>
+      <tr><th>Slam</th><th>Best result</th><th>Titles</th></tr>
+      <tr><td class="big">Australian Open</td><td>Winner (2024, 2025)</td><td>2</td></tr>
+      <tr><td class="big">French Open</td><td>Runner-up (2025)</td><td>0</td></tr>
+      <tr><td class="big">Wimbledon</td><td>Winner (2025, 2026)</td><td>2</td></tr>
+      <tr><td class="big">US Open</td><td>Winner (2024)</td><td>1</td></tr>
+    </table>
+    <p class="note">5 Grand Slam titles, 1 runner-up — the French Open is the only major missing from a career Slam, and he's already reached a final there.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2 style="font-size:16px;">By the numbers</h2>
+      <div class="chip">Career titles <b>35</b></div>
+      <div class="chip">Career win rate <b>~80%</b></div>
+      <div class="chip">Prize money <b>$64.7M+</b></div>
+      <div class="chip">All-time earnings rank <b>6th</b></div>
+      <div class="chip">Turned pro <b>2018</b></div>
+      <div class="chip">Age <b>24</b></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:16px;">vs. Top-ranked opponents, career</h2>
+      <table>
+        <tr><th>Tier</th><th>Career</th></tr>
+        <tr><td>Top 10</td><td class="big">64–36</td></tr>
+        <tr><td>Top 20</td><td class="big">99–46</td></tr>
+        <tr><td>Top 5</td><td class="big">34–29</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">Titles per year: the rise</h2>
+    <canvas id="chartTitlesYear" height="200"></canvas>
+    <p class="note">A clean climb from breakthrough (2023) to peak dominance — 2026 has already matched 2025's full-year title count, with majors still to play.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Aces per match: the quiet climb</h2>
+    <canvas id="chartAcesEvo" height="200"></canvas>
+    <p class="note">Never a big server by tour standards, but the number keeps rising — up nearly 30% from his career average to his most recent 52-week window. "Last 52 weeks" overlaps with the 2026 season figure, shown separately to make the short-term trend visible.</p>
+  </div>
+
+  <details>
+    <summary>Methodology</summary>
+    <p>Season and career stats are sourced from the ATP Tour official site, ATP "Beyond the Numbers" analysis pieces (March & May 2026), and aggregator sites (TennisRatio, TennisStats, LiveTennis serve leaders, stats.tennismylife.org). Different trackers use slightly different windows (calendar year vs. rolling 52 weeks vs. main-tour-only vs. all professional levels), which can shift specific percentages by a point or two — figures here default to ATP's own official reporting where available.</p>
+  </details>
+
+</div>
+
+<footer>SINNER — COURT VISION · @dumbdashboards · data collected August 2026</footer>
+
+<script>
+const C = { clay:'#c1622d', clayLt:'#e08e5c', grass:'#4a8f3c', grassLt:'#7ec26a', hard:'#2f7fc1', hardLt:'#5fa8e0', ball:'#d7e34a', text:'#eceef0', dim:'#8b9096' };
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.color = C.text;
+Chart.defaults.borderColor = 'rgba(215,227,74,0.10)';
+
+const chartInstances = {};
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+/* ===== 2026 Season ===== */
+makeChart('chartMasters', {
+  type:'bar',
+  data:{ labels:['Indian Wells','Miami','Monte Carlo','Madrid','Rome'],
+    datasets:[{ label:'Masters 1000 titles, streak order', data:[1,1,1,1,1], backgroundColor:C.ball }]},
+  options:{ plugins:{legend:{display:false}}, scales:{ y:{ display:false } } }
+});
+
+makeChart('chartSurface', {
+  type:'bar',
+  data:{ labels:['Grass','Clay','Hard'],
+    datasets:[{ label:'2026 win %', data:[100,94.7,90.5], backgroundColor:[C.grass,C.clay,C.hard] }]},
+  options:{ indexAxis:'y', scales:{ x:{ max:100 } }, plugins:{legend:{display:false}} }
+});
+
+makeChart('chartSurfaceYears', {
+  type:'line',
+  data:{ labels:['2024','2025','2026'],
+    datasets:[
+      { label:'Hard', data:[94.0,92.9,90.5], borderColor:C.hard, backgroundColor:'rgba(47,127,193,0.12)', tension:0.25 },
+      { label:'Clay', data:[84.6,84.6,94.7], borderColor:C.clay, backgroundColor:'rgba(193,98,45,0.15)', tension:0.25 },
+      { label:'Grass', data:[90.0,92.0,100], borderColor:C.grass, backgroundColor:'rgba(74,143,60,0.15)', tension:0.25 }
+    ]},
+  options:{ scales:{ y:{ min:70, max:100 } } }
+});
+
+makeChart('chartCareerSurface', {
+  type:'bar',
+  data:{ labels:['Indoor','Hard','Grass','Clay'],
+    datasets:[{ label:'Career win %', data:[82.1,78.7,75.5,71.6], backgroundColor:[ '#8a5fc9', C.hard, C.grass, C.clay] }]},
+  options:{ indexAxis:'y', scales:{ x:{ min:60, max:90 } }, plugins:{legend:{display:false}} }
+});
+
+/* Filterable cross-surface comparison */
+const surfaceData = {
+  labels: ['2026 win %','Career win %','Career titles (x10, scaled)'],
+  raw: [
+    { name:'Hard',  color:C.hard,  values:[90.5, 78.7, 22*10] },
+    { name:'Clay',  color:C.clay,  values:[94.7, 71.6, 4*10] },
+    { name:'Grass', color:C.grass, values:[100,  75.5, 2*10] }
+  ]
+};
+function buildSurfaceCrossDatasets(){
+  return surfaceData.raw.map(s => ({ label:s.name, data:s.values, backgroundColor:s.color }));
+}
+makeChart('chartSurfaceCross', {
+  type:'bar',
+  data:{ labels: surfaceData.labels, datasets: buildSurfaceCrossDatasets() },
+  options:{ scales:{ y:{ beginAtZero:true } }, plugins:{ legend:{ position:'bottom' } } }
+});
+document.querySelectorAll('#surfaceToggles input[type=checkbox]').forEach(box=>{
+  box.addEventListener('change', ()=>{
+    const idx = Number(box.dataset.surface);
+    const chart = chartInstances['chartSurfaceCross'];
+    chart.setDatasetVisibility(idx, box.checked);
+    chart.update();
+  });
+});
+
+/* ===== Serve & Return ===== */
+/* Shot speed & spin: Sinner vs Tour average */
+makeChart('chartShotSpeed', {
+  type:'bar',
+  data:{ labels:['Forehand (mph)','Backhand (mph)'],
+    datasets:[
+      {label:'Sinner', data:[78,73], backgroundColor:C.ball},
+      {label:'Tour average', data:[73,66], backgroundColor:'#5a5f66'}
+    ]},
+  options:{ indexAxis:'y', scales:{ x:{ beginAtZero:true } } }
+});
+
+makeChart('chartShotSpin', {
+  type:'bar',
+  data:{ labels:['Forehand (rpm)','Backhand (rpm)'],
+    datasets:[
+      {label:'Sinner', data:[3049,2235], backgroundColor:C.ball},
+      {label:'Tour average', data:[2708,1977], backgroundColor:'#5a5f66'}
+    ]},
+  options:{ indexAxis:'y', scales:{ x:{ beginAtZero:true } } }
+});
+
+makeChart('chartAnomaly', {
+  type:'scatter',
+  data:{ datasets:[
+    { label:'Sinner 2026', data:[{x:94.3,y:31.9}], backgroundColor:C.ball, pointRadius:10 },
+    { label:'Kyrgios 2022 (reference high-hold season)', data:[{x:92.9,y:19.5}], backgroundColor:C.clayLt, pointRadius:10 },
+    { label:'Typical big-serve season (illustrative)', data:[{x:91,y:14}], backgroundColor:'#5a5f66', pointRadius:8 },
+    { label:'Typical elite returner (illustrative)', data:[{x:82,y:28}], backgroundColor:'#5a5f66', pointRadius:8 }
+  ]},
+  options:{
+    scales:{
+      x:{ title:{display:true, text:'Service games won %'}, min:75, max:100 },
+      y:{ title:{display:true, text:'Return games won %'}, min:10, max:40 }
+    },
+    plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10} } } }
+  }
+});
+
+makeChart('chartServeEvo', {
+  type:'bar',
+  data:{ labels:['1st serve %','1st serve pts won %','2nd serve pts won %','Aces/match'],
+    datasets:[
+      {label:'2025', data:[61.9,74.5,53.2,6.3], backgroundColor:'#5a5f66'},
+      {label:'2026', data:[67.5,81,53.2,6.8], backgroundColor:C.ball}
+    ]},
+  options:{ scales:{ y:{ beginAtZero:true } } }
+});
+
+makeChart('chartAceContext', {
+  type:'bar',
+  data:{ labels:['Opelka','Mpetshi Perricard','Fritz','Zverev','Sinner'],
+    datasets:[{ label:'Aces per match, 2026', data:[18.5,15.1,14.1,9.2,6.8], backgroundColor:['#5a5f66','#5a5f66','#5a5f66','#5a5f66',C.ball] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+/* ===== Under Pressure ===== */
+makeChart('chartRadar', {
+  type:'radar',
+  data:{ labels:['1st Serve %','1st Serve Won','2nd Serve Won','Service Games Held','Return Games Won','BP Converted'],
+    datasets:[{ label:'Sinner, 2026', data:[67.5,81,53.2,94.3,31.9,46.4],
+      borderColor:C.ball, backgroundColor:'rgba(215,227,74,0.18)', pointBackgroundColor:C.ball }]},
+  options:{ scales:{ r:{ min:0, max:100, ticks:{ stepSize:20, backdropColor:'transparent' }, grid:{color:'rgba(255,255,255,0.08)'}, angleLines:{color:'rgba(255,255,255,0.08)'} } }, plugins:{legend:{display:false}} }
+});
+
+makeChart('chartTiers', {
+  type:'bar',
+  data:{ labels:['vs Top 10','vs Top 20','vs Top 50'],
+    datasets:[
+      {label:'Career', data:[64.0,68.3,null], backgroundColor:'#5a5f66'},
+      {label:'Last 52 weeks', data:[88.9,87.5,91.5], backgroundColor:C.ball}
+    ]},
+  options:{ scales:{ y:{ max:100 } } }
+});
+
+makeChart('chartTitlesYear', {
+  type:'bar',
+  data:{ labels:['2022','2023','2024','2025','2026*'],
+    datasets:[{ label:'Titles won', data:[1,4,7,6,6], backgroundColor:C.ball }]},
+  options:{ plugins:{legend:{display:false}} }
+});
+
+makeChart('chartAcesEvo', {
+  type:'bar',
+  data:{ labels:['Career avg','2025','2026','Last 52 weeks'],
+    datasets:[{ label:'Aces per match', data:[6.2,6.3,6.8,8.1], backgroundColor:['#5a5f66','#5a5f66',C.ball,C.ball] }]},
+  options:{ plugins:{legend:{display:false}} }
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
