@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIMYM — THE MACLAREN'S REPORT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=IBM+Plex+Mono:wght@400;500;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#1c1611; --bg2:#120e0a;
+    --panel:#241d16; --panel2:#170f0a;
+    --chalk:#eee3cf; --chalk-dim:#a89a82;
+    --gold:#d9a441; --gold-lt:#f0c674;
+    --amber:#b5722e;
+    --red:#a3453a; --red-lt:#c9645a;
+    --green:#5a8a5a;
+    --line: rgba(217,164,65,0.16);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(217,164,65,0.06), transparent 45%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--chalk);
+    font-family:'Nunito',sans-serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--gold-lt);}
+  h1,h2,h3{font-family:'Kalam',cursive; font-weight:700; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold);}
+
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    padding:20px 20px 18px; margin-bottom:16px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .card h2{ font-size:25px; margin-bottom:2px; color:var(--chalk);}
+  .card h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--gold); margin-right:8px; font-weight:400;}
+  .card p{ font-size:14.5px; line-height:1.65;}
+  .card .note{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--chalk-dim); margin-top:8px; line-height:1.65;}
+  .card .src{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--chalk-dim); opacity:0.7; margin-top:4px;}
+
+  .hero{ max-width:940px; margin:22px auto 16px; padding:26px 24px 22px; text-align:center; }
+  .hero h1{ font-size:clamp(30px,6.4vw,50px); color:var(--chalk); line-height:1.05;}
+  .hero h1 em{ font-style:normal; color:var(--gold-lt);}
+  .hero .sub{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--chalk-dim); margin-top:10px; max-width:620px; margin-left:auto; margin-right:auto; line-height:1.7;}
+
+  .nav{ max-width:940px; margin:0 auto 18px; display:flex; gap:8px; padding:0 24px; flex-wrap:wrap; justify-content:center;}
+  .tab-btn{ font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:12px; letter-spacing:0.5px;
+    background:rgba(255,255,255,0.04); color:var(--chalk-dim); border:1px solid var(--line); border-radius:20px; padding:9px 16px; cursor:pointer;}
+  .tab-btn.active{ background:var(--gold); color:#1c1611; border-color:var(--gold);}
+
+  .panel{ display:none; max-width:940px; margin:0 auto; padding:0 24px; }
+  .panel.active{ display:block; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  canvas{ max-width:100%; }
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'IBM Plex Mono',monospace; }
+  th{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; color:var(--chalk-dim); border-bottom:1px solid var(--gold);}
+  td.big{ font-family:'Kalam'; font-weight:700; font-size:17px; color:var(--chalk);}
+
+  .chip{ display:inline-block; background:var(--panel2); border:1px solid var(--line); border-radius:14px;
+    padding:6px 13px; font-family:'IBM Plex Mono',monospace; font-size:11px; margin:3px 4px 3px 0; color:var(--chalk-dim);}
+  .chip b{ color:var(--gold-lt); font-size:13px;}
+
+  .toggles{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; }
+  .toggles label{ cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:5px 10px; }
+
+  .dropdown-wrap{ position:relative; margin-bottom:14px; }
+  .dropdown-btn{ width:100%; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    background:var(--panel2); color:var(--chalk); border:1px solid var(--gold); border-radius:6px; padding:10px 14px; cursor:pointer; }
+  .dropdown-panel{ display:none; position:absolute; z-index:10; top:calc(100% + 4px); left:0; right:0;
+    background:#1a140f; border:1px solid var(--gold); border-radius:6px; padding:10px; box-shadow:0 8px 20px rgba(0,0,0,0.5); }
+  .dropdown-panel.open{ display:block; }
+  .dropdown-quick{ display:flex; gap:8px; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+  .dropdown-quick button{ font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--gold); color:#1c1611;
+    border:none; border-radius:10px; padding:5px 12px; cursor:pointer; }
+  .dropdown-panel label{ display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    padding:7px 4px; cursor:pointer; border-radius:4px; }
+  .dropdown-panel label:hover{ background:rgba(217,164,65,0.08); }
+
+  .tier-row{ display:flex; align-items:stretch; margin-bottom:8px; border-radius:6px; overflow:hidden; border:1px solid var(--line);}
+  .tier-label{ flex:0 0 90px; display:flex; align-items:center; justify-content:center; font-family:'Kalam'; font-weight:700; font-size:14px; color:#1c1611; text-align:center; padding:6px;}
+  .tier-items{ flex:1; background:var(--panel2); padding:8px 12px; font-size:12.5px; color:var(--chalk); display:flex; align-items:center; }
+
+  details summary{ font-family:'IBM Plex Mono'; font-size:11px; color:var(--chalk-dim); cursor:pointer;}
+  details p{ font-size:11.5px; color:var(--chalk-dim); line-height:1.6;}
+
+  footer{ max-width:940px; margin:20px auto 0; padding:0 24px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--chalk-dim); text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hero card">
+  <div class="eyebrow">@dumbdashboards — ep. 08</div>
+  <h1>HOW I MET YOUR MOTHER<br><em>The MacLaren's Report</em></h1>
+  <div class="sub">208 episodes, 9 seasons, one running gag that quietly tracks the show's entire decline. A full statistical breakdown, booth-side at MacLaren's.</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="episodes">208 Episodes</button>
+  <button class="tab-btn" data-tab="gags">Running Gags</button>
+  <button class="tab-btn" data-tab="ted">Ted's Love Life</button>
+</div>
+
+<!-- ===================== OVERVIEW ===================== -->
+<div class="panel active" id="panel-overview">
+
+  <div class="card">
+    <h2><span class="num">01</span>Nine seasons, one slow decline</h2>
+    <canvas id="chartSeasonAvg" height="200"></canvas>
+    <p class="note">Peak at Season 4 (7.8), then a steady slide to Season 9 (7.2) — the season almost entirely confined to one wedding weekend.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2 style="font-size:18px;">The best and worst, by the numbers</h2>
+      <div class="chip">Series average <b>7.6</b></div>
+      <div class="chip">Highest-rated ep. <b>8.6</b></div>
+      <div class="chip">Lowest-rated ep. <b>6.0</b></div>
+      <div class="chip">Total episodes <b>208</b></div>
+      <div class="chip">Seasons <b>9</b></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:18px;">Rating distribution</h2>
+      <canvas id="chartHistogram" height="160"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">The finale is, statistically, the worst thing the show ever did</h2>
+    <p style="font-size:13.5px;">"Last Forever," the series finale, aired as two parts back to back. Part 1 scored 6.5. Part 2 scored 6.0 — the single lowest-rated episode of the entire series, out of 208. The show's most-watched episode ever (13.1M viewers) is also, by audience rating, its least-loved.</p>
+    <p class="src">Source: episode ratings via TMDB; viewership via Nielsen (CBS press release, 2014).</p>
+  </div>
+
+</div>
+
+<!-- ===================== 208 EPISODES ===================== -->
+<div class="panel" id="panel-episodes">
+
+  <div class="card">
+    <h2><span class="num">02</span>Every episode, filterable by season</h2>
+    <div class="dropdown-wrap">
+      <button class="dropdown-btn" id="seasonDropdownBtn">Seasons: All 9 selected ▾</button>
+      <div class="dropdown-panel" id="seasonDropdownPanel">
+        <div class="dropdown-quick">
+          <button type="button" id="selectAllSeasons">All</button>
+          <button type="button" id="selectNoneSeasons">None</button>
+        </div>
+        <div id="seasonToggles"></div>
+      </div>
+    </div>
+    <canvas id="chartAllEpisodes" height="260"></canvas>
+    <p class="note">Pick any combination of seasons. Notice how the volatility (the spread between a season's best and worst episode) grows wider in the later seasons — the show got less consistent, not just lower-rated.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Best & worst episode, per season</h2>
+    <table id="tableSeasonExtremes"></table>
+  </div>
+
+</div>
+
+<!-- ===================== RUNNING GAGS ===================== -->
+<div class="panel" id="panel-gags">
+
+  <div class="card">
+    <h2><span class="num">03</span>The Slap Bet, rated episode by episode</h2>
+    <canvas id="chartSlaps" height="220"></canvas>
+    <p class="note">S2E9 "Slap Bet" · S3E9 "Slapsgiving" · S5E9 "Slapsgiving 2" · S7E9 "Disaster Averted" · S9E14 "Slapsgiving 3" · S9E22 "The End of the Aisle". The show's single highest-rated episode ever (8.6) is the one that started this joke. Its own sequels decline almost in a straight line, bottoming out at 6.5 for "Slapsgiving 3" — a running gag that quietly plots the whole series' arc in miniature.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">A coincidence the writers definitely planned</h2>
+    <p style="font-size:13.5px;">The first four slaps land on "Slap Bet" (S2<b>E9</b>), "Slapsgiving" (S3<b>E9</b>), "Slapsgiving 2" (S5<b>E9</b>), and "Disaster Averted" (S7<b>E9</b>) — the ninth episode of the season, four different seasons in a row. That's not a coincidence a viewer would catch live; it's a writers'-room easter egg for anyone who checks the numbers.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">Barney's number, tracked in real time by the show itself</h2>
+    <canvas id="chartBarneyCount" height="200"></canvas>
+    <p class="note">S4E22 "Right Place, Right Time" (200) → S6E3 "Unfinished" (236) → S6E22 "The Perfect Cocktail" (282+). At a steady pace, that's roughly one new "conquest" every 8–9 days for four straight years.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2 style="font-size:16px;">The Bro Code</h2>
+      <p style="font-size:13px;">At least <b>83 numbered rules</b> — the Platinum Rule is literally Article 83. The number 83 itself becomes a running joke, reused as a fake statistic ("83% success rate") more than half a dozen times across the series.</p>
+    </div>
+    <div class="card">
+      <h2 style="font-size:16px;">The Playbook</h2>
+      <p style="font-size:13px;">Barney's published seduction manual documents <b>75+ named "plays"</b> — each with a listed success rate, target type, and required prep time, played entirely straight as a parody business manual.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== TED'S LOVE LIFE ===================== -->
+<div class="panel" id="panel-ted">
+
+  <div class="card">
+    <h2><span class="num">04</span>Ted's romantic history, by seriousness tier</h2>
+    <p style="font-size:12.5px; color:var(--chalk-dim);">The show's own wiki already sorts this into five tiers by how serious things got. Read top to bottom, it's basically a dating funnel.</p>
+    <div id="tierList" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Where each major relationship sits on the timeline</h2>
+    <canvas id="chartTedTimeline" height="220"></canvas>
+    <p class="note">Victoria is split into two bars (same amber color) because her run isn't continuous — Season 1, then a comeback in Seasons 7–9. Every single-season fling still gets a visible sliver rather than disappearing at zero width. Tracy (the Mother) is technically only "onscreen" as a love interest for one season, despite being the entire show's premise.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">How it ended</h2>
+    <table>
+      <tr><th>Who</th><th>Seasons</th><th>How it ended</th></tr>
+      <tr><td class="big">Robin</td><td>1–9</td><td>On-off for years; Ted ultimately steps aside</td></tr>
+      <tr><td class="big">Victoria</td><td>1, 7–9</td><td>Ted chose his friendship with Robin over her, twice</td></tr>
+      <tr><td class="big">Stella</td><td>3–4</td><td>Left him at the altar for her ex</td></tr>
+      <tr><td class="big">Zoey</td><td>6</td><td>Fizzled once it turned romantic</td></tr>
+      <tr><td class="big">Jeanette</td><td>8</td><td>Revealed to be unstable; broke up amid arson</td></tr>
+      <tr><td class="big">Tracy</td><td>9 (+flashfwd)</td><td>Married; passed away years later</td></tr>
+    </table>
+  </div>
+
+  <details>
+    <summary>Methodology</summary>
+    <p>Episode ratings sourced from TMDB user ratings via televisionstats.com (208 episodes, all 9 seasons); IMDb-specific claims about individual episodes (e.g. "How Your Mother Met Me" as IMDb's top-rated episode) are cited separately per Wikipedia, since IMDb and TMDB scores can differ. Running-gag details (Slap Bet, Barney's count, Bro Code, Playbook) sourced from the How I Met Your Mother Fandom wiki and Wikipedia. Ted's relationship tiers follow the categorization used on the HIMYM Fandom wiki's "List of Ted's romances" page.</p>
+  </details>
+
+</div>
+
+<footer>HOW I MET YOUR MOTHER — THE MACLAREN'S REPORT · @dumbdashboards · data collected August 2026</footer>
+
+<script>
+const C = { gold:'#d9a441', goldLt:'#f0c674', amber:'#b5722e', red:'#a3453a', redLt:'#c9645a', green:'#5a8a5a', chalk:'#eee3cf', dim:'#a89a82' };
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.color = C.chalk;
+Chart.defaults.borderColor = 'rgba(217,164,65,0.10)';
+
+const chartInstances = {};
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+/* ================= FULL EPISODE DATASET ================= */
+const SEASON_EPISODES = {
+  1: [7.7,7.4,7.5,7.5,7.5,7.4,7.2,7.7,7.4,8.4,7.7,7.5,7.9,7.6,8.2,7.1,7.4,7.9,8.0,7.4,7.9,8.2],
+  2: [7.6,7.6,7.9,8.2,8.0,7.8,7.9,7.5,8.6,7.5,7.7,7.5,7.5,7.8,7.6,7.8,7.7,7.3,7.5,8.1,8.2,8.2],
+  3: [7.7,7.2,7.3,7.3,8.1,7.7,7.7,8.2,8.1,7.5,7.9,7.6,8.1,7.9,7.7,7.6,7.6,7.6,7.3,8.0],
+  4: [8.2,8.1,7.6,8.1,7.8,7.7,7.5,7.8,8.0,7.9,7.8,8.2,7.9,7.9,7.9,7.2,8.0,7.6,8.1,7.5,8.1,7.4,7.5,8.1],
+  5: [7.9,7.2,7.8,7.4,7.6,7.2,7.5,8.3,7.6,7.5,7.4,8.1,7.9,8.1,7.6,7.4,7.8,7.7,7.4,7.5,7.5,7.6,7.7,7.9],
+  6: [7.5,8.0,7.6,7.9,7.7,7.6,7.5,7.9,8.1,8.4,7.8,7.6,7.9,7.9,7.7,7.6,7.4,7.8,7.8,7.2,7.6,7.1,7.5,7.9],
+  7: [7.5,6.9,7.8,7.4,7.2,7.1,6.9,7.1,7.6,8.0,7.3,7.9,7.3,7.3,6.9,7.4,7.8,7.2,7.4,7.8,7.4,7.3,7.2,7.7],
+  8: [7.7,7.2,7.0,7.2,7.2,7.3,6.8,7.0,7.3,7.5,7.6,8.4,7.2,7.3,7.4,6.8,7.3,7.3,7.4,7.3,7.1,8.0,7.2,7.8],
+  9: [7.2,7.0,7.2,7.1,7.0,7.3,7.0,6.9,7.4,6.6,6.3,7.1,7.3,6.5,7.6,7.6,7.6,7.8,7.2,7.8,7.5,7.9,6.5,6.0]
+};
+const SEASON_COLORS = ['#d9a441','#f0c674','#b5722e','#c9645a','#a3453a','#5a8a5a','#7d9ab5','#9a7db5','#e0e0e0'];
+
+const SEASON_TITLES = {
+  1: ["Pilot","Purple Giraffe","Sweet Taste of Liberty","Return of the Shirt","Okay Awesome","The Slutty Pumpkin","Matchmaker","The Duel","Belly Full of Turkey","The Pineapple Incident","The Limo","The Wedding","Drumroll, Please","Zip, Zip, Zip","Game Night","Cupcake","Life Among the Gorillas","Nothing Good Happens After 2 A.M.","Mary the Paralegal","Best Prom Ever","Milk","Come On"],
+  2: ["Where Were We?","The Scorpion and the Toad","Brunch","Ted Mosby, Architect","World's Greatest Couple","Aldrin Justice","Swarley","Atlantic City","Slap Bet","Single Stamina","How Lily Stole Christmas","First Time in New York","Columns","Monday Night Football","Lucky Penny","Stuff","Arrivederci, Fiero","Moving Day","Bachelor Party","Showdown","Something Borrowed","Something Blue"],
+  3: ["Wait for It","We're Not from Here","Third Wheel","Little Boys","How I Met Everyone Else","I'm Not That Guy","Dowisetrepla","Spoiler Alert","Slapsgiving","The Yips","The Platinum Rule","No Tomorrow","Ten Sessions","The Bracket","The Chain of Screaming","Sandcastles in the Sand","The Goat","Rebound Bro","Everything Must Go","Miracles"],
+  4: ["Do I Know You?","The Best Burger in New York","I Heart NJ","Intervention","Shelter Island","Happily Ever After","Not a Father's Day","Woooo!","The Naked Man","The Fight","Little Minnesota","Benefits","Three Days of Snow","The Possimpible","The Stinsons","Sorry, Bro","The Front Porch","Old King Clancy","Murtaugh","Mosbius Designs","The Three Days Rule","Right Place, Right Time","As Fast as She Can","The Leap"],
+  5: ["Definitions","Double Date","Robin 101","The Sexless Innkeeper","Duel Citizenship","Bagpipes","The Rough Patch","The Playbook","Slapsgiving 2: Revenge of the Slap","The Window","Last Cigarette Ever","Girls vs. Suits","Jenkins","Perfect Week","Rabbit or Duck","Hooked","Of Course","Say Cheese","Zoo or False","Home Wreckers","Twin Beds","Robots vs. Wrestlers","The Wedding Bride","Doppelgangers"],
+  6: ["Big Days","Cleaning House","Unfinished","Subway Wars","Architect of Destruction","Baby Talk","Canning Randy","Natural History","Glitter","Blitzgiving","The Mermaid Theory","False Positive","Bad News","Last Words","Oh Honey","Desperation Day","Garbage Island","A Change of Heart","Legendaddy","The Exploding Meatball Sub","Hopeless","The Perfect Cocktail","Landmarks","Challenge Accepted"],
+  7: ["The Best Man","The Naked Truth","Ducky Tie","The Stinson Missile Crisis","Field Trip","Mystery vs. History","Noretta","The Slutty Pumpkin Returns","Disaster Averted","Tick Tick Tick","The Rebound Girl","Symphony of Illumination","Tailgate","46 Minutes","The Burning Beekeeper","The Drunk Train","No Pressure","Karma","The Broath","Trilogy Time","Now We're Even","Good Crazy","The Magician's Code (1)","The Magician's Code (2)"],
+  8: ["Farhampton","The Pre-Nup","Nannies","Who Wants to Be a Godparent?","The Autumn of Break-Ups","Splitsville","The Stamp Tramp","Twelve Horny Women","Lobster Crawl","The Over-Correction","The Final Page (1)","The Final Page (2)","Band or DJ?","Ring Up!","P.S. I Love You","Bad Crazy","The Ashtray","Weekend at Barney's","The Fortress","The Time Travelers","Romeward Bound","The Bro Mitzvah","Something Old","Something New"],
+  9: ["The Locket","Coming Back","Last Time in New York","The Broken Code","The Poker Game","Knight Vision","No Questions Asked","The Lighthouse","Platonish","Mom and Dad","Bedtime Stories","The Rehearsal Dinner","Bass Player Wanted","Slapsgiving 3: Slappointment in Slapmarra","Unpause","How Your Mother Met Me","Sunrise","Rally","Vesuvius","Daisy","Gary Blauman","The End of the Aisle","Last Forever (1)","Last Forever (2)"]
+};
+
+function buildEpisodeDatasets(){
+  return Object.keys(SEASON_EPISODES).map((s,i)=>({
+    label:'S'+s,
+    data: SEASON_EPISODES[s].map((v,idx)=>({x: idx+1, y: v})),
+    borderColor: SEASON_COLORS[i],
+    backgroundColor: SEASON_COLORS[i],
+    showLine:true, tension:0.15, pointRadius:2.5
+  }));
+}
+makeChart('chartAllEpisodes', {
+  type:'line',
+  data:{ datasets: buildEpisodeDatasets() },
+  options:{
+    scales:{ x:{ type:'linear', title:{display:true,text:'Episode # within season'} }, y:{ min:5.5, max:9 } },
+    plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10} } } }
+  }
+});
+const togglesDiv = document.getElementById('seasonToggles');
+togglesDiv.innerHTML = Object.keys(SEASON_EPISODES).map((s,i)=>
+  `<label><input type="checkbox" data-season="${i}" checked> S${s}</label>`).join('');
+
+function updateDropdownLabel(){
+  const boxes = togglesDiv.querySelectorAll('input');
+  const checked = Array.from(boxes).filter(b=>b.checked).length;
+  const btn = document.getElementById('seasonDropdownBtn');
+  if(checked===boxes.length) btn.textContent = 'Seasons: All 9 selected ▾';
+  else if(checked===0) btn.textContent = 'Seasons: none selected ▾';
+  else btn.textContent = 'Seasons: ' + checked + ' selected ▾';
+}
+togglesDiv.querySelectorAll('input').forEach(box=>{
+  box.addEventListener('change', ()=>{
+    const idx = Number(box.dataset.season);
+    const chart = chartInstances['chartAllEpisodes'];
+    chart.setDatasetVisibility(idx, box.checked);
+    chart.update();
+    updateDropdownLabel();
+  });
+});
+document.getElementById('selectAllSeasons').addEventListener('click', ()=>{
+  togglesDiv.querySelectorAll('input').forEach(box=>{ box.checked=true; chartInstances['chartAllEpisodes'].setDatasetVisibility(Number(box.dataset.season), true); });
+  chartInstances['chartAllEpisodes'].update(); updateDropdownLabel();
+});
+document.getElementById('selectNoneSeasons').addEventListener('click', ()=>{
+  togglesDiv.querySelectorAll('input').forEach(box=>{ box.checked=false; chartInstances['chartAllEpisodes'].setDatasetVisibility(Number(box.dataset.season), false); });
+  chartInstances['chartAllEpisodes'].update(); updateDropdownLabel();
+});
+document.getElementById('seasonDropdownBtn').addEventListener('click', ()=>{
+  document.getElementById('seasonDropdownPanel').classList.toggle('open');
+});
+document.addEventListener('click', (e)=>{
+  const wrap = document.querySelector('.dropdown-wrap');
+  if(wrap && !wrap.contains(e.target)) document.getElementById('seasonDropdownPanel').classList.remove('open');
+});
+
+/* Season averages */
+const seasonAverages = Object.keys(SEASON_EPISODES).map(s=>{
+  const arr = SEASON_EPISODES[s];
+  return +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2);
+});
+makeChart('chartSeasonAvg', {
+  type:'line',
+  data:{ labels:Object.keys(SEASON_EPISODES).map(s=>'S'+s),
+    datasets:[{ label:'Season average rating', data:seasonAverages, borderColor:C.gold, backgroundColor:'rgba(217,164,65,0.15)', fill:true, tension:0.3, pointRadius:5, pointBackgroundColor:C.gold }]},
+  options:{ scales:{ y:{ min:6.8, max:8 } }, plugins:{legend:{display:false}} }
+});
+
+/* Histogram of all 208 ratings */
+const allRatings = Object.values(SEASON_EPISODES).flat();
+const bins = {};
+allRatings.forEach(r=>{ const b = Math.floor(r*2)/2; bins[b]=(bins[b]||0)+1; });
+const binLabels = Object.keys(bins).map(Number).sort((a,b)=>a-b);
+makeChart('chartHistogram', {
+  type:'bar',
+  data:{ labels: binLabels.map(b=>b.toFixed(1)), datasets:[{ label:'Episodes', data: binLabels.map(b=>bins[b]), backgroundColor:C.gold }]},
+  options:{ plugins:{legend:{display:false}} }
+});
+
+/* Season extremes table, now with episode titles */
+const tbl = document.getElementById('tableSeasonExtremes');
+let rows = '<tr><th>Season</th><th>Best</th><th>Worst</th></tr>';
+Object.keys(SEASON_EPISODES).forEach(s=>{
+  const arr = SEASON_EPISODES[s];
+  const titles = SEASON_TITLES[s];
+  const bestIdx = arr.indexOf(Math.max(...arr));
+  const worstIdx = arr.indexOf(Math.min(...arr));
+  rows += `<tr>
+    <td class="big">S${s}</td>
+    <td>${arr[bestIdx].toFixed(1)} \u2014 "${titles[bestIdx]}"</td>
+    <td>${arr[worstIdx].toFixed(1)} \u2014 "${titles[worstIdx]}"</td>
+  </tr>`;
+});
+tbl.innerHTML = rows;
+
+/* ================= RUNNING GAGS ================= */
+makeChart('chartSlaps', {
+  type:'bar',
+  data:{ labels:['S2E9','S3E9','S5E9','S7E9','S9E14','S9E22'],
+    datasets:[{ label:'Episode rating', data:[8.6,8.1,7.6,7.6,6.5,7.9], backgroundColor:[C.gold,C.gold,C.amber,C.amber,C.red,C.green] }]},
+  options:{ indexAxis:'y', scales:{ x:{ min:5.5, max:9 } }, plugins:{legend:{display:false}} }
+});
+
+makeChart('chartBarneyCount', {
+  type:'line',
+  data:{ labels:['S4E22','S6E3','S6E22'],
+    datasets:[{ label:'Running tally, onscreen', data:[200,236,282], borderColor:C.redLt, backgroundColor:'rgba(201,100,90,0.15)', fill:true, tension:0.2, pointRadius:6, pointBackgroundColor:C.redLt }]},
+  options:{ plugins:{legend:{display:false}} }
+});
+
+/* ================= TED'S LOVE LIFE ================= */
+const TIERS = [
+  { t:'MARRIED', color:C.gold, text:'Tracy McConnell — "the Mother" (Season 9)' },
+  { t:'SERIOUS', color:C.amber, text:'Victoria · Robin · Stella · Zoey · Jeanette' },
+  { t:'DATED', color:C.green, text:'Various multi-episode arcs (e.g. Karen, Cathy)' },
+  { t:'1-2 DATES', color:'#7d9ab5', text:'Natalie, and a long list of one-off setups' },
+  { t:'ENCOUNTERS', color:'#9a7db5', text:'Named only in throwaway jokes (Jeannie, Alison, Lauren, Carla...)' }
+];
+document.getElementById('tierList').innerHTML = TIERS.map(t=>`
+  <div class="tier-row">
+    <div class="tier-label" style="background:${t.color};">${t.t}</div>
+    <div class="tier-items">${t.text}</div>
+  </div>`).join('');
+
+makeChart('chartTedTimeline', {
+  type:'bar',
+  data:{
+    labels:['Robin','Victoria (S1)','Stella','Zoey','Jeanette','Victoria (S7\u20139)','Tracy'],
+    datasets:[
+      {label:'Season span', data:[
+        [1,9], [0.65,1.35], [3,4], [5.65,6.35], [7.65,8.35], [7,9], [8.65,9.35]
+      ], backgroundColor:[C.goldLt,C.amber,C.goldLt,C.goldLt,C.goldLt,C.amber,C.gold]}
+    ]
+  },
+  options:{
+    indexAxis:'y',
+    scales:{ x:{ min:1, max:9, title:{display:true,text:'Season'} } },
+    plugins:{legend:{display:false}}
+  }
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
