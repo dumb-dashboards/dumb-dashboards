@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINGDOM HEARTS — THE DATA CORRIDOR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0d1a; --bg2:#050710;
+    --panel:#111528; --panel2:#0a0c1a;
+    --text:#e8eaf5; --dim:#8b8fae;
+    --gold:#d4af6a; --gold-lt:#f0cf94;
+    --cyan:#5ec8d8; --cyan-lt:#8fe0ec;
+    --purple:#8a6fc9;
+    --line: rgba(94,200,216,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(94,200,216,0.07), transparent 45%),
+      radial-gradient(ellipse at 100% 100%, rgba(138,111,201,0.08), transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--gold-lt);}
+  h1,h2,h3{font-family:'Philosopher',serif; font-weight:700; margin:0;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--cyan);}
+
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    padding:20px 20px 18px; margin-bottom:16px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .card h2{ font-size:24px; margin-bottom:2px; color:var(--text);}
+  .card h2 .num{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--gold); margin-right:8px; font-weight:400;}
+  .card p{ font-size:14.5px; line-height:1.65;}
+  .card .note{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--dim); margin-top:8px; line-height:1.65;}
+  .card .src{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); opacity:0.7; margin-top:4px;}
+
+  .hero{ max-width:940px; margin:22px auto 16px; padding:28px 24px 22px; text-align:center; }
+  .hero h1{ font-size:clamp(30px,6.2vw,50px); color:var(--text); line-height:1.1;}
+  .hero h1 em{ font-style:italic; color:var(--gold-lt);}
+  .hero .sub{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--dim); margin-top:10px; max-width:620px; margin-left:auto; margin-right:auto; line-height:1.7;}
+
+  .nav{ max-width:940px; margin:0 auto 18px; display:flex; gap:8px; padding:0 24px; flex-wrap:wrap; justify-content:center;}
+  .tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:500; font-size:12px; letter-spacing:0.5px;
+    background:rgba(255,255,255,0.04); color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:9px 16px; cursor:pointer;}
+  .tab-btn.active{ background:var(--cyan); color:#0a0d1a; border-color:var(--cyan);}
+
+  .panel{ display:none; max-width:940px; margin:0 auto; padding:0 24px; }
+  .panel.active{ display:block; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  canvas{ max-width:100%; }
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace; }
+  th{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; color:var(--dim); border-bottom:1px solid var(--cyan);}
+  td.big{ font-family:'Philosopher'; font-weight:700; font-size:16px; color:var(--text);}
+
+  .chip{ display:inline-block; background:var(--panel2); border:1px solid var(--line); border-radius:14px;
+    padding:6px 13px; font-family:'JetBrains Mono',monospace; font-size:11px; margin:3px 4px 3px 0; color:var(--dim);}
+  .chip b{ color:var(--gold-lt); font-size:13px;}
+
+  .pick{ background:rgba(94,200,216,0.05); border-left:3px solid var(--cyan); border-radius:4px; padding:12px 16px; margin-top:10px;}
+  .pick .who{ font-family:'Philosopher'; font-weight:700; font-size:17px; color:var(--cyan-lt);}
+  .pick p{ font-size:13px; color:var(--text); margin:4px 0 0; line-height:1.6;}
+  .pick .src{ font-family:'JetBrains Mono'; font-size:10px; color:var(--dim); margin-top:4px;}
+
+  details summary{ font-family:'JetBrains Mono'; font-size:11px; color:var(--dim); cursor:pointer;}
+  details p{ font-size:11.5px; color:var(--dim); line-height:1.6;}
+
+  footer{ max-width:940px; margin:20px auto 0; padding:0 24px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hero card">
+  <div class="eyebrow">@dumbdashboards — ep. 09</div>
+  <h1>KINGDOM HEARTS<br><em>The Data Corridor</em></h1>
+  <div class="sub">Announced at D23 in August 2026: Kingdom Hearts IV lands late 2027, for the series' 25th anniversary. 34 games, 25 years, and a numbering system even the fans can't agree on.</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="numbering">The Numbering Problem</button>
+  <button class="tab-btn" data-tab="scores">Critic Scores</button>
+  <button class="tab-btn" data-tab="dumb">Fun & Dumb</button>
+</div>
+
+<!-- ===================== OVERVIEW ===================== -->
+<div class="panel active" id="panel-overview">
+
+  <div class="card">
+    <h2><span class="num">01</span>25 years, 34 games</h2>
+    <div class="chip">Main story entries <b>13</b></div>
+    <div class="chip">Total games (incl. remasters/collections) <b>34</b></div>
+    <div class="chip">Franchise sales <b>36M+</b></div>
+    <div class="chip">First game <b>2002</b></div>
+    <div class="chip">KH IV <b>Late 2027</b></div>
+    <p class="note">"34 total" counts every remaster, HD collection, and rerelease as its own entry — which is itself part of the joke. Sales figure as of the last full public count (2022); it's grown since.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:19px;">The gaps between numbered entries</h2>
+    <canvas id="chartGaps" height="200"></canvas>
+    <p class="note">KH1 to KH2: 3 years. KH2 to KH3: 13 years — one of the longest waits for a numbered sequel in gaming history. KH3 to KH4: 8 years and counting, landing right on the franchise's 25th anniversary.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">What we know about KH4 so far</h2>
+    <ul style="font-size:13px; line-height:1.8; padding-left:18px; margin:0;">
+      <li>Announced for Switch 2, PS5, Xbox Series X|S, and PC — day-one on every major platform</li>
+      <li>Set in Quadratum, a realistic city Sora wakes up in, unable to find his way home</li>
+      <li>Confirmed Disney world: Pixar's <i>Coco</i> (2017), with actor Benjamin Bratt reprising his role</li>
+      <li>Kicks off what Square Enix calls the "Lost Master Arc" — a new saga after the Dark Seeker Saga's conclusion in KH3</li>
+      <li>An original anime series is also in development for Disney+ and Disney Channel</li>
+    </ul>
+    <p class="src">Source: D23 Disney Entertainment Showcase, August 14, 2026 (Square Enix / Disney press materials).</p>
+  </div>
+  <div class="card">
+    <h2 style="font-size:19px;">Secret bosses, by actual HP</h2>
+    <canvas id="chartBossHP" height="200"></canvas>
+    <p class="note">Sephiroth: KH1 (2002), then KH2 (2005). Lingering Will: KH2 Final Mix (2007). Real, published stat values from the games' own data — not a fan vibe check. Lingering Will (Terra's animated armor, the hardest optional fight in KH2FM) has nearly double Sephiroth's original 2002 HP pool.</p>
+    <p class="src">Source: Kingdom Hearts Wiki (khwiki.com) game-data tables.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:19px;">Same three bosses, full stat profile</h2>
+    <canvas id="chartBossRadar" height="260"></canvas>
+    <p class="note">HP, Strength, and Defense on the same chart. Lingering Will isn't just tankier — it hits harder and blocks better than either Sephiroth fight, across the board.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:19px;">Where the worlds actually come from</h2>
+    <canvas id="chartWorlds" height="220"></canvas>
+    <p class="note">Original, KH-only locations (Traverse Town, Twilight Town, Radiant Garden, and more) outnumber any single Disney era. Pixar didn't show up at all until 2019's KH3 — 17 years into the franchise.</p>
+  </div>
+
+</div>
+
+<!-- ===================== THE NUMBERING PROBLEM ===================== -->
+<div class="panel" id="panel-numbering">
+
+  <div class="card">
+    <h2><span class="num">02</span>Only 3 of 13 games have an actual number</h2>
+    <div style="margin-top:14px;">
+      <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono'; font-size:12px; margin-bottom:6px;">
+        <span style="color:var(--gold-lt);">Plain number — 3</span>
+        <span style="color:var(--purple);">Weird subtitle — 10</span>
+      </div>
+      <div style="display:flex; height:34px; border-radius:6px; overflow:hidden;">
+        <div style="width:23%; background:var(--gold);"></div>
+        <div style="width:77%; background:var(--purple);"></div>
+      </div>
+      <div style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--dim); margin-top:6px;">out of 13 main entries</div>
+    </div>
+    <p class="note">Kingdom Hearts, II, and III. Everything else in the main saga is a colon, a slash, a decimal point, or a Greek letter. This is not an accident — it's the most-mocked thing about the entire franchise.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">The 13 main entries, as actually titled</h2>
+    <table>
+      <tr><th>#</th><th>Title, verbatim</th><th>Year</th></tr>
+      <tr><td>1</td><td class="big">Kingdom Hearts</td><td>2002</td></tr>
+      <tr><td>2</td><td class="big">Chain of Memories</td><td>2004</td></tr>
+      <tr><td>3</td><td class="big">Kingdom Hearts II</td><td>2005</td></tr>
+      <tr><td>4</td><td class="big">358/2 Days</td><td>2009</td></tr>
+      <tr><td>5</td><td class="big">Birth by Sleep</td><td>2010</td></tr>
+      <tr><td>6</td><td class="big">Re:coded</td><td>2010</td></tr>
+      <tr><td>7</td><td class="big">3D: Dream Drop Distance</td><td>2012</td></tr>
+      <tr><td>8</td><td class="big">0.2 Birth by Sleep –A Fragmentary Passage–</td><td>2017</td></tr>
+      <tr><td>9</td><td class="big">Kingdom Hearts III</td><td>2019</td></tr>
+      <tr><td>10</td><td class="big">Melody of Memory</td><td>2020</td></tr>
+      <tr><td>11</td><td class="big">Union χ / Dark Road</td><td>2015 / 2020</td></tr>
+      <tr><td>12</td><td class="big">Missing-Link</td><td>cancelled 2025</td></tr>
+      <tr><td>13</td><td class="big">Kingdom Hearts IV</td><td>late 2027</td></tr>
+    </table>
+    <p class="note">Yes, "0.2 Birth by Sleep –A Fragmentary Passage–" is the real, full, official title of a real video game.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Release order vs. story order: not the same list</h2>
+    <div class="grid2">
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px;">RELEASE ORDER</div>
+        <ol style="font-size:12.5px; padding-left:18px; margin:0; line-height:1.9;">
+          <li>Kingdom Hearts</li>
+          <li>Chain of Memories</li>
+          <li>Kingdom Hearts II</li>
+          <li>358/2 Days</li>
+          <li>Birth by Sleep</li>
+          <li>Re:coded</li>
+          <li>Dream Drop Distance</li>
+          <li>0.2 Birth by Sleep</li>
+          <li>Kingdom Hearts III</li>
+        </ol>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px;">STORY (CHRONOLOGICAL) ORDER</div>
+        <ol style="font-size:12.5px; padding-left:18px; margin:0; line-height:1.9;">
+          <li>Birth by Sleep</li>
+          <li>Kingdom Hearts</li>
+          <li>Chain of Memories</li>
+          <li>358/2 Days</li>
+          <li>Kingdom Hearts II</li>
+          <li>Re:coded</li>
+          <li>Dream Drop Distance</li>
+          <li>0.2 Birth by Sleep</li>
+          <li>Kingdom Hearts III</li>
+        </ol>
+      </div>
+    </div>
+    <p class="note">Every single official strategy guide, wiki, and even Square Enix itself recommends playing in release order anyway — chronological order spoils everything and still won't make sense on its own.</p>
+  </div>
+
+</div>
+
+<!-- ===================== CRITIC SCORES ===================== -->
+<div class="panel" id="panel-scores">
+
+  <div class="card">
+    <h2><span class="num">03</span>Metacritic, every mainline entry</h2>
+    <canvas id="chartScores" height="240"></canvas>
+    <p class="note">The highest and lowest scores in the franchise are 21 points apart, and the worst-reviewed entry (Re:coded, 66) started life as a Japan-only phone game before anyone in the West ever played it.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">The pattern nobody wants to admit</h2>
+    <p style="font-size:13.5px;">The two highest-rated games in the entire franchise are also the only two with the simplest titles: <b>Kingdom Hearts</b> (85) and <b>Kingdom Hearts II</b> (87). The more baroque the subtitle gets, the further the score tends to drift from that peak — not a strict rule, but close enough to notice.</p>
+  </div>
+
+</div>
+
+<!-- ===================== FUN & DUMB ===================== -->
+<div class="panel" id="panel-dumb">
+
+  <div class="card">
+    <h2><span class="num">04</span>A whole game got cancelled after 3 years of hype</h2>
+    <p style="font-size:13.5px;"><b>Kingdom Hearts Missing-Link</b> was announced in April 2022 alongside KH4 itself, ran as a mobile closed beta for years, built a real community — and was quietly cancelled in May 2025 with no game ever fully released. It is, technically, one of the 34 official entries, and also one that almost nobody ever got to finish.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Organization XIII: nearly everyone betrays it</h2>
+    <div style="margin-top:14px;">
+      <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono'; font-size:12px; margin-bottom:6px;">
+        <span style="color:var(--gold-lt);">Stayed loyal — 2</span>
+        <span style="color:var(--purple);">Defected / switched sides — 11</span>
+      </div>
+      <div style="display:flex; height:34px; border-radius:6px; overflow:hidden;">
+        <div style="width:15.4%; background:var(--gold);"></div>
+        <div style="width:84.6%; background:var(--purple);"></div>
+      </div>
+      <div style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--dim); margin-top:6px;">out of 13 core members</div>
+    </div>
+    <p class="note">Of the 13 core members of the series' central villain group, only the leader (Xemnas) and his second (Xigbar) stay loyal to the very end. Everyone else defects, dies fighting it, or switches sides — an 85% desertion rate from an organization literally built on shared purpose.</p>
+    <p class="src">Source: Kingdom Hearts fandom compendiums (villains.fandom.com, khwiki.com).</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;">Curated nonsense from the franchise, for the record</h2>
+
+    <div class="pick">
+      <div class="who">A title with a decimal point in it</div>
+      <p>"Kingdom Hearts 0.2 Birth by Sleep –A Fragmentary Passage–" is a real, shipped, reviewed (66 on Metacritic) video game. It is treated as a completely normal entry by the numbering system.</p>
+    </div>
+
+    <div class="pick">
+      <div class="who">A slash in the title, on purpose</div>
+      <p>"358/2 Days" isn't a typo or a fraction — it refers to 358 in-game days over 2 playable characters. Nobody who hasn't looked this up has ever correctly guessed why it's named that.</p>
+    </div>
+
+    <div class="pick">
+      <div class="who">A Greek letter, also on purpose</div>
+      <p>"Kingdom Hearts χ [chi]" is pronounced "Kingdom Hearts Union Cross." The letter is silent, present, and doing absolutely nothing to help newcomers.</p>
+    </div>
+
+    <div class="pick">
+      <div class="who">The community's own coping mechanism</div>
+      <p>Nearly every fan wiki, Steam guide, and YouTube video about "how to play Kingdom Hearts" opens by apologizing to the reader before the list even starts. This dashboard is not exempt.</p>
+    </div>
+
+    <details>
+      <summary>Methodology</summary>
+      <p>Sales, Metacritic scores, and release dates sourced from Metacritic, VGChartz, and Wikipedia. Game count (13 main / 34 total) and title details sourced from multiple fan-compiled "playing order" guides (Cultured Vultures, Pro Game Guides, TheGamer), cross-checked against each other given the franchise's notoriously inconsistent self-documentation. KH4 details are from the official D23 2026 announcement (Square Enix / Disney).</p>
+    </details>
+  </div>
+
+</div>
+
+<footer>KINGDOM HEARTS — THE DATA CORRIDOR · @dumbdashboards · data collected August 2026</footer>
+
+<script>
+const C = { gold:'#d4af6a', goldLt:'#f0cf94', cyan:'#5ec8d8', cyanLt:'#8fe0ec', purple:'#8a6fc9', text:'#e8eaf5', dim:'#8b8fae' };
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.color = C.text;
+Chart.defaults.borderColor = 'rgba(94,200,216,0.10)';
+
+const chartInstances = {};
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+makeChart('chartGaps', {
+  type:'bar',
+  data:{ labels:['KH1 \u2192 KH2','KH2 \u2192 KH3','KH3 \u2192 KH4'],
+    datasets:[{ label:'Years between numbered entries', data:[3,13,8], backgroundColor:[C.cyan,C.purple,C.gold] }]},
+  options:{ plugins:{legend:{display:false}} }
+});
+
+makeChart('chartBossHP', {
+  type:'bar',
+  data:{ labels:['Sephiroth (KH1)','Sephiroth (KH2)','Lingering Will'],
+    datasets:[{ label:'HP', data:[1800,3000,3400], backgroundColor:[C.cyan,C.gold,C.purple] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartBossRadar', {
+  type:'radar',
+  data:{ labels:['HP (\u00f740)','Strength','Defense'],
+    datasets:[
+      { label:'Sephiroth (KH1)', data:[45,46,46], borderColor:C.cyan, backgroundColor:'rgba(94,200,216,0.12)', pointBackgroundColor:C.cyan },
+      { label:'Sephiroth (KH2)', data:[75,70,41], borderColor:C.gold, backgroundColor:'rgba(212,175,106,0.12)', pointBackgroundColor:C.gold },
+      { label:'Lingering Will', data:[85,86,51], borderColor:C.purple, backgroundColor:'rgba(138,111,201,0.15)', pointBackgroundColor:C.purple }
+    ]},
+  options:{ scales:{ r:{ min:0, max:100, ticks:{ stepSize:20, backdropColor:'transparent' }, grid:{color:'rgba(255,255,255,0.08)'}, angleLines:{color:'rgba(255,255,255,0.08)'} } }, plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:10}}}} }
+});
+
+makeChart('chartWorlds', {
+  type:'bar',
+  data:{ labels:['Original KH-only','Disney Renaissance','Disney Golden Age','Modern Disney','Pixar','Other (live-action)'],
+    datasets:[{ label:'Major worlds', data:[10,7,4,3,2,3], backgroundColor:[C.cyan,C.gold,C.goldLt,C.purple,'#e07a9e','#7d8a94'] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartScores', {
+  type:'bar',
+  data:{ labels:['Re:coded','Unchained χ','358/2 Days','Dream Drop Dist.','Chain of Memories','Birth by Sleep','KH III','KH I','KH II'],
+    datasets:[{ label:'Metacritic', data:[66,70,75,75,76,82,86,85,87],
+      backgroundColor:[C.purple,C.purple,C.purple,C.purple,C.purple,C.cyan,C.gold,C.gold,C.goldLt] }]},
+  options:{ indexAxis:'y', scales:{ x:{ min:60, max:90 } }, plugins:{legend:{display:false}} }
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
