@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F1 2026 — THE RESET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#14151a; --bg2:#0a0b0e;
+    --panel:#1c1e26; --panel2:#0f1015;
+    --text:#eceef2; --dim:#8b8f9c;
+    --red:#e10600; --red-lt:#ff4a42;
+    --blue:#00d4e0; --blue-lt:#5ee8f0;
+    --yellow:#ffd400;
+    --line: rgba(0,212,224,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.012) 0px, transparent 2px, transparent 6px),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--text);
+    font-family:'Titillium Web',sans-serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue-lt);}
+  h1,h2,h3{font-family:'Titillium Web',sans-serif; font-weight:900; margin:0; text-transform:uppercase;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--red-lt);}
+
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    padding:20px 20px 18px; margin-bottom:16px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .card::before{ content:""; position:absolute; top:0; left:0; right:0; height:4px;
+    background:repeating-linear-gradient(90deg, var(--text) 0 10px, var(--bg) 10px 20px); opacity:0.5; border-radius:4px 4px 0 0; }
+  .card h2{ font-size:22px; margin-bottom:2px; color:var(--text);}
+  .card h2 .num{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--red-lt); margin-right:8px; text-transform:none; font-weight:400;}
+  .card p{ font-size:14.5px; line-height:1.65; font-family:'Titillium Web'; font-weight:400;}
+  .card .note{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--dim); margin-top:8px; line-height:1.65;}
+  .card .src{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); opacity:0.7; margin-top:4px;}
+
+  .hero{ max-width:940px; margin:22px auto 16px; padding:26px 24px 22px; text-align:center; }
+  .hero h1{ font-size:clamp(32px,6.6vw,54px); color:var(--text); line-height:1.05;}
+  .hero h1 em{ font-style:normal; color:var(--red-lt);}
+  .hero .sub{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--dim); margin-top:10px; max-width:620px; margin-left:auto; margin-right:auto; line-height:1.7;}
+
+  .nav{ max-width:940px; margin:0 auto 18px; display:flex; gap:8px; padding:0 24px; flex-wrap:wrap; justify-content:center;}
+  .tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:500; font-size:12px; letter-spacing:0.5px;
+    background:rgba(255,255,255,0.04); color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:9px 16px; cursor:pointer;}
+  .tab-btn.active{ background:var(--red); color:var(--text); border-color:var(--red);}
+
+  .panel{ display:none; max-width:940px; margin:0 auto; padding:0 24px; }
+  .panel.active{ display:block; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  canvas{ max-width:100%; }
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace; }
+  th{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; color:var(--dim); border-bottom:1px solid var(--red);}
+  td.big{ font-family:'Titillium Web'; font-weight:700; font-size:16px; color:var(--text);}
+
+  .chip{ display:inline-block; background:var(--panel2); border:1px solid var(--line); border-radius:14px;
+    padding:6px 13px; font-family:'JetBrains Mono',monospace; font-size:11px; margin:3px 4px 3px 0; color:var(--dim);}
+  .chip b{ color:var(--blue-lt); font-size:13px;}
+
+  .pick{ background:rgba(225,6,0,0.06); border-left:3px solid var(--red); border-radius:4px; padding:12px 16px; margin-top:10px;}
+  .pick .who{ font-family:'Titillium Web'; font-weight:700; font-size:16px; color:var(--red-lt); text-transform:none;}
+  .pick p{ font-size:13px; color:var(--text); margin:4px 0 0; line-height:1.6;}
+  .pick .src{ font-family:'JetBrains Mono'; font-size:10px; color:var(--dim); margin-top:4px;}
+
+  .bar-wrap{ margin-top:14px; }
+  .bar-label{ display:flex; justify-content:space-between; font-family:'JetBrains Mono'; font-size:12px; margin-bottom:6px; }
+  .bar-track{ display:flex; height:30px; border-radius:6px; overflow:hidden; background:var(--panel2); }
+
+  details summary{ font-family:'JetBrains Mono'; font-size:11px; color:var(--dim); cursor:pointer;}
+  details p{ font-size:11.5px; color:var(--dim); line-height:1.6;}
+
+  footer{ max-width:940px; margin:20px auto 0; padding:0 24px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hero card">
+  <div class="eyebrow">@dumbdashboards — ep. 10</div>
+  <h1>F1 2026<em><br>The Reset</em></h1>
+  <div class="sub">New cars, new engines, an 11th team, and the biggest rulebook overhaul in the sport's history. 11 of 23 rounds in, here's what actually changed — and who's still stuck on zero points.</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="cadillac">Cadillac Chronicles</button>
+  <button class="tab-btn" data-tab="reset">The Reset, Explained</button>
+  <button class="tab-btn" data-tab="dumb">Radio Chaos</button>
+</div>
+
+<!-- ===================== OVERVIEW ===================== -->
+<div class="panel active" id="panel-overview">
+
+  <div class="card">
+    <h2><span class="num">01</span>Standings, after 11 of 23 rounds</h2>
+    <canvas id="chartDrivers" height="200"></canvas>
+    <p class="note">Kimi Antonelli (Mercedes) leads with 6 wins, 6 poles, and 9 podiums from 11 races. Mercedes and Ferrari have been the season's biggest beneficiaries of the reset so far.</p>
+    <p class="src">Source: F1-Fansite.com and F1 Daily Brief, standings after the Hungarian Grand Prix (round 11).</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:19px;">The constructors' table got reshuffled hard</h2>
+    <canvas id="chartShakeup" height="220"></canvas>
+    <div class="chip">2025 champions McLaren <b>1st → 3rd</b></div>
+    <div class="chip">Mercedes <b>climbed to 1st</b> (379 pts)</div>
+    <div class="chip">Red Bull <b>dropped to 6th</b></div>
+    <p class="note">Early-season snapshot after the regulation reset — the team that won everything in 2025 is now fighting to stay in the top 3, and two historically midfield teams are punching into the top 5.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">The season itself changed shape too</h2>
+    <ul style="font-size:13px; line-height:1.8; padding-left:18px; margin:0;">
+      <li>23 rounds instead of the planned 24 — Bahrain and Saudi Arabia were cancelled amid the regional conflict</li>
+      <li>A new Madrid Grand Prix debuts on the Madring street circuit</li>
+      <li>The Dutch Grand Prix (Zandvoort) runs for the last time this year — its contract wasn't renewed</li>
+      <li>Season runs March 8 (Australia) to December 6 (Abu Dhabi)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2 style="font-size:19px;">Same three drivers, full season profile</h2>
+    <canvas id="chartRadar" height="280"></canvas>
+    <p class="note">Points, wins, and podiums on the same 0–100 scale (points ÷2.2, wins ×10, podiums ×10, so all three sit on a comparable range). Antonelli's shape is round — strong everywhere. Hamilton's points lag despite a genuinely competitive podium rate once he found late-season form.</p>
+    <p class="src">Source: cross-checked race-by-race (F1-Fansite, F1 Daily Brief, individual GP result pages) rather than a single aggregator, since standings trackers disagreed with each other more than once while building this.</p>
+  </div>
+
+</div>
+
+<!-- ===================== CADILLAC CHRONICLES ===================== -->
+<div class="panel" id="panel-cadillac">
+
+  <div class="card">
+    <h2><span class="num">02</span>F1's 11th team, still on zero</h2>
+    <div class="chip">Season points <b>0</b></div>
+    <div class="chip">Best finish <b>P10</b></div>
+    <div class="chip">Combined DNFs <b>9</b> (Perez 4, Bottas 5)</div>
+    <div class="chip">Power unit <b>Ferrari</b></div>
+    <div class="chip">Base <b>Silverstone, UK</b></div>
+    <p class="note">The first fully American-owned works team in the modern F1 era, fielding two veteran drivers who'd both lost their seats the year before: Sergio Pérez (ex-Red Bull) and Valtteri Bottas (ex-Sauber).</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">The point that got away, in real time</h2>
+    <p style="font-size:13.5px;">At the Monaco Grand Prix, Pérez crossed the line 10th — Cadillac's first-ever points finish. Then race control reviewed the restart: he'd lined up out of position after the red flag. Penalty applied, dropped to P15. The point went to Fernando Alonso and Aston Martin instead. It remains the closest Cadillac has come to scoring all season.</p>
+    <p class="src">Source: Formula1.com, "Half-term report: Cadillac's best and worst moments from 2026."</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">A reliability problem, by the numbers</h2>
+    <div class="bar-wrap">
+      <div class="bar-label"><span style="color:var(--blue-lt);">Pérez — 4 DNFs</span><span style="color:var(--red-lt);">Bottas — 5 DNFs</span></div>
+      <div class="bar-track">
+        <div style="width:44%; background:var(--blue);"></div>
+        <div style="width:56%; background:var(--red);"></div>
+      </div>
+      <div class="mono" style="font-size:10.5px; color:var(--dim); margin-top:6px;">9 combined retirements through 11 rounds — second-most of any team on the grid</div>
+    </div>
+    <p class="note">Both cars failed to finish the Austrian and Hungarian Grands Prix back to back, with the same overheating issue both times.</p>
+  </div>
+
+</div>
+
+<!-- ===================== THE RESET, EXPLAINED ===================== -->
+<div class="panel" id="panel-reset">
+
+  <div class="card">
+    <h2><span class="num">03</span>What actually changed for 2026</h2>
+    <ul style="font-size:13px; line-height:1.85; padding-left:18px; margin:0;">
+      <li><b>Active aerodynamics</b> replaces the old DRS flap — front and rear wings physically change shape on straights (low drag) and corners (high downforce)</li>
+      <li><b>New power units</b>: roughly 50/50 split between electric and combustion power, up from a heavily combustion-dominated split before</li>
+      <li><b>MGU-H removed</b> — an expensive component that added cost without much performance gain</li>
+      <li><b>100% Advanced Sustainable Fuels</b> across the whole grid</li>
+      <li>Cars are <b>smaller, narrower, and lighter</b>, aimed at closer racing on tight circuits like Monaco and Singapore</li>
+    </ul>
+    <p class="src">Source: Formula1.com official 2026 regulations guide; GPFans regulations explainer.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">The engine map got redrawn too</h2>
+    <table>
+      <tr><th>Change</th><th>Detail</th></tr>
+      <tr><td class="big">Audi</td><td>Completed full factory takeover of Sauber</td></tr>
+      <tr><td class="big">Honda</td><td>Switched allegiance from Red Bull to Aston Martin</td></tr>
+      <tr><td class="big">Red Bull</td><td>Now builds its own power units, with Ford</td></tr>
+      <tr><td class="big">Cadillac</td><td>Uses a Ferrari-supplied power unit as the new 11th team</td></tr>
+    </table>
+    <p class="note">More manufacturers have direct skin in the game right now than at any point in decades.</p>
+  </div>
+  <div class="card">
+    <h2 style="font-size:18px;">Corners vs. top speed: not the relationship you'd expect</h2>
+    <canvas id="chartCircuitScatter" height="280"></canvas>
+    <p class="note">Monza has the fewest corners on this list (11) and the highest top speed (362 km/h) — the "Temple of Speed" reputation, confirmed. Monaco sits at the opposite corner: 19 turns and barely 290 km/h anywhere on track. Baku is the outlier that breaks the pattern — 20 corners, a street circuit, and still north of 350 km/h thanks to one enormous straight.</p>
+    <p class="src">Source: Motor Sport Magazine's per-circuit top-speed survey and FLOW Racers' corner-count breakdown, cross-checked against each other.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Fastest pit stop, race by race — and who beat the big teams</h2>
+    <canvas id="chartPitstops" height="220"></canvas>
+    <p class="note">Austria → Racing Bulls (2.03s) · Barcelona → McLaren (2.13s) · Monaco → Mercedes (2.17s) · Britain → Mercedes (2.18s). Racing Bulls — a midfield team, not one of the giants — set the season's fastest recorded stop so far, quicker than either Mercedes or McLaren's own best efforts elsewhere in the year.</p>
+    <p class="src">Source: Formula1.com DHL Fastest Pit Stop Award, individual race reports.</p>
+  </div>
+  <div class="card">
+    <h2 style="font-size:18px;">The cars got slower — by design, and it's verifiable lap by lap</h2>
+    <div style="margin-top:14px;">
+      <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono'; font-size:12px; margin-bottom:6px;">
+        <span style="color:var(--red-lt);">Melbourne — 3.42s slower</span>
+        <span style="color:var(--dim);">Spa — 3.80s slower</span>
+      </div>
+      <div style="display:flex; height:34px; border-radius:6px; overflow:hidden; gap:3px;">
+        <div style="width:47%; background:var(--red);"></div>
+        <div style="width:53%; background:var(--red-lt);"></div>
+      </div>
+      <div class="mono" style="font-size:10.5px; color:var(--dim); margin-top:6px;">2026 pole time vs. 2025 pole time, same circuit</div>
+    </div>
+    <p class="note">Same circuits, same qualifying format, one year apart. Russell's 2026 Australian GP pole was 3.4 seconds slower than Norris's 2025 benchmark; Antonelli's 2026 Belgian GP pole was 3.8 seconds slower than Norris's 2025 pole at the same track. Mercedes' own Toto Wolff warned pre-season that early simulations showed gaps "up to ten seconds" before development closed part of it.</p>
+    <p class="src">Source: F1 Newsauto and Scuderiafans, both citing official qualifying times for the same circuits in 2025 and 2026.</p>
+  </div>
+  <div class="card">
+    <h2><span class="num">05</span>Pick a driver — or pick several to compare</h2>
+    <div class="toggles" id="driverToggles" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; font-family:'JetBrains Mono'; font-size:12px;">
+      <label style="cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:6px 12px;"><input type="checkbox" data-driver="0" checked> Antonelli</label>
+      <label style="cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:6px 12px;"><input type="checkbox" data-driver="1"> Hamilton</label>
+      <label style="cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:6px 12px;"><input type="checkbox" data-driver="2"> Russell</label>
+      <label style="cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:6px 12px;"><input type="checkbox" data-driver="3"> Leclerc</label>
+      <label style="cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:6px 12px;"><input type="checkbox" data-driver="4"> Norris</label>
+    </div>
+    <div id="driverProfile"></div>
+    <canvas id="chartDriverCompare" height="240"></canvas>
+    <p class="note">Bar heights are rescaled so points (in the hundreds) don't visually flatten wins/poles/podiums (single digits) on the same chart — tap or hover any bar to see the real number, not the rescaled one. Points, wins, and poles are exact through round 11 (Hungarian GP); podium counts for Russell and Norris are shown with a "+" where the best available source didn't give one clean end-of-round-11 total.</p>
+    <p class="src">Source: cross-checked across F1-Fansite, Formula1.com half-term team reports, and individual race reports — built by hand for this dashboard, not pulled from one single ready-made table.</p>
+  </div>
+
+</div>
+
+<!-- ===================== RADIO CHAOS ===================== -->
+<div class="panel" id="panel-dumb">
+
+  <div class="card">
+    <h2><span class="num">04</span>"Disgraceful Teletubby engineers"</h2>
+    <p style="font-size:13.5px;">The Hungarian Grand Prix produced a blue-flag mess so confusing that Mercedes boss Toto Wolff went off on race control over the radio mid-session, unprompted, about the marshalling. International media ran with it for days. Somewhere in the same weekend, Max Verstappen was independently explaining his own dive-bomb overtaking logic on a completely unrelated pass on Lewis Hamilton.</p>
+    <p class="src">Source: RacingNews365, Hungarian GP race-week coverage.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;">Filed under: bureaucracy of speed</h2>
+
+    <div class="pick">
+      <div class="who">A 10th place that lasted about an hour</div>
+      <p>Pérez's Monaco result is the cleanest example this season of how a single grid-alignment technicality can erase a result that already happened, on television, in front of everyone.</p>
+    </div>
+
+    <div class="pick">
+      <div class="who">Two teams, one overheating problem, two race weekends</div>
+      <p>Cadillac lost both cars to the exact same brake overheating issue at back-to-back Grands Prix (Austria, then Hungary) — not a coincidence anyone at the team seems thrilled to discuss.</p>
+    </div>
+
+    <div class="pick">
+      <div class="who">A team radio outburst about children's television</div>
+      <p>Comparing your own race control to Teletubbies, on an open broadcast channel, during a live Grand Prix, is a very specific kind of professional confidence.</p>
+    </div>
+
+    <details>
+      <summary>Methodology</summary>
+      <p>Standings and points figures sourced from F1-Fansite.com and F1DailyBrief.com, cross-checked against each other for consistency (both independently report Antonelli at 219 points, 50 clear of Hamilton, after 11 of 23 rounds; the reported constructor total for Mercedes, 379, is internally consistent with Antonelli + Russell's individual point totals). Cadillac-specific detail sourced from Formula1.com's official mid-season report. Regulation changes sourced from Formula1.com's own 2026 regulations guide and GPFans. This is a fast-moving season — figures reflect the state of the championship after the Hungarian Grand Prix and will have moved on by the time of reading.</p>
+    </details>
+  </div>
+
+</div>
+
+<footer>F1 2026 — THE RESET · @dumbdashboards · data collected August 2026</footer>
+
+<script>
+const C = { red:'#e10600', redLt:'#ff4a42', blue:'#00d4e0', blueLt:'#5ee8f0', yellow:'#ffd400', text:'#eceef2', dim:'#8b8f9c' };
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.color = C.text;
+Chart.defaults.borderColor = 'rgba(0,212,224,0.10)';
+
+const chartInstances = {};
+
+/* Draws the real (unscaled) value above each bar, so charts stay readable without axis numbers */
+const realValueLabels = {
+  id: 'realValueLabels',
+  afterDatasetsDraw(chart){
+    if(!chart.data.datasets.some(ds=>ds.realValues)) return;
+    const ctx = chart.ctx;
+    chart.data.datasets.forEach((dataset, di)=>{
+      if(!dataset.realValues) return;
+      const meta = chart.getDatasetMeta(di);
+      meta.data.forEach((bar, i)=>{
+        ctx.save();
+        ctx.fillStyle = dataset.backgroundColor;
+        ctx.font = "700 12px 'JetBrains Mono', monospace";
+        ctx.textAlign = 'center';
+        ctx.fillText(String(dataset.realValues[i]), bar.x, bar.y - 8);
+        ctx.restore();
+      });
+    });
+  }
+};
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+makeChart('chartDrivers', {
+  type:'bar',
+  data:{ labels:['Antonelli','Hamilton','Russell'],
+    datasets:[{ label:'Points (after 11 rounds)', data:[219,169,160], backgroundColor:[C.blue,C.red,C.blueLt] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartShakeup', {
+  type:'bar',
+  data:{ labels:['McLaren','Red Bull','Haas','Alpine'],
+    datasets:[
+      { label:'2025 position', data:[1,3,6,10], backgroundColor:'#5a5f66' },
+      { label:'2026 position', data:[3,6,4,5], backgroundColor:C.red }
+    ]},
+  options:{ scales:{ y:{ reverse:true, min:1, max:10, ticks:{ stepSize:1 } } } }
+});
+
+makeChart('chartRadar', {
+  type:'radar',
+  data:{ labels:['Points (\u00f72.2)','Wins (\u00d710)','Podiums (\u00d710)'],
+    datasets:[
+      { label:'Antonelli', data:[99.5,60,90], borderColor:C.blue, backgroundColor:'rgba(0,212,224,0.12)', pointBackgroundColor:C.blue },
+      { label:'Hamilton', data:[76.8,10,50], borderColor:C.red, backgroundColor:'rgba(225,6,0,0.12)', pointBackgroundColor:C.red },
+      { label:'Russell', data:[72.7,20,50], borderColor:C.yellow, backgroundColor:'rgba(255,212,0,0.12)', pointBackgroundColor:C.yellow }
+    ]},
+  options:{ scales:{ r:{ min:0, max:100, ticks:{ stepSize:20, backdropColor:'transparent' }, grid:{color:'rgba(255,255,255,0.08)'}, angleLines:{color:'rgba(255,255,255,0.08)'} } }, plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:10}}}} }
+});
+
+/* Corners vs top speed scatter */
+const CIRCUIT_STATS = [
+  {name:'Monza', corners:11, speed:362},
+  {name:'Spa', corners:19, speed:357},
+  {name:'Baku', corners:20, speed:350},
+  {name:'Silverstone', corners:18, speed:325},
+  {name:'Suzuka', corners:18, speed:306},
+  {name:'Hungaroring', corners:14, speed:319},
+  {name:'Singapore', corners:19, speed:318},
+  {name:'Monaco', corners:19, speed:291}
+];
+makeChart('chartCircuitScatter', {
+  type:'scatter',
+  data:{ datasets: CIRCUIT_STATS.map((c,i)=>({
+    label:c.name, data:[{x:c.corners,y:c.speed}],
+    backgroundColor: [C.red,C.blue,C.yellow,'#8a6fc9','#5a8a5a','#e07a9e','#7d9ab5',C.redLt][i],
+    pointRadius:9
+  }))},
+  options:{
+    scales:{
+      x:{ title:{display:true, text:'Number of corners'}, min:8, max:22 },
+      y:{ title:{display:true, text:'Top speed (km/h)'}, min:270, max:380 }
+    },
+    plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:9} } } }
+  }
+});
+
+makeChart('chartPitstops', {
+  type:'bar',
+  data:{ labels:['Austria','Barcelona','Monaco','Britain'],
+    datasets:[{ label:'Fastest pit stop (seconds)', data:[2.03,2.13,2.17,2.18],
+      backgroundColor:[C.yellow,'#8a6fc9',C.blue,C.blueLt] }]},
+  options:{ indexAxis:'y', scales:{ x:{ min:1.9, max:2.3 } }, plugins:{legend:{display:false}} }
+});
+
+/* ===== Driver picker: single profile or multi-compare ===== */
+const DRIVERS = [
+  { name:'Antonelli', team:'Mercedes', color:C.blue,   points:219, wins:6, poles:6, podiums:9,  podiumFlag:'' },
+  { name:'Hamilton',  team:'Ferrari',  color:C.red,    points:169, wins:1, poles:0, podiums:5,  podiumFlag:'' },
+  { name:'Russell',   team:'Mercedes', color:C.blueLt, points:160, wins:2, poles:3, podiums:5,  podiumFlag:'+' },
+  { name:'Leclerc',   team:'Ferrari',  color:C.redLt,  points:138, wins:0, poles:0, podiums:4,  podiumFlag:'' },
+  { name:'Norris',    team:'McLaren',  color:C.yellow, points:128, wins:1, poles:1, podiums:3,  podiumFlag:'+' }
+];
+
+function getSelectedDrivers(){
+  const boxes = document.querySelectorAll('#driverToggles input');
+  const selected = [];
+  boxes.forEach(b=>{ if(b.checked) selected.push(DRIVERS[Number(b.dataset.driver)]); });
+  return selected;
+}
+
+function renderDriverView(){
+  const selected = getSelectedDrivers();
+  const profileDiv = document.getElementById('driverProfile');
+
+  if(selected.length === 0){
+    profileDiv.innerHTML = '<p class="note" style="margin:0;">Tick at least one driver above.</p>';
+    if(chartInstances['chartDriverCompare']) chartInstances['chartDriverCompare'].destroy();
+    return;
+  }
+
+  if(selected.length === 1){
+    const d = selected[0];
+    profileDiv.innerHTML = `
+      <div class="chip"><b style="color:${d.color};">${d.name}</b> — ${d.team}</div>
+      <div class="chip">Points <b>${d.points}</b></div>
+      <div class="chip">Wins <b>${d.wins}</b></div>
+      <div class="chip">Poles <b>${d.poles}</b></div>
+      <div class="chip">Podiums <b>${d.podiums}${d.podiumFlag}</b></div>
+    `;
+  } else {
+    profileDiv.innerHTML = `<p class="note" style="margin:0 0 8px;">Comparing ${selected.length} drivers — same four metrics, side by side.</p>`;
+  }
+
+  makeChart('chartDriverCompare', {
+    type:'bar',
+    data:{
+      labels:['Points','Wins','Poles','Podiums'],
+      datasets: selected.map(d=>({
+        label:d.name,
+        data:[+(d.points/2.2).toFixed(1), d.wins*5, d.poles*5, d.podiums*5],
+        realValues:[d.points, d.wins, d.poles, d.podiums+d.podiumFlag],
+        backgroundColor:d.color
+      }))
+    },
+    plugins:[realValueLabels],
+    options:{
+      layout:{ padding:{ top:22 } },
+      plugins:{
+        legend:{ display: selected.length>1, position:'bottom', labels:{boxWidth:10,font:{size:10}} },
+        tooltip:{ callbacks:{ label:(ctx)=> ctx.dataset.label+': '+ctx.dataset.realValues[ctx.dataIndex] } }
+      },
+      scales:{ y:{ ticks:{ display:false } } }
+    }
+  });
+}
+
+document.querySelectorAll('#driverToggles input').forEach(box=>{
+  box.addEventListener('change', renderDriverView);
+});
+
+
+renderDriverView();
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
