@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Impact — Anatomy of a Football Strike</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --pitch: #14532d;
+    --pitch2: #1a6b39;
+    --pitch-lt: #a8c531;
+    --ink: #0f1510;
+    --paper: #f4efe1;
+    --paper-dim: #cfc9b6;
+    --danger: #c0392b;
+    --warn: #d68910;
+    --ok: #2e7d5b;
+    --highlight: #ffd400;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;background:var(--ink);font-family:'IBM Plex Sans',sans-serif;color:var(--paper);}
+  body{padding-bottom:40px;}
+
+  header{
+    padding:16px 18px 14px;
+    background:linear-gradient(180deg,var(--pitch),var(--pitch2));
+    border-bottom:3px solid var(--paper);
+  }
+  header h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:26px;letter-spacing:1px;margin:0;color:var(--paper);
+  }
+  header .sub{font-size:12px;color:var(--paper);opacity:.8;font-family:'IBM Plex Mono',monospace;margin-top:4px;}
+  .statrow{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;}
+  .statrow div b{display:block;font-size:16px;color:var(--pitch-lt);font-weight:600;}
+
+  #mode-toggle{
+    display:flex; gap:8px; padding:12px 16px; background:var(--ink);
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+  }
+  #mode-toggle button{
+    flex:0 0 auto;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;
+    background:#1c241c;color:var(--paper);border:1px solid #3a4a3a;
+    padding:9px 14px;cursor:pointer;border-radius:20px;white-space:nowrap;
+  }
+  #mode-toggle button.active{background:var(--pitch-lt);color:var(--ink);border-color:var(--pitch-lt);font-weight:600;}
+
+  #canvas-wrap{
+    position:relative; width:100%; height:42vh; min-height:280px; max-height:420px;
+    background: radial-gradient(ellipse at 50% 20%, #1d6b3f 0%, #123d24 60%, #0a2416 100%);
+  }
+  #canvas-wrap canvas{display:block; width:100%; height:100%;}
+
+  #hint{
+    text-align:center; padding:8px 16px 4px;
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--paper-dim);
+    background:var(--ink);
+  }
+
+  #extra-controls{
+    display:flex; gap:8px; padding:0 16px 12px; background:var(--ink);
+  }
+  #extra-controls button{
+    flex:1;
+    font-family:'IBM Plex Mono',monospace;font-size:12px; font-weight:600;
+    background:#22301f; color:var(--pitch-lt); border:1px solid var(--pitch2);
+    padding:10px 8px;cursor:pointer;border-radius:8px;
+  }
+  #extra-controls button.active{ background:var(--pitch-lt); color:var(--ink); }
+
+  #top-zones{
+    background:var(--ink); padding:0 16px 16px;
+  }
+  #top-zones .tz-title{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--paper-dim); margin-bottom:8px;
+  }
+  #top-zones .tz-row{
+    display:flex; align-items:center; gap:8px; margin-bottom:6px; cursor:pointer;
+  }
+  #top-zones .tz-rank{
+    font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--pitch-lt); width:20px;
+  }
+  #top-zones .tz-name{ font-size:13px; flex:1; }
+  #top-zones .tz-bar-track{ width:70px; height:6px; background:#2a3327; border-radius:3px; overflow:hidden; }
+  #top-zones .tz-bar-fill{ height:100%; }
+
+  #part-chips{
+    display:flex; flex-wrap:wrap; gap:6px; padding:10px 16px 16px; background:var(--ink);
+    border-bottom:2px solid var(--pitch2);
+  }
+  #part-chips button{
+    font-family:'IBM Plex Mono',monospace; font-size:11px;
+    background:#1c241c; color:var(--paper-dim); border:1px solid #3a4a3a;
+    padding:8px 12px; border-radius:14px; cursor:pointer;
+  }
+  #part-chips button.active{ background:var(--highlight); color:var(--ink); border-color:var(--highlight); font-weight:600; }
+
+  #panel{ padding:20px 18px 10px; background:var(--paper); color:var(--ink); }
+
+  .placeholder{ text-align:center; padding:30px 10px; opacity:.6; }
+  .placeholder .ballicon{font-size:38px; display:block; margin-bottom:10px;}
+  .placeholder p{font-family:'IBM Plex Mono',monospace;font-size:12.5px; margin:0 auto; max-width:280px;}
+
+  .card-eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--pitch);opacity:.8;margin-bottom:4px;
+  }
+  .card h2{
+    font-family:'Bebas Neue',sans-serif;font-size:30px;margin:0 0 12px;letter-spacing:.5px;
+    color:var(--ink);border-bottom:4px solid var(--pitch2);display:inline-block;padding-bottom:3px;
+  }
+  .sevbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .sevbar .track{flex:1;height:8px;background:#ddd6c1;border-radius:4px;overflow:hidden;}
+  .sevbar .fill{height:100%;border-radius:4px;}
+  .sevbar .label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.5px; white-space:nowrap;}
+
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;
+    color:var(--pitch);margin:16px 0 6px;font-weight:600;border-left:3px solid var(--pitch2);padding-left:8px;
+  }
+  .card p{font-size:14px;line-height:1.6;margin:0 0 4px;}
+  .card ul{margin:4px 0 0;padding-left:18px;}
+  .card li{font-size:13.5px;line-height:1.55;margin-bottom:5px;}
+
+  .prognosis-box{
+    margin-top:18px;padding:12px 14px;background:#e9e4d2;border-left:4px solid var(--pitch);
+    font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;
+  }
+  .prognosis-box b{color:var(--pitch);}
+
+  .disclaimer{
+    margin-top:20px;padding-top:12px;border-top:1px dashed #b8b09a;
+    font-size:10px;opacity:.6;font-family:'IBM Plex Mono',monospace;line-height:1.5;
+  }
+
+  .tag{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.5px;
+    padding:3px 9px;border-radius:10px;margin-bottom:10px;font-weight:600;
+  }
+  .tag.shot{background:var(--pitch2);color:#fff;}
+  .tag.header{background:#c7d9d0;color:var(--pitch);}
+</style>
+</head>
+<body>
+  <header>
+    <h1>ANATOMY OF THE IMPACT</h1>
+    <div class="sub">Estimated physiological effects — being struck by a football</div>
+    <div class="statrow">
+      <div><b id="speed-val">211</b>km/h ball speed</div>
+      <div><b>430g</b> regulation ball mass</div>
+      <div><b id="energy-val">~739 J</b> est. kinetic energy</div>
+    </div>
+    <div id="energy-compare" style="font-family:'IBM Plex Mono',monospace; font-size:11px; opacity:.75; margin-top:8px;"></div>
+  </header>
+
+  <div id="mode-toggle"></div>
+
+  <div id="canvas-wrap"></div>
+  <div id="hint">drag the mannequin to rotate it, or pick a body part below ↓</div>
+
+  <div id="extra-controls">
+    <button id="btn-random">🎲 Hit me randomly</button>
+    <button id="btn-quiz">🧠 Quiz mode</button>
+  </div>
+
+  <div id="top-zones"></div>
+
+  <div id="part-chips"></div>
+
+  <div id="panel">
+    <div class="placeholder">
+      <span class="ballicon">⚽</span>
+      <p>Rotate the mannequin above, or tap a body part in the list to see the estimated effects of the impact.</p>
+    </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============ DATA ============
+   Regulation ball: 430g, ~22cm diameter (vs a tennis ball: 57.7g, 6.7cm).
+   Much greater mass -> kinetic energy is often higher even at lower speeds.
+   Much greater diameter -> less concentration on small targets (eyeball, trachea),
+   more force spread across a wide area of the face/body. This changes the type of
+   injury, not just the ball's name.
+
+   Content is organised into four severity TIERS rather than one block per shot,
+   since writing fully unique medical content for 8 different shot speeds x 19 body
+   parts isn't practical. Each real shot below is mapped to the nearest tier by its
+   actual kinetic energy; the exact speed/energy shown at the top is always specific
+   to the shot you picked, even though the tier text is shared across nearby shots. */
+
+const DATA = {
+  head_eye: {
+    name:"Eye / orbit",
+    eyebrow:"Sensitive zone — but different from tennis",
+    severity:{extreme:0.75, high:0.6, medium:0.5, low:0.15},
+    sevLabel:{extreme:"Severe", high:"Moderate-Severe", medium:"Moderate", low:"Mild"},
+    extreme:{
+      desc:"At this energy, even the football's large diameter doesn't fully protect the eye: the whole orbital and cheekbone region absorbs a genuinely dangerous amount of force, and a partial, glancing hit on the globe itself becomes plausible.",
+      effects:["Severe diffuse orbital contusion with massive eyelid swelling within minutes","Subconjunctival haemorrhage, possible hyphema (blood in the front chamber)","Orbital floor (blow-out) fracture is a real risk at this force level","Blurred vision from swelling; retinal injury cannot be ruled out without an exam","Bilateral bruising spreading across both eyes within hours"],
+      prognosis:"Emergency ophthalmology assessment required. If there's any vision change, pain with eye movement, or double vision, treat as a possible orbital fracture until imaging says otherwise. Simple bruising: 10-14 days. Fracture: maxillofacial referral, possible surgery."
+    },
+    high:{
+      desc:"Unlike a tennis ball, the football (22cm) is much bigger than the orbit itself: energy spreads across the whole orbital-cheekbone region instead of concentrating on the eyeball. Direct globe rupture is therefore less likely, but the total energy involved is still substantial.",
+      effects:["Diffuse orbital contusion with massive eyelid swelling within minutes","Subconjunctival haemorrhage","Possible orbital floor (blow-out) fracture from indirect soft-tissue compression","Temporary blurred vision from swelling; direct retinal damage is uncommon but possible","Bilateral periorbital bruising in the following hours"],
+      prognosis:"Ophthalmology assessment within 24h to rule out blow-out fracture. Simple bruising: 10-14 days. If fractured: maxillofacial referral, possible surgery within 1-2 weeks."
+    },
+    medium:{
+      desc:"Lower energy but the same mechanism: force spreads across the face rather than concentrating on the eyeball.",
+      effects:["Marked eyelid swelling","Significant periorbital bruising","Blurred vision for a few hours"],
+      prognosis:"Ophthalmology check recommended within 24-48h. Typical resolution in 7-10 days."
+    },
+    low:{
+      desc:"Low energy; the main issue is the shock of direct contact, not structural damage.",
+      effects:["Transient redness and mild swelling","Immediate reflex tearing"],
+      prognosis:"Resolves within hours, no assessment generally needed."
+    }
+  },
+  head_nose: {
+    name:"Nose",
+    eyebrow:"Exposed bony target",
+    severity:{extreme:0.9, high:0.75, medium:0.6, low:0.2},
+    sevLabel:{extreme:"Severe", high:"Severe", medium:"Moderate", low:"Mild"},
+    extreme:{
+      desc:"The nose stays a small, bony target even within a wide-area impact: at this energy level, fracture is close to certain, with real risk of extension into surrounding structures.",
+      effects:["Nasal bone fracture highly likely, possibly with septal displacement","Heavy, immediate epistaxis (nosebleed)","Widespread swelling across the nose, cheeks, and periorbital area","Associated concussion risk from the recoil force, given the ball's high mass","Possible orbital or sinus wall extension of the fracture at this force level"],
+      prognosis:"Facial CT recommended to rule out orbital extension. Surgical reduction within 7-10 days if displaced. Full bony healing in 4-6 weeks."
+    },
+    high:{
+      desc:"The nasal bones offer very little structural resistance to an impact concentrated at this energy, even from a wide-diameter object.",
+      effects:["Nasal bone fracture highly likely","Heavy, immediate epistaxis","Widespread swelling across nose, cheeks, and periorbital region (from the wide contact area)","Possible associated concussion from the recoil, given the ball's high mass"],
+      prognosis:"Facial CT if orbital extension is suspected. Surgical reduction within 7-10 days if displaced. Full healing in 4-6 weeks."
+    },
+    medium:{
+      desc:"Still enough energy to fracture the nasal bones.",
+      effects:["Non-displaced or mildly displaced nasal fracture","Moderate epistaxis","Marked local swelling"],
+      prognosis:"ENT assessment within 48-72h. Healing in 3-4 weeks."
+    },
+    low:{
+      desc:"A sharp, painful knock at this energy, rarely structural.",
+      effects:["Immediate sharp pain","Mild redness, rarely minimal epistaxis"],
+      prognosis:"Resolves within hours to a couple of days."
+    }
+  },
+  jaw: {
+    name:"Jaw / chin",
+    eyebrow:"Critical zone",
+    severity:{extreme:1.0, high:0.9, medium:0.7, low:0.15},
+    sevLabel:{extreme:"Critical", high:"Severe", medium:"Moderate-Severe", low:"Mild"},
+    extreme:{
+      desc:"At world-record shot energy, a direct hit to the jaw delivers a rotational impulse to the skull base comparable to a heavyweight boxer's punch, or worse.",
+      effects:["High risk of concussion with possible loss of consciousness","Mandibular fracture (body, angle, or condyle) is a real possibility","Temporomandibular joint dislocation","Tongue or cheek laceration from the bite force","Post-traumatic amnesia possible"],
+      prognosis:"Mandatory concussion protocol (minimum 24h observation, no physical activity for at least 7-14 days). If fractured: intermaxillary fixation or surgical fixation, 6 weeks to heal."
+    },
+    high:{
+      desc:"The ball's mass is over seven times that of a tennis ball: a direct hit to the jaw transmits a far greater rotational impulse to the skull base, similar in mechanism to a full-power punch.",
+      effects:["High risk of concussion with possible brief loss of consciousness","Possible mandibular fracture (body, angle, or condyle)","Temporomandibular joint dislocation","Tongue or cheek bite injury","Transient post-traumatic amnesia"],
+      prognosis:"Mandatory concussion protocol (24h observation minimum, no physical activity for 7-14 days). If fractured: surgical fixation, 6 weeks to heal."
+    },
+    medium:{
+      desc:"Still enough energy for a significant concussive effect.",
+      effects:["Possible mild-to-moderate concussion","Pain and limited mouth opening","Bruising over the jawline"],
+      prognosis:"24h neurological observation. Full recovery expected in 1-3 weeks."
+    },
+    low:{
+      desc:"A common impact in aerial play, generally well tolerated with correct technique.",
+      effects:["Transient discomfort, rarely mild bruising"],
+      prognosis:"Resolves immediately to within a few hours, barring a badly-timed header."
+    }
+  },
+  ear: {
+    name:"Ear",
+    eyebrow:"Sensitive zone",
+    severity:{extreme:0.65, high:0.5, medium:0.4, low:0.1},
+    sevLabel:{extreme:"Moderate-Severe", high:"Moderate", medium:"Mild-Moderate", low:"Mild"},
+    extreme:{
+      desc:"The ball's large diameter partially wraps around the ear, driving a sharp pressure spike into the ear canal — less direct than a small object, but the sheer energy involved keeps the risk real.",
+      effects:["Tympanic membrane perforation from the pressure spike","Bleeding from the ear canal","Tinnitus and temporary hearing loss","Auricular haematoma (risk of 'cauliflower ear' if not drained)"],
+      prognosis:"Otoscopy within 24h. Simple perforations heal in 4-8 weeks; a haematoma needs draining within 24-48h to avoid permanent deformity."
+    },
+    high:{
+      desc:"The football, being larger than the ear itself, partly envelops it, compressing air against the eardrum — a sharp pressure change, if less direct than a small projectile would cause.",
+      effects:["Possible tympanic membrane perforation from the pressure change","Mild bleeding from the ear canal","Temporary tinnitus and hearing loss","Auricular haematoma (risk of 'cauliflower ear' if untreated)"],
+      prognosis:"Otoscopy within 24-48h. Simple perforations heal in 4-8 weeks."
+    },
+    medium:{
+      desc:"A more contained pressure change, same mechanism.",
+      effects:["Transient tinnitus","Sharp pain settling within minutes to hours"],
+      prognosis:"ENT check if tinnitus persists beyond 48h. Favourable outlook within 1-2 weeks."
+    },
+    low:{
+      desc:"Minimal contact in normal aerial play.",
+      effects:["Brief discomfort"],
+      prognosis:"No lasting effect expected."
+    }
+  },
+  throat: {
+    name:"Throat / larynx",
+    eyebrow:"Critical zone — protected somewhat by ball size",
+    severity:{extreme:0.85, high:0.75, medium:0.55, low:0.1},
+    sevLabel:{extreme:"Severe", high:"Severe", medium:"Moderate", low:"Mild"},
+    extreme:{
+      desc:"Ball size still helps here, but at this energy the whole throat-to-upper-chest region takes a very serious hit even spread out, and true airway compromise becomes a real concern.",
+      effects:["Diffuse contusion of the throat and upper chest","Reflex laryngospasm, potentially significant","Marked hoarseness from direct vocal cord impact","Swallowing difficulty","Laryngeal oedema requiring close airway observation is a genuine risk at this energy"],
+      prognosis:"Emergency department observation mandatory, with low threshold for airway intervention if voice or breathing worsens. Typical resolution in 1-3 weeks if no oedema develops."
+    },
+    high:{
+      desc:"Physics actually helps here: a 22cm ball is too large to wedge into the laryngeal notch the way a small object could — impact spreads across the throat, chin, and upper chest together. The risk of isolated laryngeal compression is lower than with a tennis ball, but the total energy is still very high.",
+      effects:["Diffuse contusion of the throat and upper chest","Possible transient reflex laryngospasm","Hoarseness from direct impact on the vocal cords","Temporary swallowing difficulty","In the worst cases, laryngeal oedema requiring observation"],
+      prognosis:"Emergency department observation to rule out airway compromise, especially with significant voice change or breathing difficulty. Typical resolution in 1-2 weeks without oedema."
+    },
+    medium:{
+      desc:"Same spread-out mechanism, lower energy.",
+      effects:["Pain and transient spasm","Mild hoarseness for a few hours"],
+      prognosis:"Brief observation; resolves within a few days."
+    },
+    low:{
+      desc:"Unlikely target and low energy in normal play.",
+      effects:["Transient discomfort if contact is low"],
+      prognosis:"No lasting effect expected."
+    }
+  },
+  chest: {
+    name:"Chest / sternum",
+    eyebrow:"High-risk zone — total energy is very high",
+    severity:{extreme:0.95, high:0.85, medium:0.6, low:0.05},
+    sevLabel:{extreme:"Severe", high:"Severe", medium:"Moderate", low:"Negligible"},
+    extreme:{
+      desc:"The chest tolerates a normal pass or a chest-trap easily — this is nowhere near that. At near-record energy, the commotio cordis risk (a dangerous heart-rhythm disruption from impact timed to a vulnerable point in the heartbeat) moves from theoretical to genuinely worth monitoring for.",
+      effects:["Commotio cordis: real, if still uncommon, risk of ventricular fibrillation if impact lands in the heart's vulnerable window","Sternal or rib fracture is plausible","Myocardial contusion","Acute breathlessness from pain-limited shallow breathing"],
+      prognosis:"ECG and cardiac monitoring in the emergency department are warranted at this energy level. If no arrhythmia and a simple fracture: 3-4 weeks. Commotio cordis requires immediate defibrillation."
+    },
+    high:{
+      desc:"The chest is the most common target in football (chest control) and normally well tolerated — but a shot at this power level far exceeds the energy of a normally-played ball. Commotio cordis (a dangerous arrhythmia triggered by impact in a vulnerable window of the heartbeat) is rare but documented with high-energy impacts to the precordium.",
+      effects:["Commotio cordis: rare but real risk of ventricular fibrillation if impact lands in the heart's vulnerable window","Possible sternal or rib fracture","Myocardial contusion","Acute breathlessness from pain-limited shallow breathing"],
+      prognosis:"ECG and cardiac monitoring recommended in the emergency department for impacts at this intensity. If no arrhythmia and a simple fracture: 3-4 weeks. Commotio cordis requires immediate defibrillation."
+    },
+    medium:{
+      desc:"Still above the energy of a normal chest control, but with a real margin below the higher tier.",
+      effects:["Strong, breath-taking contusion pain","Extensive chest bruising","Possible rib strain in a slightly built person"],
+      prognosis:"Clinical observation; ECG if pain persists or breathlessness appears. Recovery in 1-3 weeks."
+    },
+    low:{
+      desc:"Not applicable — a header doesn't strike the chest.",
+      effects:["—"],
+      prognosis:"—"
+    }
+  },
+  ribs: {
+    name:"Ribcage / flank",
+    eyebrow:"Broad bony zone",
+    severity:{extreme:0.8, high:0.65, medium:0.45, low:0.05},
+    sevLabel:{extreme:"Severe", high:"Moderate-Severe", medium:"Moderate", low:"Negligible"},
+    extreme:{
+      desc:"The ribs flex to absorb an impact spread across a wide surface, but at this energy that flex has real limits.",
+      effects:["Single or multiple rib fractures plausible, especially at the more exposed floating ribs","Underlying lung contusion, with a real (if lower) risk of pneumothorax","Sharp, breath-dependent pain limiting deep breaths and coughing","Extensive chest-wall bruising"],
+      prognosis:"Chest X-ray/CT to rule out pneumothorax. Simple fractures heal in 4-6 weeks; pain control matters to prevent under-breathing-related complications."
+    },
+    high:{
+      desc:"The wide surface of the ball spreads the impact across several ribs at once, but the total energy remains considerable.",
+      effects:["Single or multiple rib fractures possible, especially at the more exposed floating ribs","Underlying lung contusion, with a rare risk of pneumothorax in the more energetic cases","Sharp, breath-dependent pain","Extensive chest-wall bruising"],
+      prognosis:"Chest X-ray/CT to rule out pneumothorax if the impact was significant. Simple fractures heal in 4-6 weeks."
+    },
+    medium:{
+      desc:"Enough energy for a painful bruise, less often a true fracture.",
+      effects:["Rib contusion, painful to touch and coughing","Extensive bruising"],
+      prognosis:"Resolves in 2-3 weeks barring a confirmed fracture."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  abdomen: {
+    name:"Abdomen",
+    eyebrow:"Zone with organ-injury risk",
+    severity:{extreme:0.95, high:0.85, medium:0.55, low:0.05},
+    sevLabel:{extreme:"Severe", high:"Severe", medium:"Moderate", low:"Negligible"},
+    extreme:{
+      desc:"This is the classic 'wind knocked out of you' impact taken to an extreme: at near-record energy, solid organs like the spleen and liver are a genuine concern, not just a theoretical one.",
+      effects:["Severe diaphragmatic spasm","Abdominal wall contusion with reflex muscle guarding","Real risk of splenic or hepatic injury, especially if the impact lands during exhalation with relaxed muscles","Shoulder-tip pain if diaphragmatic irritation occurs (Kehr's sign, a red flag for splenic injury)"],
+      prognosis:"FAST ultrasound or CT abdomen strongly recommended at this energy level, even without obvious signs, given the force involved. Simple contusion: 2-3 weeks. Organ injury: admission, possible emergency surgery."
+    },
+    high:{
+      desc:"This is the classic 'wind knocked out of you' impact — the ball's wide surface spreads force across the whole abdominal wall, but the mass and energy at this speed are enough to raise real concern for solid organs like the spleen and liver, especially if the impact lands on relaxed muscle.",
+      effects:["Intense diaphragmatic spasm ('the wind knocked out of you', severe form)","Abdominal wall contusion with reflex muscle guarding","Risk of splenic or hepatic injury in the more energetic cases, especially during exhalation","Shoulder-tip pain if diaphragmatic irritation occurs (Kehr's sign, a possible marker of splenic injury)"],
+      prognosis:"If pain doesn't settle within minutes, or rigidity/pallor appears, get a FAST ultrasound or CT abdomen to rule out organ injury. Simple contusion: 2-3 weeks."
+    },
+    medium:{
+      desc:"The classic 'punch in the stomach' of football, generally without organ damage.",
+      effects:["Transient diaphragmatic spasm","Sharp pain resolving in 1-2 minutes","Possible superficial bruising"],
+      prognosis:"If pain doesn't resolve within a few minutes, seek medical review. Otherwise favourable immediate outlook."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  groin: {
+    name:"Groin",
+    eyebrow:"Very sensitive area",
+    severity:{extreme:0.85, high:0.75, medium:0.55, low:0.05},
+    sevLabel:{extreme:"Severe / specific risk", high:"Painful / specific risk", medium:"Painful", low:"Negligible"},
+    extreme:{
+      desc:"Arguably the most feared impact in football at any level, taken to its most powerful extreme. The ball's wide surface spreads the blow somewhat, but the raw energy keeps real anatomical risk on the table.",
+      effects:["Extremely intense acute pain with possible vagal response (slowed heart rate, sweating, nausea, near-fainting)","Scrotal/testicular or labial haematoma from small-vessel rupture","Real, if uncommon, risk of testicular rupture (tunica albuginea) with a very direct, centred impact at this force"],
+      prognosis:"If pain or swelling persists beyond 30-60 minutes, urgent scrotal ultrasound to rule out testicular rupture — the surgical window is best within 72h. Simple contusion: resolves within days."
+    },
+    high:{
+      desc:"Arguably the most feared impact in amateur and professional football alike. The ball's wide surface spreads the blow somewhat compared to a small object, but the high mass keeps real risk on the table.",
+      effects:["Extremely intense acute pain with possible vagal response (slowed heart rate, sweating, nausea, near-fainting)","Scrotal/testicular or labial haematoma from small-vessel rupture","Rare but possible testicular rupture (tunica albuginea) with a very direct, centred impact"],
+      prognosis:"If pain or swelling persists beyond 30-60 minutes, urgent scrotal ultrasound to rule out testicular rupture. Simple contusion: resolves within days."
+    },
+    medium:{
+      desc:"Sharp, disproportionate pain, usually without structural damage.",
+      effects:["Intense transient pain with possible brief nausea","Possible mild superficial bruising"],
+      prognosis:"Typically resolves within hours to days."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  shoulder: {
+    name:"Shoulder",
+    eyebrow:"Joint",
+    severity:{extreme:0.6, high:0.5, medium:0.35, low:0.05},
+    sevLabel:{extreme:"Moderate-Severe", high:"Moderate", medium:"Mild-Moderate", low:"Negligible"},
+    extreme:{
+      effects:["Rotator cuff contusion","Extensive deltoid haematoma, wide given the ball's large contact area","Pain-limited arm function for several days","Possible clavicle or acromion involvement at this force"],
+      desc:"Deltoid muscle mass absorbs much of the impact, but a direct hit at this energy is significant regardless.",
+      prognosis:"X-ray if a clavicle/acromion fracture is suspected. Functional recovery in 2-4 weeks, physiotherapy if limitation persists."
+    },
+    high:{
+      effects:["Rotator cuff contusion","Extensive deltoid haematoma, wider than a small-object impact given the contact area","Pain-limited arm function for several days"],
+      desc:"The deltoid's muscle mass absorbs much of the impact, though a direct hit to the acromion is less protected.",
+      prognosis:"X-ray if a clavicle/acromion fracture is suspected. Functional recovery in 2-4 weeks."
+    },
+    medium:{
+      desc:"Well tolerated by the muscle at this energy.",
+      effects:["Simple muscle contusion","Soreness for 3-5 days"],
+      prognosis:"Resolves within a week."
+    },
+    low:{ desc:"Not applicable to this type of impact.", effects:["—"], prognosis:"—" }
+  },
+  upperarm: {
+    name:"Upper arm",
+    eyebrow:"Muscular segment",
+    severity:{extreme:0.55, high:0.4, medium:0.3, low:0.05},
+    sevLabel:{extreme:"Moderate", high:"Mild-Moderate", medium:"Mild", low:"Negligible"},
+    extreme:{
+      effects:["Deep muscle haematoma, extensive given the wide contact area","Possible transient numbness if the radial nerve's path is struck","Stiffness and pain on elbow flexion-extension"],
+      desc:"The arm is well covered by muscle; damage stays mostly contusive even at high energy, barring a direct hit on a peripheral nerve.",
+      prognosis:"Conservative management usually sufficient. If tingling/weakness in the hand appears, neurological review; recovery over 6-12 weeks in that case."
+    },
+    high:{
+      effects:["Deep muscle haematoma, wider than with a small object","Possible transient numbness if the radial nerve's path is struck","Stiffness on elbow flexion-extension"],
+      desc:"The arm is well covered by muscle; damage stays mostly contusive despite the high energy, barring a direct hit to a peripheral nerve.",
+      prognosis:"Conservative management (ice, rest). If tingling or weakness in the hand appears, neurological review; 6-12 weeks recovery in that case."
+    },
+    medium:{
+      desc:"Well tolerated by the arm's muscle mass.",
+      effects:["Superficial muscle haematoma","Mild tenderness for a few days"],
+      prognosis:"Spontaneous resolution in 5-7 days."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  forearm: {
+    name:"Forearm",
+    eyebrow:"Exposed bony segment",
+    severity:{extreme:0.7, high:0.55, medium:0.4, low:0.05},
+    sevLabel:{extreme:"Severe", high:"Moderate", medium:"Mild-Moderate", low:"Negligible"},
+    extreme:{
+      effects:["Very painful subperiosteal haematoma","Rapid swelling","Real risk of radius/ulna fracture at this energy"],
+      desc:"The radius and ulna sit relatively close to the surface; at high energy the football can cause genuine bone injury despite its size.",
+      prognosis:"X-ray recommended. Ice and splinting if no fracture; if fractured, immobilisation 4-6 weeks, watch for compartment syndrome signs in the first 24h."
+    },
+    high:{
+      effects:["Painful subperiosteal haematoma","Rapid swelling","Possible microfracture of the radius/ulna at this energy"],
+      desc:"The radius and ulna are relatively superficial; the football's high energy can still cause bone injury.",
+      prognosis:"X-ray recommended. Ice and splinting if no fracture confirmed; 4-6 weeks immobilisation if fractured."
+    },
+    medium:{
+      desc:"Enough energy for a painful haematoma, rarely a true fracture.",
+      effects:["Painful subperiosteal haematoma","Moderate local swelling"],
+      prognosis:"Ice and observation; resolves in about a week."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  hand: {
+    name:"Hand / fingers",
+    eyebrow:"Distal segment",
+    severity:{extreme:0.6, high:0.45, medium:0.35, low:0.05},
+    sevLabel:{extreme:"Moderate-Severe", high:"Moderate", medium:"Mild-Moderate", low:"Negligible"},
+    extreme:{
+      effects:["Diffuse finger swelling","Real possibility of microfracture with a direct, centred hit","Possible subungual haematoma"],
+      desc:"The ball's wide surface spreads the blow compared to a small projectile, which meaningfully lowers (but doesn't remove) fracture risk to the small hand bones.",
+      prognosis:"X-ray if bony pain persists. Recovery in 1-3 weeks in most cases."
+    },
+    high:{
+      effects:["Diffuse finger swelling","Possible microfracture with a direct, centred hit","Possible subungual haematoma"],
+      desc:"The ball's wide surface spreads the impact compared to a small projectile, lowering fracture risk to the small hand bones.",
+      prognosis:"X-ray if bony pain persists. Recovery in 1-3 weeks in most cases."
+    },
+    medium:{
+      desc:"Enough energy for a contusive injury to the small joints.",
+      effects:["Contusion with finger swelling","Soreness for a few days"],
+      prognosis:"Typical healing in 1-2 weeks."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  hip: {
+    name:"Hip / pelvis",
+    eyebrow:"Deep bony structure",
+    severity:{extreme:0.45, high:0.35, medium:0.25, low:0.05},
+    sevLabel:{extreme:"Mild-Moderate", high:"Mild", medium:"Mild", low:"Negligible"},
+    extreme:{
+      effects:["Deep haematoma of the gluteal or fascia lata muscles","Sharp, localised pain if the iliac crest is hit directly","Transient antalgic limp"],
+      desc:"The pelvis is a thick, well-covered bony structure; true fracture risk stays low even at high energy.",
+      prognosis:"Conservative management; X-ray only if pain persists beyond 48-72h. Recovery in 1-3 weeks."
+    },
+    high:{
+      effects:["Deep haematoma of the gluteal or fascia lata muscles","Sharp, localised pain if the iliac crest is hit directly","Transient antalgic limp"],
+      desc:"The pelvis is a thick, well-covered bony structure; true fracture risk stays low even at this energy.",
+      prognosis:"Conservative management; X-ray only if pain persists beyond 48-72h. Recovery in 1-3 weeks."
+    },
+    medium:{
+      desc:"Well cushioned by the pelvis's muscle and bone mass.",
+      effects:["Superficial local haematoma","Sore walking for 2-3 days"],
+      prognosis:"Spontaneous resolution."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  thigh: {
+    name:"Thigh",
+    eyebrow:"Football's most common target",
+    severity:{extreme:0.55, high:0.4, medium:0.3, low:0.05},
+    sevLabel:{extreme:"Moderate", high:"Moderate", medium:"Mild-Moderate", low:"Negligible"},
+    extreme:{
+      effects:["Intramuscular quadriceps haematoma, potentially extensive and very painful at this energy","Risk of myositis ossificans if the haematoma isn't managed correctly in the following days","Stiffness with reduced knee range of motion"],
+      desc:"The thigh is the body part most used to impacts in football (control, trapping), but a shot at this power level far exceeds a normally-played ball's energy.",
+      prognosis:"RICE in the first 48h, avoid early massage to prevent myositis ossificans. Full recovery in 2-4 weeks."
+    },
+    high:{
+      effects:["Intramuscular quadriceps haematoma, potentially extensive and very painful","Risk of myositis ossificans if the haematoma isn't managed correctly in the following days","Stiffness with reduced knee range of motion"],
+      desc:"The thigh is the body part most used to impacts in football (control, trapping), but a shot at this power level far exceeds a normally-played ball's energy.",
+      prognosis:"RICE in the first 48h, avoid early massage to prevent myositis ossificans. Full recovery in 2-4 weeks."
+    },
+    medium:{
+      desc:"Energy well absorbed by the muscle, a typical hard-strike contusion.",
+      effects:["Superficial-to-moderate muscle haematoma","Pain on active contraction for a few days"],
+      prognosis:"Resolves in 7-10 days with RICE."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  knee: {
+    name:"Knee",
+    eyebrow:"Exposed joint",
+    severity:{extreme:0.75, high:0.6, medium:0.4, low:0.05},
+    sevLabel:{extreme:"Severe", high:"Moderate-Severe", medium:"Moderate", low:"Negligible"},
+    extreme:{
+      effects:["Patellar contusion with real fracture risk if the hit is centred and direct at this energy","Acute joint effusion (haemarthrosis) possible","Pain immediately limiting weight-bearing"],
+      desc:"The patella is superficial and has essentially no muscular protection on the front of the knee.",
+      prognosis:"X-ray/ultrasound given the energy involved. If fractured: bracing or surgery depending on displacement. Simple effusion: 2-3 weeks with progressive weight-bearing."
+    },
+    high:{
+      effects:["Patellar contusion with possible fracture if the hit is centred and direct","Acute joint effusion (haemarthrosis) possible","Pain limiting weight-bearing"],
+      desc:"The patella is superficial and has essentially no muscular protection on the front of the knee.",
+      prognosis:"X-ray/ultrasound if pain is significant. Recovery in 2-3 weeks with progressive weight-bearing in most cases."
+    },
+    medium:{
+      desc:"Enough energy for a painful patellar contusion.",
+      effects:["Patellar contusion with mild-moderate swelling","Pain on flexion"],
+      prognosis:"Ice and progressive loading; resolves in 1-2 weeks."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  shin: {
+    name:"Shin",
+    eyebrow:"Every footballer's most feared spot",
+    severity:{extreme:0.85, high:0.7, medium:0.5, low:0.05},
+    sevLabel:{extreme:"Severe", high:"Severe (pain) / Moderate (real damage)", medium:"Moderate", low:"Negligible"},
+    extreme:{
+      effects:["Extremely intense, disproportionate pain — the shin has essentially no soft-tissue cushioning on its front-inner face","Tense, rapidly-swelling subperiosteal haematoma","Real risk of microfracture or cortical crack at this energy, especially without shin guards"],
+      desc:"This is exactly why shin guards exist: the tibia sits directly under the skin, with no muscle padding on the front.",
+      prognosis:"X-ray if bony pain persists beyond 15-20 minutes or there's visible deformity. Simple contusion: 2-3 weeks, with residual tenderness lasting longer."
+    },
+    high:{
+      effects:["Extremely intense, disproportionate pain — the shin has essentially no soft-tissue cushioning on its front-inner face","Tense, rapidly-swelling subperiosteal haematoma","Possible microfracture or cortical crack at this energy, especially without shin guards"],
+      desc:"This is exactly why shin guards exist: the tibia sits directly under the skin, with no muscle padding on the front.",
+      prognosis:"X-ray if bony pain persists beyond 15-20 minutes or there's deformity. Simple contusion: 2-3 weeks, with residual tenderness lasting longer."
+    },
+    medium:{
+      desc:"Very intense pain, usually without structural damage at this level.",
+      effects:["Painful subperiosteal haematoma","Swelling that can last 1-2 weeks"],
+      prognosis:"Ice and observation; typically 1-2 weeks."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  foot: {
+    name:"Foot",
+    eyebrow:"Distal segment",
+    severity:{extreme:0.65, high:0.5, medium:0.35, low:0.05},
+    sevLabel:{extreme:"Moderate-Severe", high:"Moderate", medium:"Mild-Moderate", low:"Negligible"},
+    extreme:{
+      effects:["Real possibility of phalanx or metatarsal fracture (especially the fifth metatarsal) at this energy","Dorsal foot haematoma with diffuse swelling","Moderate-to-severe difficulty walking"],
+      desc:"The top of the foot has little soft-tissue protection over the metatarsal bones.",
+      prognosis:"Foot X-ray. Simple fracture: boot/brace for 4-6 weeks. Normal walking recovery in 6-8 weeks."
+    },
+    high:{
+      effects:["Possible phalanx or metatarsal fracture (especially the fifth metatarsal)","Dorsal foot haematoma with diffuse swelling","Moderate difficulty walking"],
+      desc:"The top of the foot has little soft-tissue protection over the metatarsal bones.",
+      prognosis:"Foot X-ray. Simple fracture: boot/brace for 4-6 weeks. Recovery in 6-8 weeks."
+    },
+    medium:{
+      desc:"Enough energy for a significant contusive injury to the top of the foot.",
+      effects:["Contusion with dorsal swelling and bruising","Pain on weight-bearing for a few days"],
+      prognosis:"X-ray if bony pain persists. Otherwise resolves in 1-2 weeks."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  },
+  back: {
+    name:"Back",
+    eyebrow:"Muscular + bony zone",
+    severity:{extreme:0.6, high:0.5, medium:0.35, low:0.05},
+    sevLabel:{extreme:"Moderate-Severe", high:"Moderate", medium:"Mild-Moderate", low:"Negligible"},
+    extreme:{
+      effects:["Paraspinal contusion with protective reflex muscle spasm","Pain possibly radiating along the intercostal nerves","Possible transient flare of pre-existing lower-back issues"],
+      desc:"Paraspinal muscle absorbs some of the energy, but a direct hit on a spinous process is still painful and bony at this force.",
+      prognosis:"If pain radiates or there's tingling in the limbs, assess for nerve root involvement. Simple contusion: 1-3 weeks with pain control."
+    },
+    high:{
+      effects:["Paraspinal contusion with protective reflex muscle spasm","Pain possibly radiating along the intercostal nerves","Possible transient flare of pre-existing lower-back issues"],
+      desc:"Paraspinal muscle absorbs and disperses some of the energy, but a direct hit on a spinous process is still painful and bony.",
+      prognosis:"If pain radiates or there's tingling in the limbs, assess for nerve root involvement. Simple contusion: 1-3 weeks with pain control."
+    },
+    medium:{
+      desc:"A typical contusion, well tolerated by the paraspinal muscle mass.",
+      effects:["Diffuse muscular soreness","Superficial bruising"],
+      prognosis:"Resolves in about a week."
+    },
+    low:{ desc:"Not applicable.", effects:["—"], prognosis:"—" }
+  }
+};
+
+/* ============ SHOTS: real, documented, spanning multiple leagues ============ */
+const SHOTS = [
+  {key:'heberson',  name:'Heberson', full:'Ronny Heberson — Sporting Lisbon vs Naval, 2006', kmh:211,  tier:'extreme', note:'World record shot speed'},
+  {key:'koeman',    name:'Koeman', full:'Ronald Koeman — Barcelona, European Cup Final 1992', kmh:188, tier:'extreme', note:'European Cup Final'},
+  {key:'trezeguet', name:'Trezeguet', full:'David Trezeguet — Monaco vs Man Utd, 1998', kmh:154, tier:'high', note:'Champions League'},
+  {key:'ibra',      name:'Ibrahimović', full:'Zlatan Ibrahimović — PSG vs Anderlecht, Champions League', kmh:149.7, tier:'high', note:'Champions League'},
+  {key:'adriano',   name:'Adriano', full:'Adriano — Inter vs Palermo, Serie A 2004', kmh:140, tier:'high', note:'Serie A record'},
+  {key:'rcarlos',   name:'R. Carlos', full:'Roberto Carlos — Brazil vs France, 1997', kmh:137, tier:'high', note:'International friendly'},
+  {key:'okocha',    name:'Okocha', full:'Jay-Jay Okocha — Bolton, Premier League', kmh:119, tier:'medium', note:'Premier League'},
+  {key:'totti',     name:'Totti', full:'Francesco Totti — Roma vs Juventus, Serie A 2013', kmh:113, tier:'medium', note:'Fastest by an Italian in Serie A'},
+  {key:'header',    name:'Header', full:'Generic header', kmh:30, tier:'low', note:'Reference speed'}
+];
+const BALL_MASS = 0.43; // kg
+function energyJ(kmh){ const v = kmh/3.6; return 0.5*BALL_MASS*v*v; }
+
+/* Intuitive energy comparison: equivalent drop height for a 7kg bowling ball (KE = mgh) */
+function energyCompareText(kmh){
+  const ke = energyJ(kmh);
+  const bowlingMass = 7; // kg, a heavy bowling ball
+  const g = 9.8;
+  const h = ke/(bowlingMass*g);
+  return `\u2248 the energy of a 7kg bowling ball dropped from ${h.toFixed(1)}m \u2014 about ${h<3 ? 'chest height' : h<6 ? 'a 2nd-floor balcony' : h<12 ? 'a 4th-floor window' : 'the top of a small building'}.`;
+}
+
+let currentShotKey = 'heberson';
+function currentTier(){ return SHOTS.find(s=>s.key===currentShotKey).tier; }
+
+const toggleWrap = document.getElementById('mode-toggle');
+SHOTS.forEach(s=>{
+  const btn = document.createElement('button');
+  btn.textContent = (s.key==='header' ? '🤕 ' : '⚽ ') + s.name + ' (' + s.kmh + ' km/h)';
+  btn.dataset.shot = s.key;
+  if(s.key===currentShotKey) btn.classList.add('active');
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#mode-toggle button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentShotKey = s.key;
+    document.getElementById('speed-val').textContent = s.kmh;
+    document.getElementById('energy-val').textContent = '~'+Math.round(energyJ(s.kmh))+' J';
+    document.getElementById('energy-compare').textContent = energyCompareText(s.kmh);
+    renderTopZones();
+    if(quizActive){ nextQuizQuestion(); }
+    else if(activeKey) renderPanel(activeKey);
+  });
+  toggleWrap.appendChild(btn);
+});
+document.getElementById('energy-compare').textContent = energyCompareText(SHOTS[0].kmh);
+
+/* ============ Body-part chip list ============ */
+const PART_LABELS = {
+  head_eye:"Eye", head_nose:"Nose", jaw:"Jaw", ear:"Ear", throat:"Throat",
+  chest:"Chest", ribs:"Ribs", abdomen:"Abdomen", groin:"Groin",
+  shoulder:"Shoulder", upperarm:"Upper arm", forearm:"Forearm", hand:"Hand",
+  hip:"Hip", thigh:"Thigh", knee:"Knee", shin:"Shin", foot:"Foot", back:"Back"
+};
+const chipsWrap = document.getElementById('part-chips');
+Object.keys(PART_LABELS).forEach(k=>{
+  const btn = document.createElement('button');
+  btn.textContent = PART_LABELS[k];
+  btn.dataset.key = k;
+  btn.addEventListener('click', ()=> quizActive ? answerQuiz(k) : selectPart(k));
+  chipsWrap.appendChild(btn);
+});
+
+/* ============ Top 3 worst zones for the current shot ============ */
+function renderTopZones(){
+  const tier = currentTier();
+  const ranked = Object.keys(DATA)
+    .filter(k => DATA[k][tier].effects[0] !== "—")
+    .map(k => ({ key:k, name:DATA[k].name, sev:DATA[k].severity[tier] }))
+    .sort((a,b)=> b.sev - a.sev)
+    .slice(0,3);
+  const colors = ['#c0392b','#d68910','#d68910'];
+  document.getElementById('top-zones').innerHTML = `
+    <div class="tz-title">Worst 3 zones for this shot</div>
+    ${ranked.map((r,i)=>`
+      <div class="tz-row" data-key="${r.key}">
+        <div class="tz-rank">${i+1}</div>
+        <div class="tz-name">${r.name}</div>
+        <div class="tz-bar-track"><div class="tz-bar-fill" style="width:${Math.round(r.sev*100)}%;background:${colors[i]}"></div></div>
+      </div>`).join('')}
+  `;
+  document.querySelectorAll('#top-zones .tz-row').forEach(row=>{
+    row.addEventListener('click', ()=> selectPart(row.dataset.key));
+  });
+}
+
+/* ============ Random hit button ============ */
+document.getElementById('btn-random').addEventListener('click', ()=>{
+  const keys = Object.keys(PART_LABELS);
+  const tier = currentTier();
+  const valid = keys.filter(k=>DATA[k][tier].effects[0] !== "—");
+  const pick = valid[Math.floor(Math.random()*valid.length)];
+  if(quizActive) stopQuiz();
+  selectPart(pick);
+});
+
+/* ============ Quiz mode ============ */
+let quizActive = false;
+let quizAnswer = null;
+const quizBtn = document.getElementById('btn-quiz');
+quizBtn.addEventListener('click', ()=>{
+  quizActive ? stopQuiz() : startQuiz();
+});
+function startQuiz(){
+  quizActive = true;
+  quizBtn.classList.add('active');
+  quizBtn.textContent = '✕ Exit quiz';
+  document.getElementById('top-zones').style.display = 'none';
+  nextQuizQuestion();
+}
+function stopQuiz(){
+  quizActive = false;
+  quizBtn.classList.remove('active');
+  quizBtn.textContent = '🧠 Quiz mode';
+  document.getElementById('top-zones').style.display = '';
+  renderTopZones();
+  document.querySelectorAll('#part-chips button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel').innerHTML = `
+    <div class="placeholder">
+      <span class="ballicon">⚽</span>
+      <p>Rotate the mannequin above, or tap a body part in the list to see the estimated effects of the impact.</p>
+    </div>`;
+}
+function nextQuizQuestion(){
+  clearHighlight();
+  document.querySelectorAll('#part-chips button').forEach(b=>b.classList.remove('active'));
+  const tier = currentTier();
+  const keys = Object.keys(PART_LABELS).filter(k=>DATA[k][tier].effects[0] !== "—");
+  quizAnswer = keys[Math.floor(Math.random()*keys.length)];
+  const d = DATA[quizAnswer];
+  const effects = d[tier].effects;
+  const sample = effects.slice(0, Math.min(3, effects.length));
+  document.getElementById('panel').innerHTML = `
+    <div class="card">
+      <div class="card-eyebrow">Quiz \u2014 guess the body part</div>
+      <h2>???</h2>
+      <p style="opacity:.7;">A shot lands somewhere on the body. These are some of the estimated effects:</p>
+      <ul>${sample.map(e=>`<li>${e}</li>`).join('')}</ul>
+      <p style="margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:12px; opacity:.6;">Tap a body part below to guess.</p>
+    </div>`;
+}
+function answerQuiz(guessKey){
+  const correct = guessKey === quizAnswer;
+  const d = DATA[quizAnswer];
+  document.querySelectorAll('#part-chips button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.key === quizAnswer);
+  });
+  highlightPart(quizAnswer);
+  document.getElementById('panel').innerHTML = `
+    <div class="card">
+      <div class="card-eyebrow" style="color:${correct?'#2e7d5b':'#c0392b'};">${correct ? '\u2713 Correct!' : '\u2717 Not quite'}</div>
+      <h2>${d.name}</h2>
+      <p>${correct ? "Nice read on that one." : "That's the actual answer — those effects were for the "+d.name.toLowerCase()+"."}</p>
+      <button id="quiz-next" style="margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; background:var(--pitch); color:#fff; border:none; padding:12px 18px; border-radius:8px; cursor:pointer; width:100%;">Next question \u2192</button>
+    </div>`;
+  document.getElementById('quiz-next').addEventListener('click', nextQuizQuestion);
+}
+
+/* ============ THREE.JS SCENE ============ */
+const wrap = document.getElementById('canvas-wrap');
+let W = wrap.clientWidth, H = wrap.clientHeight;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, W/H, 0.1, 100);
+camera.position.set(0, 1.1, 7.2);
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setSize(W,H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+wrap.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xfff4dd, 0.65));
+const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
+keyLight.position.set(3,5,4);
+scene.add(keyLight);
+const rim = new THREE.DirectionalLight(0xf4efe1, 0.4);
+rim.position.set(-4,2,-3);
+scene.add(rim);
+
+const floorGeo = new THREE.CircleGeometry(3.2, 64);
+const floorMat = new THREE.MeshBasicMaterial({color:0x0f4025, transparent:true, opacity:0.6});
+const floor = new THREE.Mesh(floorGeo, floorMat);
+floor.rotation.x = -Math.PI/2;
+floor.position.y = -2.55;
+scene.add(floor);
+const ringGeo = new THREE.RingGeometry(3.15,3.22,64);
+const ringMat = new THREE.MeshBasicMaterial({color:0xf4efe1});
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.rotation.x = -Math.PI/2;
+ring.position.y = -2.54;
+scene.add(ring);
+
+const BASE_SKIN = 0xe8c9a0;
+const BASE_SKIN_DARK = 0xd9b98a;
+function newSkinMat(dark){ return new THREE.MeshStandardMaterial({color: dark?BASE_SKIN_DARK:BASE_SKIN, roughness:0.6, metalness:0.05}); }
+const hairMat = new THREE.MeshStandardMaterial({color:0x2b1b12, roughness:0.8});
+
+const figure = new THREE.Group();
+const parts = {};
+
+function addPart(key, mesh){
+  mesh.userData.key = key;
+  mesh.userData.baseColor = mesh.material.color.getHex();
+  parts[key] = parts[key] || [];
+  parts[key].push(mesh);
+  figure.add(mesh);
+}
+
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.42,32,32), newSkinMat(false));
+head.position.set(0,2.55,0);
+head.scale.set(0.85,1,0.9);
+head.userData.key = 'jaw';
+head.userData.baseColor = head.material.color.getHex();
+parts['jaw'] = parts['jaw'] || [];
+parts['jaw'].push(head);
+figure.add(head);
+
+const eyeZone = new THREE.Mesh(new THREE.SphereGeometry(0.1,16,16), new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.4}));
+eyeZone.position.set(0.15,2.6,0.36);
+addPart('head_eye', eyeZone);
+const eyeZone2 = eyeZone.clone(); eyeZone2.material = eyeZone.material.clone(); eyeZone2.position.set(-0.15,2.6,0.36);
+addPart('head_eye', eyeZone2);
+[eyeZone,eyeZone2].forEach(e=>{
+  const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.045,12,12), new THREE.MeshStandardMaterial({color:0x1a1a1a}));
+  pupil.position.copy(e.position); pupil.position.z += 0.06;
+  figure.add(pupil);
+});
+const nose = new THREE.Mesh(new THREE.ConeGeometry(0.07,0.16,12), newSkinMat(true));
+nose.rotation.x = Math.PI/2.2;
+nose.position.set(0,2.47,0.4);
+addPart('head_nose', nose);
+const jawZone = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.12,0.15), newSkinMat(true));
+jawZone.position.set(0,2.34,0.35);
+addPart('jaw', jawZone);
+const earGeo = new THREE.SphereGeometry(0.07,12,12);
+const earL = new THREE.Mesh(earGeo, newSkinMat(true)); earL.position.set(0.4,2.55,0); earL.scale.set(0.5,1,1);
+const earR = new THREE.Mesh(earGeo, newSkinMat(true)); earR.position.set(-0.4,2.55,0); earR.scale.set(0.5,1,1);
+addPart('ear', earL); addPart('ear', earR);
+const hair = new THREE.Mesh(new THREE.SphereGeometry(0.43,32,16,0,Math.PI*2,0,Math.PI*0.55), hairMat);
+hair.position.set(0,2.62,0); hair.scale.set(0.87,1,0.92);
+figure.add(hair);
+
+const throat = new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.15,0.22,16), newSkinMat(false));
+throat.position.set(0,2.14,0.08);
+addPart('throat', throat);
+
+const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.42,0.9,20), newSkinMat(false));
+chest.position.set(0,1.55,0);
+addPart('chest', chest);
+
+const ribL = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.55,0.35), newSkinMat(true));
+ribL.position.set(0.52,1.5,0);
+const ribR = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.55,0.35), newSkinMat(true));
+ribR.position.set(-0.52,1.5,0);
+addPart('ribs', ribL); addPart('ribs', ribR);
+
+const abdomen = new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.38,0.5,20), newSkinMat(true));
+abdomen.position.set(0,0.85,0);
+addPart('abdomen', abdomen);
+
+const hip = new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.34,0.35,20), newSkinMat(false));
+hip.position.set(0,0.45,0);
+addPart('hip', hip);
+
+const groin = new THREE.Mesh(new THREE.SphereGeometry(0.12,16,16), newSkinMat(true));
+groin.position.set(0,0.24,0.22);
+addPart('groin', groin);
+
+const shoulderGeo = new THREE.SphereGeometry(0.22,20,20);
+const shoulderL = new THREE.Mesh(shoulderGeo, newSkinMat(false)); shoulderL.position.set(0.62,1.92,0);
+const shoulderR = new THREE.Mesh(shoulderGeo, newSkinMat(false)); shoulderR.position.set(-0.62,1.92,0);
+addPart('shoulder', shoulderL); addPart('shoulder', shoulderR);
+
+const upperArmGeo = new THREE.CylinderGeometry(0.13,0.115,0.7,16);
+const upperArmL = new THREE.Mesh(upperArmGeo, newSkinMat(false)); upperArmL.position.set(0.68,1.5,0); upperArmL.rotation.z = -0.12;
+const upperArmR = new THREE.Mesh(upperArmGeo, newSkinMat(false)); upperArmR.position.set(-0.68,1.5,0); upperArmR.rotation.z = 0.12;
+addPart('upperarm', upperArmL); addPart('upperarm', upperArmR);
+
+const forearmGeo = new THREE.CylinderGeometry(0.105,0.09,0.65,16);
+const forearmL = new THREE.Mesh(forearmGeo, newSkinMat(true)); forearmL.position.set(0.76,0.9,0.05); forearmL.rotation.z = -0.08;
+const forearmR = new THREE.Mesh(forearmGeo, newSkinMat(true)); forearmR.position.set(-0.76,0.9,0.05); forearmR.rotation.z = 0.08;
+addPart('forearm', forearmL); addPart('forearm', forearmR);
+
+const handGeo = new THREE.SphereGeometry(0.11,16,16);
+const handL = new THREE.Mesh(handGeo, newSkinMat(false)); handL.position.set(0.8,0.52,0.08); handL.scale.set(0.8,1.3,0.6);
+const handR = new THREE.Mesh(handGeo, newSkinMat(false)); handR.position.set(-0.8,0.52,0.08); handR.scale.set(0.8,1.3,0.6);
+addPart('hand', handL); addPart('hand', handR);
+
+const thighGeo = new THREE.CylinderGeometry(0.2,0.17,0.85,18);
+const thighL = new THREE.Mesh(thighGeo, newSkinMat(false)); thighL.position.set(0.22,-0.15,0);
+const thighR = new THREE.Mesh(thighGeo, newSkinMat(false)); thighR.position.set(-0.22,-0.15,0);
+addPart('thigh', thighL); addPart('thigh', thighR);
+
+const kneeGeo = new THREE.SphereGeometry(0.15,16,16);
+const kneeL = new THREE.Mesh(kneeGeo, newSkinMat(true)); kneeL.position.set(0.22,-0.62,0.05);
+const kneeR = new THREE.Mesh(kneeGeo, newSkinMat(true)); kneeR.position.set(-0.22,-0.62,0.05);
+addPart('knee', kneeL); addPart('knee', kneeR);
+
+const shinGeo = new THREE.CylinderGeometry(0.13,0.1,0.8,18);
+const shinL = new THREE.Mesh(shinGeo, newSkinMat(false)); shinL.position.set(0.22,-1.12,0);
+const shinR = new THREE.Mesh(shinGeo, newSkinMat(false)); shinR.position.set(-0.22,-1.12,0);
+addPart('shin', shinL); addPart('shin', shinR);
+
+const footGeo = new THREE.BoxGeometry(0.16,0.12,0.38);
+const footL = new THREE.Mesh(footGeo, newSkinMat(true)); footL.position.set(0.22,-1.58,0.1);
+const footR = new THREE.Mesh(footGeo, newSkinMat(true)); footR.position.set(-0.22,-1.58,0.1);
+addPart('foot', footL); addPart('foot', footR);
+
+const backPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.48,0.42,1.3,20,1,true,Math.PI*0.7,Math.PI*0.6), newSkinMat(true));
+backPlate.position.set(0,1.1,0);
+backPlate.material.side = THREE.BackSide;
+addPart('back', backPlate);
+
+scene.add(figure);
+figure.position.y = -0.3;
+
+const bootGroup = new THREE.Group();
+const bootBody = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.2,0.22), new THREE.MeshStandardMaterial({color:0x1a1a1a}));
+const bootSole = new THREE.Mesh(new THREE.BoxGeometry(0.52,0.05,0.24), new THREE.MeshStandardMaterial({color:0xf4efe1}));
+bootSole.position.y = -0.12;
+bootGroup.add(bootBody, bootSole);
+bootGroup.position.set(2.1,-1.9,-1.5);
+bootGroup.rotation.y = 0.4;
+scene.add(bootGroup);
+
+const ballGroup = new THREE.Group();
+const ballCore = new THREE.Mesh(new THREE.SphereGeometry(0.16,20,20), new THREE.MeshStandardMaterial({color:0xf4efe1, roughness:0.7}));
+ballGroup.add(ballCore);
+const patchGeo = new THREE.CircleGeometry(0.05,6);
+const patchMat = new THREE.MeshStandardMaterial({color:0x111111, roughness:0.8});
+const patchPositions = [
+  [0,0.16,0],[0.14,0.09,0.08],[-0.14,0.09,0.08],[0.14,0.09,-0.08],[-0.14,0.09,-0.08],
+  [0,-0.16,0],[0.14,-0.09,0.08],[-0.14,-0.09,0.08]
+];
+patchPositions.forEach(p=>{
+  const patch = new THREE.Mesh(patchGeo, patchMat);
+  patch.position.set(p[0],p[1],p[2]);
+  patch.lookAt(patch.position.clone().multiplyScalar(2));
+  ballGroup.add(patch);
+});
+ballGroup.position.set(1.3,2.2,1.6);
+scene.add(ballGroup);
+
+/* ============ INTERACTION ============ */
+let isDragging = false, prevX = 0, autoRotate = true, rotY = 0.4;
+renderer.domElement.style.cursor = 'grab';
+
+renderer.domElement.addEventListener('pointerdown', e=>{
+  isDragging = true; autoRotate = false;
+  prevX = e.clientX;
+  renderer.domElement.style.cursor = 'grabbing';
+});
+window.addEventListener('pointerup', ()=>{ isDragging=false; renderer.domElement.style.cursor='grab'; });
+window.addEventListener('pointermove', e=>{
+  if(!isDragging) return;
+  const dx = e.clientX - prevX;
+  rotY += dx * 0.008;
+  prevX = e.clientX;
+});
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let activeKey = null;
+
+function clearHighlight(){
+  Object.values(parts).flat().forEach(m=>{
+    m.material.color.setHex(m.userData.baseColor);
+    if(m.material.emissive) m.material.emissive.setHex(0x000000);
+    m.userData.shakeUntil = 0;
+    if(m.userData.baseScale) m.scale.copy(m.userData.baseScale);
+  });
+}
+
+function highlightPart(k){
+  (parts[k]||[]).forEach(m=>{
+    m.material.color.setHex(0xffd400);
+    if(m.material.emissive){ m.material.emissive.setHex(0xffaa00); m.material.emissiveIntensity = 0.6; }
+    m.userData.shakeUntil = performance.now() + 350;
+    m.userData.baseScale = m.userData.baseScale || m.scale.clone();
+  });
+}
+
+renderer.domElement.addEventListener('click', e=>{
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
+  mouse.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(figure.children, false);
+  if(intersects.length){
+    const k = intersects[0].object.userData.key;
+    if(k && DATA[k]){ quizActive ? answerQuiz(k) : selectPart(k); }
+  }
+});
+
+function selectPart(k){
+  clearHighlight();
+  activeKey = k;
+  highlightPart(k);
+  document.querySelectorAll('#part-chips button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.key === k);
+  });
+  renderPanel(k);
+  document.getElementById('panel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderPanel(k){
+  const d = DATA[k];
+  const tier = currentTier();
+  const shotData = d[tier];
+  const sevVal = d.severity[tier];
+  const sevPct = Math.round(sevVal*100);
+  let sevColor = '#2e7d5b';
+  if(sevVal>0.75) sevColor='#c0392b';
+  else if(sevVal>0.5) sevColor='#d68910';
+
+  const shot = SHOTS.find(s=>s.key===currentShotKey);
+
+  if(shotData.effects[0] === "—"){
+    document.getElementById('panel').innerHTML = `
+      <div class="card">
+        <div class="card-eyebrow">${d.eyebrow}</div>
+        <h2>${d.name}</h2>
+        <p style="opacity:.6;">This area isn't a realistic target for a header. Try selecting one of the foot-shot options above.</p>
+      </div>`;
+    return;
+  }
+
+  const effectsHtml = shotData.effects.map(e=>`<li>${e}</li>`).join('');
+  const shotTag = shot.key==='header'
+    ? `<span class="tag header">🤕 Header · ${shot.kmh} km/h</span>`
+    : `<span class="tag shot">⚽ ${shot.full} · ${shot.kmh} km/h</span>`;
+
+  document.getElementById('panel').innerHTML = `
+    <div class="card">
+      <div class="card-eyebrow">${d.eyebrow}</div>
+      <h2>${d.name}</h2>
+      <div>${shotTag}</div>
+      <div class="sevbar">
+        <div class="track"><div class="fill" style="width:${sevPct}%;background:${sevColor}"></div></div>
+        <div class="label" style="color:${sevColor}">${d.sevLabel[tier]}</div>
+      </div>
+      <p>${shotData.desc}</p>
+      <div class="section-label">Estimated effects</div>
+      <ul>${effectsHtml}</ul>
+      <div class="prognosis-box"><b>Indicative prognosis:</b><br>${shotData.prognosis}</div>
+      <div class="disclaimer">Estimates based on general principles of trauma biomechanics and sports-medicine literature; this is not medical advice. Real outcomes depend on angle, exact contact point, physical condition, and individual factors. Seek real medical care for a real injury. Speeds are the fastest documented shots across major competitions (multiple leagues, Champions League, international football); precise per-player shot-speed tracking isn't publicly available the way ATP serve-speed radar data is for tennis. Detailed medical text is grouped into four severity tiers (based on each shot's actual kinetic energy) rather than written uniquely for all nine shots.</div>
+    </div>
+  `;
+}
+
+renderer.domElement.addEventListener('mousemove', e=>{
+  if(isDragging) return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
+  mouse.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(figure.children, false);
+  renderer.domElement.style.cursor = (intersects.length && intersects[0].object.userData.key) ? 'pointer' : 'grab';
+});
+
+function animate(){
+  requestAnimationFrame(animate);
+  if(autoRotate) rotY += 0.0045;
+  figure.rotation.y = rotY;
+  ballGroup.position.x = 1.3 + Math.sin(Date.now()*0.001)*0.15;
+  ballGroup.rotation.y += 0.02;
+  ballGroup.rotation.x += 0.008;
+  bootGroup.rotation.y = 0.4 + Math.sin(Date.now()*0.0006)*0.15;
+
+  const now = performance.now();
+  Object.values(parts).flat().forEach(m=>{
+    if(m.userData.shakeUntil && now < m.userData.shakeUntil){
+      const remain = (m.userData.shakeUntil - now)/350;
+      const pulse = 1 + 0.22*Math.sin(remain*Math.PI*5)*remain;
+      m.scale.copy(m.userData.baseScale).multiplyScalar(pulse);
+    } else if(m.userData.baseScale && m.scale.x !== m.userData.baseScale.x){
+      m.scale.copy(m.userData.baseScale);
+    }
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+renderTopZones();
+
+window.addEventListener('resize', ()=>{
+  W = wrap.clientWidth; H = wrap.clientHeight;
+  camera.aspect = W/H;
+  camera.updateProjectionMatrix();
+  renderer.setSize(W,H);
+});
+
+let idleTimer;
+window.addEventListener('pointerup', ()=>{
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(()=>{ autoRotate = true; }, 4000);
+});
+</script>
+</body>
+</html>
