@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SILENT HILL — CASE FILE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#1a1614; --bg2:#0d0b0a;
+    --panel:#241e1b; --panel2:#14100e;
+    --fog:#d4c9a8; --fog-dim:#a89a78;
+    --rust:#a13a2e; --rust-lt:#c96555;
+    --teal:#5a7270;
+    --text:#e8e0d0; --dim:#93897a;
+    --line: rgba(161,58,46,0.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(161,58,46,0.08), transparent 45%),
+      radial-gradient(ellipse at 100% 100%, rgba(90,114,112,0.08), transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--text);
+    font-family:'Crimson Text',serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--rust-lt);}
+
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line); border-radius:2px;
+    padding:20px 20px 18px; margin-bottom:16px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .card h2{ font-family:'Special Elite',monospace; font-size:20px; margin-bottom:2px; color:var(--fog); font-weight:400;}
+  .card h2 .num{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--rust-lt); margin-right:8px;}
+  .card p{ font-size:15.5px; line-height:1.6;}
+  .card .note{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--dim); margin-top:8px; line-height:1.65;}
+  .card .src{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); opacity:0.7; margin-top:4px;}
+
+  .hero{ max-width:940px; margin:22px auto 16px; padding:28px 24px 22px; text-align:center; }
+  .hero h1{ font-family:'Special Elite',monospace; font-weight:400; font-size:clamp(26px,5.6vw,42px); color:var(--fog); letter-spacing:1px;}
+  .hero h1 em{ font-style:normal; color:var(--rust-lt);}
+  .hero .sub{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--dim); margin-top:10px; max-width:620px; margin-left:auto; margin-right:auto; line-height:1.7;}
+
+  .nav{ max-width:940px; margin:0 auto 18px; display:flex; gap:8px; padding:0 24px; flex-wrap:wrap; justify-content:center;}
+  .tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:500; font-size:12px; letter-spacing:0.5px;
+    background:rgba(255,255,255,0.04); color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:9px 16px; cursor:pointer; }
+  .tab-btn.active{ background:var(--rust); color:#fff; border-color:var(--rust);}
+
+  .panel{ display:none; max-width:940px; margin:0 auto; padding:0 24px; }
+  .panel.active{ display:block; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  canvas{ max-width:100%; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+  th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace; }
+  th{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; color:var(--dim); border-bottom:1px solid var(--rust);}
+  td.big{ font-family:'Special Elite'; font-size:15px; color:var(--fog);}
+
+  .chip{ display:inline-block; background:var(--panel2); border:1px solid var(--line); border-radius:14px;
+    padding:6px 13px; font-family:'JetBrains Mono',monospace; font-size:11px; margin:3px 4px 3px 0; color:var(--dim);}
+  .chip b{ color:var(--rust-lt); font-size:13px;}
+
+  .pick{ background:rgba(161,58,46,0.06); border-left:3px solid var(--rust); border-radius:4px; padding:12px 16px; margin-top:10px;}
+  .pick .who{ font-family:'Special Elite'; font-size:16px; color:var(--rust-lt);}
+  .pick p{ font-size:14px; color:var(--text); margin:4px 0 0; line-height:1.6;}
+  .pick .src{ font-family:'JetBrains Mono'; font-size:10px; color:var(--dim); margin-top:4px;}
+
+  .tier-row{ display:flex; align-items:stretch; margin-bottom:8px; border-radius:4px; overflow:hidden; border:1px solid var(--line);}
+  .tier-label{ flex:0 0 70px; display:flex; align-items:center; justify-content:center; font-family:'Special Elite'; font-size:20px; color:#1a1614; text-align:center; padding:6px;}
+  .tier-items{ flex:1; background:var(--panel2); padding:10px 14px; font-size:13.5px; color:var(--text); display:flex; align-items:center; }
+
+  .quiz-box{ background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:18px; }
+  .quiz-q{ font-family:'Special Elite'; font-size:16px; color:var(--fog); margin-bottom:12px; }
+  .quiz-opt{ display:block; width:100%; text-align:left; font-family:'JetBrains Mono',monospace; font-size:12.5px;
+    background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:4px; padding:11px 14px; margin-bottom:8px; cursor:pointer; }
+  .quiz-opt:hover{ border-color:var(--rust); }
+  .quiz-result{ text-align:center; padding:10px; }
+  .quiz-result .pct{ font-family:'Special Elite'; font-size:48px; color:var(--rust-lt); }
+  .quiz-restart{ font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--rust); color:#fff; border:none; border-radius:20px; padding:10px 20px; cursor:pointer; margin-top:12px; }
+
+  details summary{ font-family:'JetBrains Mono'; font-size:11px; color:var(--dim); cursor:pointer;}
+  details p{ font-size:11.5px; color:var(--dim); line-height:1.6; font-family:'JetBrains Mono',monospace;}
+
+  footer{ max-width:940px; margin:20px auto 0; padding:0 24px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hero card">
+  <div class="eyebrow">@dumbdashboards — ep. 13</div>
+  <h1>SILENT HILL<br><em>Case File</em></h1>
+  <div class="sub">25 years, 17.1 million copies, a 12-year silence, and a joke ending about aliens hiding in 8 out of 10 games. A full audit ahead of Townfall (Sept 24, 2026).</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="value">Value & Weapons</button>
+  <button class="tab-btn" data-tab="endings">The Endings</button>
+  <button class="tab-btn" data-tab="quiz">Survival Odds</button>
+</div>
+
+<!-- ===================== OVERVIEW ===================== -->
+<div class="panel active" id="panel-overview">
+
+  <div class="card">
+    <h2><span class="num">01</span>Twenty-five years, one long silence</h2>
+    <div class="chip">Franchise sales <b>17.1M</b></div>
+    <div class="chip">First game <b>1999</b></div>
+    <div class="chip">The gap <b>12 years</b></div>
+    <div class="chip">Townfall releases <b>Sept 24, 2026</b></div>
+    <p class="note">Between Book of Memories (2012) and the revival starting with The Short Message (2024), Silent Hill went completely dark for 12 years — longer than the gap between any two Kingdom Hearts games. Since then: three games in three years.</p>
+    <p class="src">Source: Konami investor sales report (March 2026); Wikipedia release timeline.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Metacritic, every mainline entry</h2>
+    <canvas id="chartScores" height="240"></canvas>
+    <p class="note">The 2001 original remains the highest-rated entry in the franchise at 89 — the 2024 remake, made 23 years later with modern technology and a bigger budget, still didn't beat it.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">The revival, three years running</h2>
+    <table>
+      <tr><th>Year</th><th>Game</th><th>Score</th></tr>
+      <tr><td class="big">2024</td><td>Silent Hill 2 (Remake)</td><td>86</td></tr>
+      <tr><td class="big">2025</td><td>Silent Hill f</td><td>85</td></tr>
+      <tr><td class="big">2026</td><td>Silent Hill: Townfall</td><td>TBD</td></tr>
+    </table>
+    <p class="note">Konami has stated it wants Silent Hill on an annual release cadence going forward — a total reversal from the 12-year silence that preceded it.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:19px;">Sales, release by release, over time</h2>
+    <canvas id="chartTimeline" height="340"></canvas>
+    <p class="note">Cumulative franchise sales, release by release. Capcom publishes exact per-title sales — the 9 dots from 2005 onward are real, confirmed figures. Konami doesn't publish the same breakdown for Silent Hill; only Silent Hill f's ~2M is a confirmed individual figure. Every other point on both lines evenly splits what's left of each franchise's official total (200M for RE, 17.1M for SH) across its remaining release years — an estimate, not a confirmed per-title number, but the endpoints match Capcom's and Konami's own reported totals exactly.</p>
+    <p class="src">Source: Capcom sales announcements (via AestheticGamer tracker, ResetEra); Konami sales reports.</p>
+    <div class="chip">Avg. sales per mainline game <b>RE: ~18.2M</b></div>
+    <div class="chip">Avg. sales per mainline game <b>SH: ~1.7M</b></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:19px;">David and a much, much bigger Goliath</h2>
+    <canvas id="chartVsRE" height="180"></canvas>
+    <p class="note">Resident Evil launched only 3 years before Silent Hill (1996 vs. 1999) — and has sold over 11x as many copies since. One single Resident Evil game, RE5 alone (19M), comes close to outselling Silent Hill's entire 25-year, ~10-game catalog combined.</p>
+    <p class="src">Source: Capcom investor announcements (200M+ as of May 2026); Konami sales report (Silent Hill, March 2026).</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">Same genre, very different metabolism</h2>
+    <div class="grid2">
+      <div style="background:rgba(90,114,112,0.1); border-left:3px solid var(--teal); border-radius:4px; padding:14px 16px;">
+        <div class="mono" style="font-size:12px; color:var(--teal); font-weight:600;">RESIDENT EVIL</div>
+        <p style="margin:6px 0 0; font-size:14px;">Latest entry (Requiem, Feb 2026) sold 5M copies in under a week — the fastest in franchise history. Never had a gap longer than a few years.</p>
+      </div>
+      <div style="background:rgba(161,58,46,0.1); border-left:3px solid var(--rust); border-radius:4px; padding:14px 16px;">
+        <div class="mono" style="font-size:12px; color:var(--rust-lt); font-weight:600;">SILENT HILL</div>
+        <p style="margin:6px 0 0; font-size:14px;">Fastest-selling entry (Silent Hill f) took 6 months to reach 2M. Survived a 12-year gap where the franchise nearly vanished entirely.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== VALUE & WEAPONS ===================== -->
+<div class="panel" id="panel-value">
+
+  <div class="card">
+    <h2><span class="num">02</span>The full series, in hours</h2>
+    <canvas id="chartHours" height="200"></canvas>
+    <p class="note">Every mainline game's main-story length, plus the series total: roughly 76.5 hours to see every main story once, 137 hours to see every game 100% — joke endings included.</p>
+    <p class="src">Source: HowLongToBeat, aggregated via TheGamer.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">"Eight to ten hours of game play for $69!?"</h2>
+    <p style="font-size:14.5px;">That's an actual Silent Hill f player, on the game's own Steam discussion board, doing the same price-per-hour math you'd do for anything else. Silent Hill f launched at $69.99 for an 8–10 hour main story — among the shortest entries in the franchise, at the franchise's highest-ever launch price.</p>
+    <p class="src">Source: Steam Community discussions, SILENT HILL f General Discussions.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">The weirdest weapons in the fog</h2>
+    <div class="pick">
+      <div class="who">The chainsaw does a Leatherface dance</div>
+      <p>Stand idle with it equipped near an enemy and the protagonist lifts it overhead exactly like Leatherface from Texas Chainsaw Massacre — a direct, deliberate reference (the in-game shop is even called "Cut Rite Chainsaws").</p>
+    </div>
+    <div class="pick">
+      <div class="who">The best weapons got cut from the remake</div>
+      <p>Pyramid Head's massive "Great Knife" and the reality-warping "Hyper Spray" were fan-favorite unlockables in the 2001 original. Neither made it into the 2024 remake.</p>
+    </div>
+    <div class="pick">
+      <div class="who">Officially, the worst weapon in the series</div>
+      <p>Silent Hill 4's paper cutting knife is described in-game as "hard to use as a weapon" and is widely regarded by fans as the single worst weapon across the whole franchise — worse even than the bug spray in the same game.</p>
+    </div>
+    <p class="src">Source: Silent Hill Wiki (Fandom); TheGamer weapon guides.</p>
+  </div>
+
+</div>
+
+<!-- ===================== THE ENDINGS ===================== -->
+<div class="panel" id="panel-endings">
+
+  <div class="card">
+    <h2><span class="num">03</span>The aliens show up in 8 out of 10 games</h2>
+    <canvas id="chartUFO" height="180"></canvas>
+    <p class="note">A joke "UFO ending" is a running tradition across nearly the entire franchise — present in Silent Hill 1, 2, 3, Origins, Homecoming, Shattered Memories, The Arcade, and (very likely) f. Only Silent Hill 4 and Downpour skip it — and Downpour swaps in its own different joke ending instead.</p>
+    <p class="src">Source: Silent Hill Wiki (Fandom), "UFO Ending" article.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Silent Hill 2 alone has 8 endings</h2>
+    <canvas id="chartSH2Endings" height="220"></canvas>
+    <p class="note">Six count as "real" narrative conclusions (Leave, In Water, Maria, Rebirth, and the remake's new Bliss and Stillness). Two — Dog and UFO — are jokes the developers built entire unlock sequences around.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Every ending across 6 games, by tone</h2>
+    <canvas id="chartAllEndings" height="220"></canvas>
+    <p class="note">19 endings, hand-classified by what actually happens in each one — not a third-party ranking. Positive/hopeful: SH1 Good/Good+, SH2 Leave, Origins Good, Shattered Memories' Broken. Dark/tragic: SH1 Bad/Bad+, SH2 In Water/Maria/Rebirth/Stillness, Origins Bad. Ironic/joke: every UFO ending plus SH2's Dog ending and Downpour's Surprise ending. Almost exactly a third of the franchise's endings are jokes.</p>
+    <p class="src">Methodology: classified directly from ending synopses gathered across Silent Hill Wiki, GameRant, and Siliconera — not pulled from an existing ranked list. "Bliss" (SH2 Remake) excluded — synopsis wasn't confirmed.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:17px;">If you were the protagonist: survival tier list</h2>
+    <div id="tierList"></div>
+    <p class="note">Ranked purely on "would you, personally, want this to happen to you" — not narrative quality.</p>
+  </div>
+
+</div>
+
+<!-- ===================== SURVIVAL ODDS (QUIZ) ===================== -->
+<div class="panel" id="panel-quiz">
+
+  <div class="card">
+    <h2><span class="num">04</span>What are your odds in Silent Hill?</h2>
+    <p style="font-size:14px; color:var(--dim); font-family:'JetBrains Mono'; font-size:12px;">Based on the real hidden mechanic Silent Hill 2 uses to pick your ending — it silently tracks things like whether you rest when hurt, how often you examine items, and how you treat other characters.</p>
+    <div class="quiz-box" id="quizBox"></div>
+  </div>
+
+</div>
+
+<footer>SILENT HILL — CASE FILE · @dumbdashboards · data collected September 2026</footer>
+
+<script>
+const C = { rust:'#a13a2e', rustLt:'#c96555', fog:'#d4c9a8', fogDim:'#a89a78', teal:'#5a7270', text:'#e8e0d0', dim:'#93897a' };
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.color = C.text;
+Chart.defaults.borderColor = 'rgba(161,58,46,0.10)';
+
+const chartInstances = {};
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+makeChart('chartScores', {
+  type:'bar',
+  data:{ labels:['SH2 (2001)','SH2 Remake','SH (1999)','SH3','SH f','SH4','Escape (mobile)'],
+    datasets:[{ label:'Metacritic', data:[89,86,85,85,85,76,58], backgroundColor:[C.rustLt,C.rust,C.teal,C.teal,C.teal,'#7d6a5a','#5a4a3e'] }]},
+  options:{ indexAxis:'y', scales:{ x:{ min:50, max:95 } }, plugins:{legend:{display:false}} }
+});
+
+makeChart('chartTimeline', {
+  type:'line',
+  data:{
+    datasets:[
+      {
+        label:'Resident Evil, cumulative',
+        data:[
+          {x:1996,y:12.72},{x:1998,y:25.43},{x:1999,y:38.15},{x:2000,y:50.87},{x:2002,y:76.3},
+          {x:2005,y:91.4},{x:2009,y:107.7},{x:2012,y:123.3},{x:2017,y:139.7},{x:2019,y:156.5},
+          {x:2020,y:167.4},{x:2021,y:180.9},{x:2023,y:193.1},{x:2026,y:200.0}
+        ],
+        borderColor:C.teal, backgroundColor:'rgba(90,114,112,0.12)', fill:true,
+        pointRadius:(ctx)=> ctx.dataIndex>=5 ? 6 : 3,
+        pointBackgroundColor:C.teal, tension:0.1, borderWidth:2.5
+      },
+      {
+        label:'Silent Hill, cumulative',
+        data:[
+          {x:1999,y:1.68},{x:2001,y:3.36},{x:2003,y:5.03},{x:2004,y:6.71},{x:2007,y:8.39},
+          {x:2008,y:10.07},{x:2009,y:11.74},{x:2012,y:13.42},{x:2024,y:15.1},{x:2025,y:17.1}
+        ],
+        borderColor:C.rustLt, backgroundColor:'rgba(201,101,85,0.15)', fill:true,
+        pointRadius:(ctx)=> ctx.dataIndex===9 ? 7 : 3,
+        pointBackgroundColor:C.rustLt, tension:0.1, borderWidth:2.5
+      }
+    ]
+  },
+  options:{
+    scales:{
+      x:{ type:'linear', min:1995, max:2027, title:{display:true,text:'release year'}, ticks:{stepSize:5} },
+      y:{ min:0, max:210, title:{display:true,text:'cumulative copies sold (millions)'} }
+    },
+    plugins:{ legend:{ position:'bottom', labels:{boxWidth:10,font:{size:10}} } }
+  }
+});
+
+makeChart('chartVsRE', {
+  type:'bar',
+  data:{ labels:['Resident Evil','RE5 alone','Silent Hill'],
+    datasets:[{ label:'Copies sold (millions)', data:[200,19,17.1], backgroundColor:[C.teal,'#7d9490',C.rust] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartHours', {
+  type:'bar',
+  data:{ labels:['SH (1999)','SH2 (2001)','SH3','SH4','SH2 Remake','SH f','Series total'],
+    datasets:[{ label:'Hours, main story', data:[8,10,9,11,17,9,76.5], backgroundColor:[C.teal,C.teal,C.teal,C.teal,C.rustLt,C.teal,C.rust] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartUFO', {
+  type:'bar',
+  data:{ labels:['Has UFO ending','No UFO ending'],
+    datasets:[{ label:'Mainline games', data:[8,2], backgroundColor:[C.rust,C.teal] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartSH2Endings', {
+  type:'pie',
+  data:{ labels:['Serious endings','Joke endings'],
+    datasets:[{ data:[6,2], backgroundColor:[C.teal,C.rust] }]},
+  options:{ plugins:{legend:{position:'bottom'}} }
+});
+
+makeChart('chartAllEndings', {
+  type:'pie',
+  data:{ labels:['Positive','Dark / tragic','Ironic / joke'],
+    datasets:[{ data:[5,7,7], backgroundColor:[C.fogDim,C.rust,C.teal] }]},
+  options:{ plugins:{legend:{position:'bottom'}} }
+});
+
+/* Tier list */
+const TIERS = [
+  { t:'S', color:C.fog, text:'UFO ending (any game) \u00b7 Dog ending (SH2) \u2014 objectively the best outcomes available' },
+  { t:'A', color:C.rustLt, text:'"Leave" (SH2) \u00b7 Good ending (Origins) \u2014 you live, with dignity' },
+  { t:'B', color:C.teal, text:'"Broken" (Shattered Memories) \u2014 you live, but you have real grieving to do' },
+  { t:'F', color:'#4a3830', text:'"In Water" \u00b7 "Rebirth" \u00b7 "Stillness" \u00b7 Bad ending (Origins) \u2014 you do not make it out intact' }
+];
+document.getElementById('tierList').innerHTML = TIERS.map(t=>`
+  <div class="tier-row">
+    <div class="tier-label" style="background:${t.color};">${t.t}</div>
+    <div class="tier-items">${t.text}</div>
+  </div>`).join('');
+
+/* ===== Survival quiz ===== */
+const QUIZ = [
+  { q:"You're badly hurt. What do you do?", opts:[
+    {t:"Push forward immediately, no time to rest", s:-2},
+    {t:"Find a safe room and actually rest first", s:2},
+    {t:"Keep fighting anyway, adrenaline will carry you", s:-3}
+  ]},
+  { q:"You find a locked door with no obvious key nearby.", opts:[
+    {t:"Search every room again, methodically, for the key", s:2},
+    {t:"Try to force it open", s:-1},
+    {t:"Leave it and come back later, maybe", s:0}
+  ]},
+  { q:"A radio starts hissing static nearby.", opts:[
+    {t:"Freeze and assess before moving another step", s:2},
+    {t:"Run toward the sound to see what's causing it", s:-3},
+    {t:"Run away from the sound immediately", s:1}
+  ]},
+  { q:"Someone in your group is acting suspicious.", opts:[
+    {t:"Confront them directly, right now", s:-1},
+    {t:"Keep an eye on them but stay close to the group", s:2},
+    {t:"Avoid them entirely and go off alone", s:-2}
+  ]},
+  { q:"You find a weapon you don't recognize.", opts:[
+    {t:"Test it immediately on the next enemy", s:0},
+    {t:"Check your inventory notes/examine it first", s:2},
+    {t:"Ignore it, stick with what you know", s:1}
+  ]}
+];
+let quizIdx = 0, quizScore = 0;
+const quizBox = document.getElementById('quizBox');
+
+function renderQuiz(){
+  if(quizIdx >= QUIZ.length){ renderQuizResult(); return; }
+  const q = QUIZ[quizIdx];
+  quizBox.innerHTML = `
+    <div class="mono" style="font-size:11px; color:var(--dim); margin-bottom:6px;">QUESTION ${quizIdx+1} OF ${QUIZ.length}</div>
+    <div class="quiz-q">${q.q}</div>
+    ${q.opts.map((o,i)=>`<button class="quiz-opt" data-i="${i}">${o.t}</button>`).join('')}
+  `;
+  quizBox.querySelectorAll('.quiz-opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      quizScore += q.opts[Number(btn.dataset.i)].s;
+      quizIdx++;
+      renderQuiz();
+    });
+  });
+}
+
+function renderQuizResult(){
+  const maxScore = 10, minScore = -9;
+  let pct = Math.round(((quizScore - minScore) / (maxScore - minScore)) * 100);
+  pct = Math.max(3, Math.min(97, pct));
+  let verdict, tier;
+  if(pct >= 70){ verdict = "You'd probably make it to the \u2018Leave\u2019 ending. Cautious, methodical, alive."; tier='A-tier survivor'; }
+  else if(pct >= 45){ verdict = "You'd survive, but you'd need serious therapy afterward. \u2018Broken\u2019-ending energy."; tier='B-tier survivor'; }
+  else { verdict = "Statistically, you're getting an F-tier ending. Sorry."; tier='F-tier survivor'; }
+  quizBox.innerHTML = `
+    <div class="quiz-result">
+      <div class="mono" style="font-size:11px; color:var(--dim);">${tier.toUpperCase()}</div>
+      <div class="pct">${pct}%</div>
+      <div class="mono" style="font-size:11px; color:var(--dim); margin-bottom:10px;">ESTIMATED SURVIVAL ODDS</div>
+      <p style="font-size:14.5px; margin:0;">${verdict}</p>
+      <button class="quiz-restart" id="quizRestart">Try again \u2192</button>
+    </div>
+  `;
+  document.getElementById('quizRestart').addEventListener('click', ()=>{
+    quizIdx = 0; quizScore = 0; renderQuiz();
+  });
+}
+renderQuiz();
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
