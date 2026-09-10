@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE DUMB QUESTIONS MACHINE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a0e2e; --bg2:#0d0619;
+    --panel:#2a1745; --panel2:#160b28;
+    --yellow:#ffd23f; --yellow-lt:#ffe38a;
+    --pink:#ff4d8d; --pink-lt:#ff8fb8;
+    --cyan:#4de8e0; --cyan-lt:#8ff5ef;
+    --green:#7ee787;
+    --text:#f5f0ff; --dim:#a595c2;
+    --line: rgba(255,210,63,0.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(255,77,141,0.14), transparent 45%),
+      radial-gradient(ellipse at 100% 100%, rgba(77,232,224,0.10), transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .display{font-family:'Righteous',cursive;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  .hero{ max-width:640px; margin:22px auto 10px; padding:24px 24px 16px; text-align:center; }
+  .hero .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--pink-lt);}
+  .hero h1{ font-family:'Righteous',cursive; font-size:clamp(26px,7vw,40px); color:var(--yellow); margin:8px 0 0; text-shadow:3px 3px 0 var(--pink);}
+  .hero .sub{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim); margin-top:12px; line-height:1.7;}
+
+  #wheel-wrap{ max-width:420px; margin:20px auto; position:relative; display:flex; flex-direction:column; align-items:center; }
+  #wheel-svg{ width:280px; height:280px; transition: transform 3.6s cubic-bezier(.13,.85,.15,1); }
+  #wheel-pointer{ position:absolute; top:-6px; left:50%; transform:translateX(-50%); font-size:32px; z-index:5; }
+  #spin-btn{
+    margin-top:18px; font-family:'Righteous',cursive; font-size:16px; letter-spacing:1px;
+    background:var(--pink); color:#fff; border:none; border-radius:30px; padding:14px 34px; cursor:pointer;
+    box-shadow:0 6px 0 #b8305f; transition:transform .1s;
+  }
+  #spin-btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #b8305f; }
+
+  #picker-grid{ max-width:640px; margin:10px auto 20px; padding:0 24px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  #picker-grid button{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; background:var(--panel2); color:var(--dim);
+    border:1px solid var(--line); border-radius:16px; padding:8px 14px; cursor:pointer;
+  }
+  #picker-grid button.active{ background:var(--yellow); color:#1a0e2e; border-color:var(--yellow); font-weight:700; }
+
+  #stage{ max-width:640px; margin:0 auto; padding:0 24px; }
+  .q-panel{ display:none; background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:22px 20px; }
+  .q-panel.active{ display:block; animation: popin .35s ease; }
+  @keyframes popin{ from{opacity:0; transform:scale(.96);} to{opacity:1; transform:scale(1);} }
+
+  .q-title{ font-family:'Righteous',cursive; font-size:22px; color:var(--yellow-lt); margin:0 0 4px; line-height:1.3;}
+  .q-sub{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim); margin-bottom:16px;}
+
+  canvas.viz{ width:100%; height:180px; display:block; background:var(--panel2); border-radius:10px; margin-bottom:16px; }
+
+  .slider-row{ margin-bottom:14px; }
+  .slider-label{ display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:12px; margin-bottom:6px; }
+  .slider-label b{ color:var(--cyan-lt); }
+  input[type=range]{
+    width:100%; -webkit-appearance:none; height:10px; border-radius:5px; background:var(--panel2); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:26px; height:26px; border-radius:50%; background:var(--pink);
+    border:3px solid var(--yellow); cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:26px; height:26px; border-radius:50%; background:var(--pink); border:3px solid var(--yellow); cursor:pointer;
+  }
+
+  .result-box{ background:var(--panel2); border-radius:10px; padding:16px; text-align:center; margin:14px 0; }
+  .result-box .num{ font-family:'Righteous',cursive; font-size:38px; color:var(--green); }
+  .result-box .lbl{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim); letter-spacing:1px; text-transform:uppercase; }
+
+  .explain{ font-size:14.5px; line-height:1.6; color:var(--text); }
+  .explain b{ color:var(--yellow-lt); }
+  .src{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); opacity:.75; margin-top:12px; border-top:1px dashed var(--line); padding-top:10px; }
+
+  footer{ max-width:640px; margin:24px auto 0; padding:0 24px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">@dumbdashboards — ep. 14</div>
+  <h1>THE DUMB<br>QUESTIONS MACHINE</h1>
+  <div class="sub">Six genuinely useless calculations, done with genuinely real physics. Spin the wheel or just pick one.</div>
+</div>
+
+<div id="wheel-wrap">
+  <div id="wheel-pointer">🔻</div>
+  <svg id="wheel-svg" viewBox="0 0 200 200"></svg>
+  <button id="spin-btn">🎡 SPIN</button>
+</div>
+
+<div id="picker-grid"></div>
+
+<div id="stage"></div>
+
+<footer>THE DUMB QUESTIONS MACHINE · @dumbdashboards · September 2026</footer>
+
+<script>
+const QUESTIONS = [
+  { key:'jump', color:'#ff4d8d', short:'Global Jump', title:"If everyone on Earth jumped at once,<br>would it cause an earthquake?" },
+  { key:'ants', color:'#4de8e0', short:'Ants vs Humans', title:"Do all the ants on Earth<br>outweigh all the humans?" },
+  { key:'lollipop', color:'#ffd23f', short:'Tootsie Pop', title:"How many licks to the center<br>of a Tootsie Pop?" },
+  { key:'penny', color:'#7ee787', short:'Penny Drop', title:"Can a penny dropped from a skyscraper<br>actually kill someone?" },
+  { key:'scream', color:'#c792ea', short:'Scream Heat', title:"How long would you have to scream<br>to heat a cup of coffee?" },
+  { key:'banana', color:'#ff8a4d', short:'Banana Dose', title:"How many bananas' worth of radiation<br>is actually dangerous?" }
+];
+
+/* ============ WHEEL ============ */
+const svg = document.getElementById('wheel-svg');
+const n = QUESTIONS.length;
+const cx=100, cy=100, r=95;
+let paths = '';
+for(let i=0;i<n;i++){
+  const a0 = (i/n)*2*Math.PI - Math.PI/2;
+  const a1 = ((i+1)/n)*2*Math.PI - Math.PI/2;
+  const x0 = cx+r*Math.cos(a0), y0 = cy+r*Math.sin(a0);
+  const x1 = cx+r*Math.cos(a1), y1 = cy+r*Math.sin(a1);
+  paths += `<path d="M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 0,1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" fill="${QUESTIONS[i].color}" stroke="#1a0e2e" stroke-width="2"/>`;
+  const amid = (a0+a1)/2;
+  const lx = cx + (r*0.62)*Math.cos(amid), ly = cy + (r*0.62)*Math.sin(amid);
+  const rot = (amid*180/Math.PI)+90;
+  paths += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" fill="#1a0e2e" font-size="9" font-weight="700" font-family="JetBrains Mono, monospace" text-anchor="middle" transform="rotate(${rot.toFixed(1)} ${lx.toFixed(2)} ${ly.toFixed(2)})">${QUESTIONS[i].short}</text>`;
+}
+svg.innerHTML = paths + `<circle cx="${cx}" cy="${cy}" r="14" fill="#1a0e2e" stroke="#ffd23f" stroke-width="3"/>`;
+
+let currentRotation = 0;
+document.getElementById('spin-btn').addEventListener('click', function(){
+  if(this.disabled) return;
+  this.disabled = true;
+  const idx = Math.floor(Math.random()*n);
+  const segAngle = 360/n;
+  const targetMid = idx*segAngle + segAngle/2;
+  // How much MORE rotation (mod 360) is needed from wherever the wheel already sits,
+  // plus some integer number of full spins for the visual effect.
+  const desiredEffective = ((-targetMid % 360) + 360) % 360;
+  const currentEffective = ((currentRotation % 360) + 360) % 360;
+  const deltaNeeded = (desiredEffective - currentEffective + 360) % 360;
+  const extraSpins = 5 + Math.floor(Math.random()*3); // integer only — fractional spins throw off the landing angle
+  const finalAngle = 360*extraSpins + deltaNeeded;
+  currentRotation += finalAngle;
+  svg.style.transform = `rotate(${currentRotation}deg)`;
+  const btn = this;
+  setTimeout(()=>{ selectQuestion(QUESTIONS[idx].key); btn.disabled = false; }, 3700);
+});
+
+/* ============ PICKER GRID ============ */
+const pickerGrid = document.getElementById('picker-grid');
+QUESTIONS.forEach(q=>{
+  const btn = document.createElement('button');
+  btn.textContent = q.short;
+  btn.dataset.key = q.key;
+  btn.addEventListener('click', ()=> selectQuestion(q.key));
+  pickerGrid.appendChild(btn);
+});
+
+function selectQuestion(key){
+  document.querySelectorAll('#picker-grid button').forEach(b=> b.classList.toggle('active', b.dataset.key===key));
+  document.querySelectorAll('.q-panel').forEach(p=> p.classList.remove('active'));
+  const panel = document.getElementById('panel-'+key);
+  if(panel){ panel.classList.add('active'); INIT[key] && INIT[key](); }
+  document.getElementById('stage').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ============ Count-up helper ============ */
+function countUp(el, target, decimals=0, duration=800, prefix='', suffix=''){
+  const start = performance.now();
+  const from = 0;
+  function frame(now){
+    const t = Math.min(1, (now-start)/duration);
+    const eased = 1-Math.pow(1-t,3);
+    const val = from + (target-from)*eased;
+    el.textContent = prefix + val.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + suffix;
+    if(t<1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+const INIT = {};
+const stage = document.getElementById('stage');
+
+/* ================= 1. GLOBAL JUMP ================= */
+stage.innerHTML += `
+<div class="q-panel" id="panel-jump">
+  <div class="q-title">If everyone on Earth jumped<br>at the same time...</div>
+  <div class="q-sub">CH.01 · a classic physics myth</div>
+  <canvas class="viz" id="viz-jump"></canvas>
+  <div class="slider-row">
+    <div class="slider-label"><span>People participating</span><b id="jump-pct-lbl">100%</b></div>
+    <input type="range" id="jump-slider" min="1" max="100" value="100">
+  </div>
+  <div class="result-box">
+    <div class="num" id="jump-result">0</div>
+    <div class="lbl">Joules per m² of Earth's surface</div>
+  </div>
+  <div class="explain">The total energy released is genuinely real — <b>~357 tons of TNT</b> worth, at 100% participation. But spread across Earth's entire 510 million km² surface at once, that's about <b>0.003 joules per square meter</b> — less than a single firecracker going off nearby. The energy is real; it's just too thin to feel.</div>
+  <div class="src">Physics: KE on landing ≈ ½mv², v from a 30cm drop, divided across Earth's total surface area. Richter-scale magnitude doesn't apply here — that formula assumes a concentrated point source, not energy spread across an entire planet at once.</div>
+</div>`;
+
+INIT.jump = function(){
+  const canvas = document.getElementById('viz-jump');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = canvas.clientWidth*2; canvas.height = canvas.clientHeight*2; }
+  resize();
+  const slider = document.getElementById('jump-slider');
+  const lbl = document.getElementById('jump-pct-lbl');
+  const resultEl = document.getElementById('jump-result');
+
+  function calc(pct){
+    const totalPop = 8.2e9;
+    const participants = totalPop*(pct/100);
+    const avgMass = 62; // kg
+    const dropHeight = 0.3; // m
+    const g = 9.8;
+    const v = Math.sqrt(2*g*dropHeight);
+    const totalKE = 0.5*avgMass*participants*v*v; // joules
+    const earthSurfaceArea = 5.1e14; // m^2
+    const energyDensity = totalKE/earthSurfaceArea;
+    const tntTons = totalKE/4.184e9;
+    return { energyDensity, totalKE, tntTons };
+  }
+
+  function draw(pct){
+    const {tntTons} = calc(pct);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const w=canvas.width, h=canvas.height;
+    // ground
+    ctx.fillStyle = '#3a2a5a';
+    ctx.fillRect(0, h*0.75, w, h*0.25);
+    // people as dots jumping
+    const count = Math.round((pct/100)*40);
+    const t = (Date.now()/300)%1;
+    const jumpH = Math.sin(t*Math.PI)*h*0.15;
+    ctx.fillStyle = '#ffd23f';
+    for(let i=0;i<count;i++){
+      const x = (w/40)*i + (w/80);
+      ctx.beginPath();
+      ctx.arc(x, h*0.72-jumpH, w*0.008, 0, 7);
+      ctx.fill();
+    }
+    // TNT equivalent text (real, substantial number) alongside the "but spread thin" message
+    ctx.fillStyle = '#ff4d8d';
+    ctx.font = `bold ${h*0.11}px Righteous, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(tntTons.toFixed(0)+' tons TNT total', w/2, h*0.35);
+    ctx.fillStyle = '#4de8e0';
+    ctx.font = `${h*0.07}px JetBrains Mono, monospace`;
+    ctx.fillText('(but spread across the whole planet)', w/2, h*0.47);
+  }
+
+  let animId;
+  function loop(){ draw(Number(slider.value)); animId = requestAnimationFrame(loop); }
+  cancelAnimationFrame(animId); loop();
+
+  slider.oninput = ()=>{
+    lbl.textContent = slider.value+'%';
+    const {energyDensity} = calc(Number(slider.value));
+    countUp(resultEl, energyDensity, 5, 300);
+  };
+  countUp(resultEl, calc(100).energyDensity, 5, 800);
+};
+
+/* ================= 2. ANTS VS HUMANS ================= */
+stage.innerHTML += `
+<div class="q-panel" id="panel-ants">
+  <div class="q-title">Do all the ants on Earth<br>outweigh all the humans?</div>
+  <div class="q-sub">CH.02 · real 2022 entomology estimate</div>
+  <canvas class="viz" id="viz-ants"></canvas>
+  <div class="slider-row">
+    <div class="slider-label"><span>Estimated global ant population</span><b id="ants-pop-lbl">20 quadrillion</b></div>
+    <input type="range" id="ants-slider" min="10" max="30" value="20">
+  </div>
+  <div class="result-box">
+    <div class="num" id="ants-result">0</div>
+    <div class="lbl">Ant biomass as % of human biomass</div>
+  </div>
+  <div class="explain">A 2022 University of Hong Kong / Würzburg study estimated <b>~20 quadrillion ants</b> alive at any time, at roughly 3mg each. That's a real, peer-reviewed number — but even at the high end of the estimate range, total ant biomass lands well under total human biomass, not over it, despite the popular claim.</div>
+  <div class="src">Source: Schultheiss et al. (2022), PNAS, "The abundance, biomass, and distribution of ants on Earth."</div>
+</div>`;
+
+INIT.ants = function(){
+  const canvas = document.getElementById('viz-ants');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.clientWidth*2; canvas.height = canvas.clientHeight*2;
+  const slider = document.getElementById('ants-slider');
+  const lbl = document.getElementById('ants-pop-lbl');
+  const resultEl = document.getElementById('ants-result');
+
+  function calc(quadrillions){
+    const antCount = quadrillions*1e15;
+    const antMassKg = 0.000003; // 3mg
+    const antBiomassTonnes = (antCount*antMassKg)/1000;
+    const humanPop = 8.2e9;
+    const humanAvgKg = 50; // global average incl. children
+    const humanBiomassTonnes = (humanPop*humanAvgKg)/1000;
+    const pct = (antBiomassTonnes/humanBiomassTonnes)*100;
+    return { pct, antBiomassTonnes, humanBiomassTonnes };
+  }
+
+  function draw(quadrillions){
+    const {pct} = calc(quadrillions);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const w=canvas.width,h=canvas.height;
+    const barY = h*0.4, barH = h*0.22;
+    ctx.fillStyle = '#3a2a5a';
+    ctx.fillRect(w*0.08, barY, w*0.84, barH);
+    const fillW = Math.min(w*0.84, w*0.84*(pct/100));
+    ctx.fillStyle = '#4de8e0';
+    ctx.fillRect(w*0.08, barY, fillW, barH);
+    ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(w*0.08+w*0.84, barY-10); ctx.lineTo(w*0.08+w*0.84, barY+barH+10); ctx.stroke();
+    ctx.fillStyle = '#f5f0ff';
+    ctx.font = `${h*0.09}px JetBrains Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText('humans = 100%', w*0.5, barY+barH+h*0.14);
+    ctx.font = `bold ${h*0.13}px Righteous, sans-serif`;
+    ctx.fillStyle = '#4de8e0';
+    ctx.fillText(pct.toFixed(0)+'%', w/2, barY-h*0.08);
+  }
+
+  draw(20);
+  slider.oninput = ()=>{
+    const v = Number(slider.value);
+    lbl.textContent = v+' quadrillion';
+    const {pct} = calc(v);
+    draw(v);
+    countUp(resultEl, pct, 0, 300);
+  };
+  countUp(resultEl, calc(20).pct, 0, 800);
+};
+
+/* ================= 3. TOOTSIE POP ================= */
+stage.innerHTML += `
+<div class="q-panel" id="panel-lollipop">
+  <div class="q-title">How many licks to the center<br>of a Tootsie Pop?</div>
+  <div class="q-sub">CH.03 · a real, repeated engineering study</div>
+  <canvas class="viz" id="viz-lollipop"></canvas>
+  <div class="slider-row">
+    <div class="slider-label"><span>Your lick speed</span><b id="lolli-speed-lbl">90/min</b></div>
+    <input type="range" id="lolli-slider" min="40" max="180" value="90">
+  </div>
+  <div class="result-box">
+    <div class="num" id="lolli-result">0</div>
+    <div class="lbl">Minutes to reach the center</div>
+  </div>
+  <div class="explain">Purdue engineering students built an actual licking machine and got <b>364 licks</b> on average. Human students at other universities got anywhere from 144 to 411 — the real number depends entirely on lick force and technique, same as this slider.</div>
+  <div class="src">Source: Purdue University College of Engineering; University of Michigan and NYU follow-up studies.</div>
+</div>`;
+
+INIT.lollipop = function(){
+  const canvas = document.getElementById('viz-lollipop');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.clientWidth*2; canvas.height = canvas.clientHeight*2;
+  const slider = document.getElementById('lolli-slider');
+  const lbl = document.getElementById('lolli-speed-lbl');
+  const resultEl = document.getElementById('lolli-result');
+  const LICKS = 364;
+
+  function draw(speed){
+    const progress = 0; // static visual, animated via CSS-like reveal on slider change handled by redraw calls below
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const w=canvas.width,h=canvas.height;
+    const cx=w/2, cy=h/2, r=h*0.32;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fillStyle='#ff4d8d'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.55,0,7); ctx.fillStyle='#ffd23f'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.22,0,7); ctx.fillStyle='#4de8e0'; ctx.fill();
+    ctx.fillStyle='#3a2a5a'; ctx.fillRect(cx-w*0.02, cy+r-2, w*0.04, h*0.35);
+    ctx.fillStyle = '#f5f0ff';
+    ctx.font = `${h*0.09}px JetBrains Mono, monospace`;
+    ctx.textAlign='center';
+    ctx.fillText(LICKS+' licks total (avg.)', cx, h*0.15);
+  }
+  draw(90);
+
+  slider.oninput = ()=>{
+    const v = Number(slider.value);
+    lbl.textContent = v+'/min';
+    const minutes = LICKS/v;
+    countUp(resultEl, minutes, 1, 300);
+  };
+  countUp(resultEl, LICKS/90, 1, 800);
+};
+
+/* ================= 4. PENNY DROP ================= */
+stage.innerHTML += `
+<div class="q-panel" id="panel-penny">
+  <div class="q-title">Can a penny dropped from a<br>skyscraper actually kill someone?</div>
+  <div class="q-sub">CH.04 · mythbusted, with real terminal velocity</div>
+  <canvas class="viz" id="viz-penny"></canvas>
+  <div class="slider-row">
+    <div class="slider-label"><span>Building height</span><b id="penny-height-lbl">443m (Empire State)</b></div>
+    <input type="range" id="penny-slider" min="2" max="828" value="443">
+  </div>
+  <div class="result-box">
+    <div class="num" id="penny-result">0</div>
+    <div class="lbl">Impact speed (km/h)</div>
+  </div>
+  <div class="explain">A penny's flat shape creates enormous air resistance for its weight — drag the slider down and you'll see it still <b>accelerating</b> below ~20m, but past that it hits a hard <b>terminal velocity of ~60 km/h</b> (a thrown baseball's speed) and never goes faster, no matter how tall the building. Empire State or Burj Khalifa: same impact speed. It'll sting, not kill.</div>
+  <div class="src">Source: physics of terminal velocity for flat, light objects; widely confirmed including by MythBusters (2003).</div>
+</div>`;
+
+INIT.penny = function(){
+  const canvas = document.getElementById('viz-penny');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.clientWidth*2; canvas.height = canvas.clientHeight*2;
+  const slider = document.getElementById('penny-slider');
+  const lbl = document.getElementById('penny-height-lbl');
+  const resultEl = document.getElementById('penny-result');
+  const TERMINAL_VELOCITY_KMH = 60; // penny's real terminal velocity
+  const TERMINAL_VELOCITY_MS = TERMINAL_VELOCITY_KMH/3.6;
+  const g = 9.8;
+  // height at which terminal velocity is essentially reached (approx, given light+flat drag)
+  const heightToReachTerminal = (TERMINAL_VELOCITY_MS*TERMINAL_VELOCITY_MS)/(2*g)*1.4; // small empirical buffer
+
+  function calc(height){
+    if(height >= heightToReachTerminal) return TERMINAL_VELOCITY_KMH;
+    const v = Math.sqrt(2*g*height)*3.6;
+    return Math.min(v, TERMINAL_VELOCITY_KMH);
+  }
+
+  function draw(height){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const w=canvas.width,h=canvas.height;
+    const bh = Math.min(h*0.85, h*0.85*(height/828));
+    ctx.fillStyle = '#3a2a5a';
+    ctx.fillRect(w*0.15, h-bh, w*0.2, bh);
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath(); ctx.arc(w*0.6, h-bh-10, h*0.05, 0, 7); ctx.fill();
+    ctx.fillStyle = '#7ee787';
+    ctx.textAlign = 'center';
+    const capped = height >= heightToReachTerminal;
+    const label = capped ? 'TERMINAL VELOCITY' : 'STILL ACCELERATING';
+    let fontSize = h*0.1;
+    ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+    const maxTextWidth = w*0.9;
+    while(ctx.measureText(label).width > maxTextWidth && fontSize > 8){
+      fontSize -= 1;
+      ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+    }
+    ctx.fillText(label, w*0.5, h*0.2);
+  }
+
+  draw(443);
+  slider.oninput = ()=>{
+    const v = Number(slider.value);
+    lbl.textContent = v+'m'+(v===443?' (Empire State)':v>800?' (Burj Khalifa)':'');
+    draw(v);
+    countUp(resultEl, calc(v), 0, 300);
+  };
+  countUp(resultEl, calc(443), 0, 800);
+};
+
+/* ================= 5. SCREAM HEAT ================= */
+stage.innerHTML += `
+<div class="q-panel" id="panel-scream">
+  <div class="q-title">How long would you have to scream<br>to heat a cup of coffee?</div>
+  <div class="q-sub">CH.05 · sound energy is pathetically weak</div>
+  <canvas class="viz" id="viz-scream"></canvas>
+  <div class="slider-row">
+    <div class="slider-label"><span>Your scream volume</span><b id="scream-db-lbl">110 dB</b></div>
+    <input type="range" id="scream-slider" min="80" max="129" value="110">
+  </div>
+  <div class="result-box">
+    <div class="num" id="scream-result">0</div>
+    <div class="lbl">Days of nonstop screaming needed</div>
+  </div>
+  <div class="explain">Sound is an incredibly inefficient way to transfer energy. Heating 200ml of coffee by 20°C takes about 16,700 joules — at a loud 80dB shout, that's <b>over 5 months</b> of nonstop screaming. Push it to the human scream record (129dB) and it drops to under an hour, since decibels are logarithmic: every +10dB is roughly 10x the actual power.</div>
+  <div class="src">Physics: dB-to-watts conversion (point source approximation); Q=mcΔT for the coffee.</div>
+</div>`;
+
+INIT.scream = function(){
+  const canvas = document.getElementById('viz-scream');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.clientWidth*2; canvas.height = canvas.clientHeight*2;
+  const slider = document.getElementById('scream-slider');
+  const lbl = document.getElementById('scream-db-lbl');
+  const resultEl = document.getElementById('scream-result');
+
+  function calc(db){
+    // rough acoustic power estimate from SPL at 1m, simplified point-source model
+    const referenceIntensity = 1e-12; // W/m^2
+    const intensity = referenceIntensity*Math.pow(10, db/10);
+    const area = 4*Math.PI*1*1; // sphere at 1m
+    const acousticPowerW = intensity*area;
+    const energyNeeded = 0.2*4186*20; // 200ml water, ΔT=20C
+    const seconds = energyNeeded/acousticPowerW;
+    const days = seconds/86400;
+    return days;
+  }
+
+  function draw(db){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const w=canvas.width,h=canvas.height;
+    const waveCount = Math.round((db-80)/5)+2;
+    ctx.strokeStyle = '#c792ea'; ctx.lineWidth = 4;
+    for(let i=0;i<waveCount;i++){
+      ctx.beginPath();
+      ctx.arc(w*0.3, h*0.5, (i+1)*(w*0.06), -0.6, 0.6);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#ffd23f';
+    ctx.font = `${h*0.3}px sans-serif`;
+    ctx.fillText('😱', w*0.15, h*0.65);
+    ctx.fillStyle = '#f5f0ff';
+    ctx.font = `${h*0.35}px sans-serif`;
+    ctx.fillText('☕', w*0.72, h*0.65);
+  }
+
+  draw(110);
+  slider.oninput = ()=>{
+    const v = Number(slider.value);
+    lbl.textContent = v+' dB';
+    draw(v);
+    countUp(resultEl, calc(v), 1, 300);
+  };
+  countUp(resultEl, calc(110), 1, 800);
+};
+
+/* ================= 6. BANANA DOSE ================= */
+stage.innerHTML += `
+<div class="q-panel" id="panel-banana">
+  <div class="q-title">How many bananas' worth of radiation<br>is actually dangerous?</div>
+  <div class="q-sub">CH.06 · a real unit used in radiation science education</div>
+  <canvas class="viz" id="viz-banana"></canvas>
+  <div class="slider-row">
+    <div class="slider-label"><span>Bananas eaten (hypothetically, at once)</span><b id="banana-count-lbl">10</b></div>
+    <input type="range" id="banana-slider" min="1" max="5000000" value="10" step="1">
+  </div>
+  <div class="result-box">
+    <div class="num" id="banana-result">0</div>
+    <div class="lbl">% of one chest X-ray's radiation dose</div>
+  </div>
+  <div class="explain">The "Banana Equivalent Dose" (BED) is a real, if informal, unit radiation scientists use for public education: <b>1 banana ≈ 0.1 microsieverts</b>, from the potassium-40 naturally inside it. You'd need roughly <b>1 million bananas at once</b> to reach 100 millisieverts — the dose level where health agencies start citing measurable increased cancer risk — which is, of course, physically impossible to eat.</div>
+  <div class="src">Source: U.S. Nuclear Regulatory Commission public radiation-dose education materials.</div>
+</div>`;
+
+INIT.banana = function(){
+  const canvas = document.getElementById('viz-banana');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.clientWidth*2; canvas.height = canvas.clientHeight*2;
+  const slider = document.getElementById('banana-slider');
+  const lbl = document.getElementById('banana-count-lbl');
+  const resultEl = document.getElementById('banana-result');
+  const BED_MICROSIEVERT = 0.1;
+  const XRAY_MICROSIEVERT = 100; // one chest X-ray
+
+  function calc(count){
+    const doseMicroSv = count*BED_MICROSIEVERT;
+    return (doseMicroSv/XRAY_MICROSIEVERT)*100;
+  }
+
+  function draw(count){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const w=canvas.width,h=canvas.height;
+    const shown = Math.min(60, Math.max(1, Math.round(Math.log10(count+1)*10)));
+    for(let i=0;i<shown;i++){
+      const x = (w/60)*i + w*0.02;
+      const y = h*0.5 + Math.sin(i*1.3)*h*0.15;
+      ctx.fillStyle = '#ffd23f';
+      ctx.beginPath();
+      ctx.ellipse(x, y, w*0.012, h*0.06, 0.5, 0, 7);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#f5f0ff';
+    ctx.font = `${h*0.11}px JetBrains Mono, monospace`;
+    ctx.textAlign='center';
+    ctx.fillText(count.toLocaleString()+' bananas', w/2, h*0.15);
+  }
+
+  draw(10);
+  slider.oninput = ()=>{
+    const v = Number(slider.value);
+    lbl.textContent = v.toLocaleString();
+    draw(v);
+    countUp(resultEl, calc(v), 3, 300);
+  };
+  countUp(resultEl, calc(10), 3, 800);
+};
+
+/* Default view */
+selectQuestion('jump');
+window.addEventListener('resize', ()=>{
+  const active = document.querySelector('.q-panel.active');
+  if(active){
+    const key = active.id.replace('panel-','');
+    INIT[key] && INIT[key]();
+  }
+});
+</script>
+</body>
+</html>
