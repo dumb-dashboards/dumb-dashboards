@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STEEL BALL RUN — RACE ANALYTICS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#1a1410; --bg2:#0d0a08;
+    --panel:#2b2018; --panel2:#171310;
+    --gold:#d4a017; --gold-lt:#f0c94a;
+    --red:#a3271f; --red-lt:#d1483a;
+    --teal:#3a8a7a; --teal-lt:#6fc4b2;
+    --text:#f0e6d2; --dim:#a89880;
+    --line: rgba(212,160,23,0.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(163,39,31,0.14), transparent 45%),
+      radial-gradient(ellipse at 100% 100%, rgba(58,138,122,0.10), transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--text);
+    font-family:'Oswald',sans-serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold-lt);}
+
+  .hero{ max-width:960px; margin:0 auto 12px; padding:26px 24px 18px; text-align:center; border-bottom:1px solid var(--line);}
+  .hero h1{ font-family:'Bungee',cursive; font-weight:400; font-size:clamp(24px,5.2vw,38px); color:var(--gold-lt);}
+  .hero .sub{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim); margin-top:10px; max-width:600px; margin-left:auto; margin-right:auto; line-height:1.7;}
+
+  /* ===== SPOILER TOGGLE — prominent, impossible to miss ===== */
+  #spoilerBar{
+    max-width:960px; margin:0 auto 18px; padding:14px 24px; background:var(--red);
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  #spoilerBar .label{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#fff; line-height:1.5; flex:1; min-width:200px;}
+  #spoilerBar .label b{ font-family:'Bungee',cursive; font-size:13px; display:block; margin-bottom:2px;}
+  .toggle-switch{ position:relative; width:58px; height:30px; background:rgba(0,0,0,0.35); border-radius:20px; cursor:pointer; flex:0 0 auto; }
+  .toggle-switch .knob{ position:absolute; top:3px; left:3px; width:24px; height:24px; background:var(--gold-lt); border-radius:50%; transition:left 0.2s; }
+  .toggle-switch.on{ background:rgba(0,0,0,0.5); }
+  .toggle-switch.on .knob{ left:31px; background:#fff; }
+
+  .nav{ max-width:960px; margin:0 auto 18px; display:flex; gap:8px; padding:0 24px; flex-wrap:wrap; justify-content:center;}
+  .tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:600; font-size:12px; letter-spacing:0.5px;
+    background:rgba(255,255,255,0.04); color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:9px 16px; cursor:pointer; }
+  .tab-btn.active{ background:var(--gold); color:#1a1410; border-color:var(--gold);}
+
+  .panel{ display:none; max-width:960px; margin:0 auto; padding:0 24px; }
+  .panel.active{ display:block; }
+  canvas{ max-width:100%; }
+
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:20px 20px 18px; margin-bottom:16px;
+  }
+  .card h2{ font-family:'Bungee',cursive; font-weight:400; font-size:17px; margin-bottom:2px; color:var(--text);}
+  .card h2 .num{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold-lt); margin-right:8px; font-weight:400;}
+  .card p{ font-size:14.5px; line-height:1.6;}
+  .card .note{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim); margin-top:8px; line-height:1.65;}
+  .card .src{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--dim); opacity:0.75; margin-top:4px;}
+
+  .kpi-row{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; }
+  .kpi{ flex:1; min-width:130px; background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:12px 14px; }
+  .kpi .v{ font-family:'Bungee',cursive; font-size:24px; color:var(--gold-lt); }
+  .kpi .l{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:0.3px; text-transform:uppercase; margin-top:2px;}
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace; }
+  th{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; color:var(--dim); border-bottom:1px solid var(--gold);}
+
+  #mapWrap{ position:relative; width:100%; background:var(--panel2); border-radius:8px; overflow:hidden; }
+  #usSvg{ width:100%; height:auto; display:block; }
+  .stage-marker{ cursor:pointer; }
+  .stage-marker.locked{ cursor:not-allowed; }
+  #stageDetail{ margin-top:14px; }
+  .stage-placeholder{ text-align:center; padding:20px 10px; opacity:.6; font-family:'JetBrains Mono',monospace; font-size:12px; }
+  .stage-card{ background:var(--panel2); border-radius:8px; padding:16px; }
+  .stage-card .name{ font-family:'Bungee',cursive; font-size:17px; color:var(--gold-lt); }
+  .stage-card .meta{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--teal-lt); margin-bottom:8px;}
+  .stage-card p{ font-size:14px; margin:8px 0 0; }
+  .locked-msg{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--red-lt); text-align:center; padding:14px; background:var(--panel2); border-radius:8px; border:1px dashed var(--red-lt);}
+
+  .spoiler-lock{ text-align:center; padding:30px 16px; background:var(--panel2); border-radius:8px; border:1px dashed var(--red-lt); }
+  .spoiler-lock .icon{ font-size:32px; }
+  .spoiler-lock p{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim); max-width:320px; margin:10px auto 0; line-height:1.6;}
+
+  details summary{ font-family:'JetBrains Mono'; font-size:11px; color:var(--dim); cursor:pointer;}
+  details p{ font-size:11px; color:var(--dim); line-height:1.6; font-family:'JetBrains Mono',monospace;}
+
+  footer{ max-width:960px; margin:20px auto 0; padding:0 24px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">@dumbdashboards — ep. 17</div>
+  <h1>STEEL BALL RUN<br>RACE ANALYTICS</h1>
+  <div class="sub">Ahead of the next cours dropping September 25: a data audit of the deadliest, richest horse race in fiction — 6,000km, San Diego to New York, 1890.</div>
+</div>
+
+<div id="spoilerBar">
+  <div class="label"><b>⚠ SPOILER PROTECTION IS ON</b>Only Episode 1 (Stage 1) content is shown. Flip this to see the full race — later stages, the ending, character fates.</div>
+  <div class="toggle-switch" id="spoilerToggle"><div class="knob"></div></div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="map">Race Map</button>
+  <button class="tab-btn" data-tab="stats">Race Stats</button>
+  <button class="tab-btn" data-tab="anime">Anime Reception</button>
+  <button class="tab-btn" data-tab="characters">Characters</button>
+  <button class="tab-btn" data-tab="legal">If Organized Today</button>
+</div>
+
+<!-- ===================== RACE MAP ===================== -->
+<div class="panel active" id="panel-map">
+  <div class="card">
+    <h2><span class="num">01</span>9 stages, ~6,000km, San Diego to Trinity Church</h2>
+    <p class="note" style="margin:0 0 10px;">Tap a checkpoint to see what happens there. Locked stages haven't aired in the anime yet as of today.</p>
+    <div id="mapWrap">
+      <svg id="usSvg" viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div style="display:flex; gap:16px; margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--dim);">
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d4a017;margin-right:5px;"></span>Unlocked (aired)</span>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#4a4038;margin-right:5px;"></span>Locked (not yet aired)</span>
+    </div>
+    <div id="stageDetail">
+      <div class="stage-placeholder">Tap a checkpoint on the map above.</div>
+    </div>
+    <p class="src">Source: JoJo's Bizarre Encyclopedia (jojowiki.com), JoJo's Bizarre Wiki (Fandom) — route and stage details as catalogued by the fan community; exact stage-by-stage figures vary slightly between sources.</p>
+  </div>
+</div>
+
+<!-- ===================== RACE STATS ===================== -->
+<div class="panel" id="panel-stats">
+  <div class="card">
+    <h2><span class="num">02</span>What Episode 1 already told you</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">~6,000km</div><div class="l">total race distance (San Diego → NYC)</div></div>
+      <div class="kpi"><div class="v">9</div><div class="l">stages, separated by checkpoints</div></div>
+      <div class="kpi"><div class="v">$50–60M</div><div class="l">prize money for 1st place</div></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">3,852</div><div class="l">total entrants (predicted: just 500)</div></div>
+      <div class="kpi"><div class="v">1,200km</div><div class="l">Stage 1 alone — Arizona Desert crossing</div></div>
+    </div>
+    <p class="note">These numbers are established in the race's setup (before or during Episode 1) — not spoilers about who lives, dies, or wins.</p>
+    <p class="src">Source: JoJo's Bizarre Encyclopedia, Steel Ball Run (race) entry.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;">The manga behind the race: chapters and volumes</h2>
+    <canvas id="chartChapters" height="180"></canvas>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">95</div><div class="l">total chapters</div></div>
+      <div class="kpi"><div class="v">24</div><div class="l">collected volumes</div></div>
+      <div class="kpi"><div class="v">2004–11</div><div class="l">original serialization (7 years)</div></div>
+    </div>
+    <p class="note">Serialized in Weekly Shōnen Jump through Chapter 24, then moved to Ultra Jump for the rest of the run — an actual mid-series magazine switch, not just a stylistic shift.</p>
+    <p class="src">Source: JoJo's Bizarre Wiki, "Steel Ball Run/Chapter List."</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;">The full prize ladder, not just first place</h2>
+    <canvas id="chartPrizes" height="180"></canvas>
+    <p class="note">A real, tiered payout structure — with additional bonus categories (per-stage winner bonuses, checkpoint awards) stacked on top for the first ten finishers of each leg.</p>
+    <p class="src">Source: JoJo's Bizarre Wiki (Fandom), Steel Ball Run (race) entry.</p>
+  </div>
+
+  <div id="fullStatsGate"></div>
+</div>
+
+<!-- ===================== ANIME RECEPTION ===================== -->
+<div class="panel" id="panel-anime">
+  <div class="card">
+    <h2><span class="num">03</span>Episode 1 broke the internet — no spoilers here, just hype</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">9.38/10</div><div class="l">MyAnimeList score after 1 episode — #1 Top Airing AND #1 all-time</div></div>
+      <div class="kpi"><div class="v">#1</div><div class="l">Japan's Spring 2026 Anime Satisfaction Ranking (Filmarks)</div></div>
+    </div>
+    <p class="note">Beat Frieren for the MAL top spot. On Netflix, it out-charted One Piece and Virgin River in the US within 24 hours of release (March 19, 2026).</p>
+    <p class="src">Source: MyAnimeList, Filmarks, FlixPatrol — March 2026.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;">The next drop: September 25, 2026</h2>
+    <canvas id="chartAnimeTimeline" height="140"></canvas>
+    <p class="note">Episode 1 was a 47-minute special covering just Stage 1. The next cours — 11 weekly episodes covering Stages 2 and 3 — starts in a few days. This is why the spoiler toggle above defaults to "off."</p>
+    <p class="src">Source: Wikipedia, "Steel Ball Run: JoJo's Bizarre Adventure" (anime season article).</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;">The manga behind it</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">100M+</div><div class="l">copies of JoJo's Bizarre Adventure in circulation (all parts combined)</div></div>
+      <div class="kpi"><div class="v">Part 7</div><div class="l">of 9 — first part of the "rebooted" continuity</div></div>
+    </div>
+    <p class="src">Source: ScreenRant, citing Shueisha circulation figures.</p>
+  </div>
+</div>
+
+<!-- ===================== CHARACTERS (fully gated) ===================== -->
+<div class="panel" id="panel-characters">
+  <div class="card">
+    <h2><span class="num">04</span>Who you've already met (Episode 1)</h2>
+    <table>
+      <tr><th>Character</th><th>Role</th></tr>
+      <tr><td>Johnny Joestar</td><td>Paraplegic ex-jockey, enters the race after a chance encounter</td></tr>
+      <tr><td>Gyro Zeppeli</td><td>Neapolitan racer, wields "Steel Balls" and the Spin technique</td></tr>
+      <tr><td>Diego Brando</td><td>Rival racer, early front-runner</td></tr>
+      <tr><td>Sandman</td><td>Rival racer, unique running technique</td></tr>
+      <tr><td>Pocoloco</td><td>Rival racer, unusually lucky</td></tr>
+      <tr><td>Mohammed Avdul</td><td>Eliminated in Stage 1's first 1,000 meters</td></tr>
+    </table>
+    <p class="note">Just roles and introductions — nothing here reveals who wins, who dies, or what anyone's Stand ability turns out to be.</p>
+  </div>
+  <div id="charactersGate"></div>
+</div>
+
+<!-- ===================== LEGAL PROBLEMS ===================== -->
+<div class="panel" id="panel-legal">
+  <div class="card">
+    <h2><span class="num">06</span>The race would never clear a permit office today</h2>
+    <table>
+      <tr><th>Modern requirement</th><th>Why the Steel Ball Run fails it</th></tr>
+      <tr><td>Interstate event permitting</td><td>No single agency could authorize an unregulated 6,000km course crossing 9+ states with zero road-closure coordination</td></tr>
+      <tr><td>Horse Protection Act (1970)</td><td>Federal law banning cruel treatment of competition horses — an open-ended, unsupervised, multi-day endurance race would violate it almost immediately</td></tr>
+      <tr><td>General liability insurance</td><td>No insurer would underwrite an event with a predictable serious-injury rate this high; without it, most US venues and roads legally can't host it</td></tr>
+      <tr><td>State/federal gambling law</td><td>A $60M winner-take-most purse funded partly by wagering would trigger state gaming commission oversight almost everywhere</td></tr>
+      <tr><td>Visa & immigration law</td><td>Open, no-visa entry for competitors from Italy, Mexico, India and elsewhere isn't how any nation's borders work today</td></tr>
+      <tr><td>Firearms across state lines</td><td>Competitors carrying guns through 9+ states hits a patchwork of conflicting state carry laws the moment they cross a border</td></tr>
+    </table>
+    <p class="note">None of this requires knowing a single plot detail — it's just what happens when a 19th-century wild-west race meets 21st-century regulation.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;">Stage 1: already a liability nightmare</h2>
+    <p>An unmarked course with cacti and terrain hazards, no course marshals, no medical staff on standby — Avdul's elimination (riding straight into a cactus grove mid-race) is exactly the kind of foreseeable, preventable injury that ends careers in real regulatory law. Any US racing commission would have shut the course down at the first inspection.</p>
+  </div>
+
+  <div id="legalGate"></div>
+</div>
+
+<footer>STEEL BALL RUN — RACE ANALYTICS · @dumbdashboards · September 2026</footer>
+
+<script>
+const US_PATHS = {'Alabama':'M644.0,357.7 L676.1,378.6 L682.2,415.4 L683.3,421.5 L682.4,426.0 L681.0,433.0 L681.4,446.5 L675.0,453.1 L639.4,456.3 L642.6,464.8 L641.4,470.2 L634.9,467.1 L633.1,460.6 L631.0,469.3 L625.5,431.7 L631.7,360.3 L644.0,357.7 Z','Arizona':'M282.6,310.0 L248.8,445.2 L186.4,417.5 L191.3,411.2 L191.3,404.7 L187.9,395.7 L191.7,388.7 L193.1,379.0 L197.7,374.3 L192.2,364.6 L189.4,357.7 L190.1,350.0 L187.7,331.4 L195.8,333.4 L199.2,329.2 L258.3,309.9 L282.6,310.0 Z','Arkansas':'M525.4,321.9 L598.9,326.6 L593.7,333.9 L603.9,338.3 L600.9,343.3 L598.1,353.0 L594.8,357.8 L593.2,361.7 L590.2,366.8 L587.5,372.8 L584.1,378.3 L582.1,384.7 L582.4,395.1 L581.8,402.1 L539.9,404.9 L532.6,392.3 L527.0,392.4 L526.2,348.3 L525.4,321.9 Z','California':'M46.1,190.6 L82.7,190.9 L100.1,232.2 L121.4,283.7 L157.7,321.9 L189.4,357.7 L192.2,364.6 L197.7,374.3 L193.1,379.0 L191.7,388.7 L187.9,395.7 L191.3,404.7 L191.3,411.2 L165.9,414.3 L145.9,413.3 L144.5,402.5 L136.9,392.5 L129.0,388.6 L126.8,385.4 L120.0,381.6 L112.0,375.2 L102.1,371.8 L92.1,370.9 L89.8,361.1 L89.5,355.3 L84.9,347.0 L80.5,342.5 L77.8,339.0 L68.4,326.3 L69.0,319.3 L67.8,310.5 L61.1,307.3 L60.0,301.4 L58.1,291.3 L59.9,282.6 L58.3,287.8 L51.0,285.4 L47.8,275.4 L42.6,269.5 L38.5,261.5 L37.3,249.1 L31.5,235.9 L26.5,228.0 L31.5,214.0 L32.2,204.1 L29.0,196.0 L46.1,190.6 Z','Colorado':'M301.3,214.5 L365.8,214.5 L399.1,238.4 L383.3,310.0 L318.9,310.1 L282.6,310.0 L282.4,279.6 L282.5,214.7 L301.3,214.5 Z','Connecticut':'M882.4,189.8 L903.3,190.6 L902.3,206.9 L893.6,208.4 L881.2,211.1 L872.4,214.9 L875.3,209.6 L875.2,189.6 L882.4,189.8 Z','Delaware':'M843.1,243.1 L839.8,247.6 L842.6,254.9 L846.8,266.9 L849.2,275.4 L836.9,245.1 L843.1,243.1 Z','District of Columbia':'M816.1,262.5 L818.2,264.8 L816.0,267.3 L814.7,263.9 L816.1,262.5 Z','Florida':'M675.0,453.1 L685.5,459.9 L729.7,463.3 L732.6,468.3 L732.6,459.0 L738.0,459.1 L743.6,470.4 L750.5,497.3 L756.8,514.8 L760.3,530.8 L766.1,553.3 L764.2,578.5 L761.0,585.0 L758.4,591.4 L754.0,592.2 L747.2,590.8 L744.1,576.6 L738.7,576.0 L736.1,565.3 L731.8,556.4 L730.5,550.4 L729.2,554.2 L721.8,538.0 L723.5,529.0 L719.1,527.3 L722.6,503.4 L720.0,497.3 L713.0,490.7 L709.8,484.9 L706.0,479.6 L694.0,475.6 L692.5,478.6 L678.2,484.1 L676.6,478.3 L661.7,468.3 L651.5,468.0 L643.8,466.7 L643.2,460.8 L640.0,453.1 L675.0,453.1 Z','Georgia':'M714.8,357.7 L711.0,365.2 L718.3,369.9 L721.4,377.9 L727.9,385.9 L734.6,394.4 L737.3,401.5 L742.9,409.1 L745.3,415.9 L748.1,426.4 L747.8,436.5 L745.3,444.4 L743.3,449.9 L738.0,459.1 L732.6,459.0 L732.6,468.3 L729.7,463.3 L685.5,459.9 L681.4,446.5 L681.0,433.0 L682.4,426.0 L683.3,421.5 L682.2,415.4 L676.1,378.6 L694.7,357.9 L714.8,357.7 Z','Idaho':'M165.9,23.8 L171.3,54.9 L174.5,64.3 L178.3,67.1 L185.2,76.1 L189.8,80.1 L192.3,88.9 L193.5,98.2 L191.7,103.2 L194.4,108.3 L200.2,102.5 L202.8,106.8 L207.1,116.2 L209.1,122.4 L214.4,124.7 L218.5,133.7 L225.5,131.6 L231.6,130.7 L236.3,130.9 L243.6,125.1 L249.2,131.7 L230.6,190.9 L149.5,190.8 L151.7,139.3 L147.2,136.9 L149.4,125.2 L152.8,120.9 L154.5,115.8 L158.9,104.6 L153.6,99.6 L151.3,91.4 L149.4,85.2 L149.4,23.8 L165.9,23.8 Z','Illinois':'M589.3,178.6 L636.6,179.0 L638.6,188.9 L641.2,254.0 L641.5,263.4 L639.6,270.9 L636.1,279.2 L634.6,282.6 L632.3,289.4 L630.7,294.3 L625.4,300.7 L626.3,306.3 L618.1,304.6 L613.6,309.1 L611.8,310.1 L609.4,301.8 L608.0,293.5 L600.8,289.0 L594.1,281.0 L597.0,271.1 L598.2,266.0 L592.2,263.2 L589.0,264.0 L582.3,251.1 L575.1,237.6 L576.4,229.4 L581.3,222.5 L583.9,216.5 L581.5,208.9 L589.1,203.6 L594.8,196.9 L597.6,190.8 L593.4,185.4 L589.3,178.6 Z','Indiana':'M666.8,196.5 L686.5,198.1 L686.4,259.8 L686.5,267.4 L680.4,269.8 L676.3,273.4 L672.4,278.4 L667.9,285.6 L662.3,284.9 L658.0,285.2 L654.5,288.7 L649.2,288.7 L643.6,287.7 L640.0,286.7 L634.4,288.7 L632.3,289.4 L634.6,282.6 L636.1,279.2 L639.6,270.9 L641.5,263.4 L641.2,254.0 L642.9,199.2 L653.0,196.5 L666.8,196.5 Z','Iowa':'M577.2,155.0 L579.9,158.5 L580.4,163.7 L582.2,172.9 L589.3,178.6 L593.4,185.4 L597.6,190.8 L594.8,196.9 L589.1,203.6 L581.5,208.9 L583.9,216.5 L581.3,222.5 L576.4,229.4 L571.2,223.8 L545.7,224.6 L503.9,224.4 L502.9,215.2 L501.3,203.8 L498.0,198.5 L497.9,191.4 L492.6,179.1 L490.9,170.4 L492.8,164.0 L491.2,157.4 L492.5,155.0 L577.2,155.0 Z','Kansas':'M401.6,238.4 L513.2,240.6 L514.8,249.4 L519.6,257.4 L523.1,310.0 L399.3,310.1 L401.6,238.4 Z','Kentucky':'M701.6,267.8 L708.0,269.4 L716.1,268.9 L719.2,272.1 L723.4,276.0 L725.0,287.8 L728.4,294.1 L733.8,297.2 L721.3,307.1 L718.9,310.5 L715.5,313.5 L705.4,319.5 L690.9,319.7 L675.2,319.1 L635.8,318.7 L632.4,322.0 L609.7,322.0 L613.1,320.1 L613.6,309.1 L618.1,304.6 L626.3,306.3 L625.4,300.7 L630.7,294.3 L634.4,288.7 L640.0,286.7 L643.6,287.7 L649.2,288.7 L654.5,288.7 L658.0,285.2 L662.3,284.9 L667.9,285.6 L672.4,278.4 L676.3,273.4 L680.4,269.8 L686.5,267.4 L686.4,259.8 L696.1,264.8 L701.6,267.8 Z','Louisiana':'M539.9,404.9 L582.1,408.1 L580.8,414.0 L583.6,424.0 L577.6,432.9 L575.0,437.7 L572.7,446.7 L572.7,453.1 L602.6,461.0 L605.9,470.1 L603.0,475.9 L606.7,479.8 L611.9,479.8 L609.6,484.1 L606.3,485.1 L608.2,491.5 L615.2,496.0 L614.0,500.5 L608.6,495.6 L602.5,489.3 L599.6,494.0 L596.1,497.7 L590.6,494.0 L586.7,498.7 L581.8,496.2 L575.9,487.7 L573.0,483.2 L568.5,480.8 L564.8,485.9 L556.4,487.0 L546.2,482.3 L536.0,484.4 L538.5,473.5 L538.4,466.5 L539.5,460.7 L541.0,449.5 L536.3,434.6 L532.6,404.9 L539.9,404.9 Z','Maine':'M921.6,165.5 L919.9,161.5 L916.1,127.4 L922.5,108.7 L924.1,103.4 L926.3,100.2 L928.2,93.8 L932.4,85.5 L946.2,60.5 L949.4,65.8 L957.0,64.7 L962.8,63.0 L970.2,69.9 L970.0,103.1 L974.9,107.6 L975.2,112.5 L980.7,115.4 L980.2,127.7 L976.6,128.8 L973.9,130.4 L965.9,135.2 L963.0,131.5 L959.9,137.1 L957.2,135.6 L952.8,132.1 L950.7,135.4 L948.8,142.0 L942.6,143.9 L938.2,147.3 L933.6,149.2 L929.1,150.8 L927.4,154.3 L924.1,159.3 L921.6,165.5 Z','Maryland':'M833.4,287.3 L833.1,287.3 L832.6,287.3 L833.4,287.3 Z M775.4,245.1 L838.4,275.1 L845.9,285.4 L838.8,287.3 L835.3,284.4 L835.9,281.1 L832.5,278.9 L827.9,274.2 L829.0,268.6 L828.7,258.8 L833.3,253.6 L831.7,249.5 L827.2,254.9 L825.7,264.5 L824.8,273.3 L826.7,280.0 L827.3,284.8 L818.0,279.2 L813.2,277.6 L814.5,271.1 L818.2,264.8 L814.7,263.9 L809.1,260.5 L807.2,255.0 L802.8,248.0 L797.1,245.7 L792.8,247.4 L787.2,248.3 L781.8,251.1 L775.2,257.4 L775.4,245.1 Z','Massachusetts':'M918.0,169.6 L920.3,174.2 L916.9,180.7 L920.5,184.9 L922.3,191.7 L924.3,195.2 L934.4,195.3 L925.3,201.5 L920.6,199.4 L917.8,201.7 L913.4,198.5 L911.2,196.0 L907.8,190.4 L903.3,190.2 L875.2,189.6 L878.9,173.0 L911.7,174.2 L918.0,169.6 Z','Michigan':'M709.1,197.2 L686.5,196.5 L653.0,196.5 L658.6,188.0 L662.3,180.2 L662.8,166.6 L659.4,147.5 L662.2,134.9 L662.5,126.6 L665.6,121.5 L673.1,116.2 L674.6,125.2 L676.9,113.6 L682.8,110.6 L684.4,101.2 L692.3,103.6 L698.4,107.4 L706.7,110.8 L711.4,115.8 L711.3,122.1 L711.1,135.0 L706.9,141.8 L700.7,148.8 L705.5,152.9 L712.3,143.7 L720.9,143.2 L724.3,156.5 L726.4,167.5 L722.0,177.4 L720.0,175.2 L714.6,185.1 L709.4,195.2 L709.1,197.2 Z M674.9,101.8 L675.1,104.7 L672.9,105.2 L673.9,101.2 L674.9,101.8 Z M640.2,117.0 L639.2,111.1 L636.8,107.3 L633.5,100.2 L624.5,94.9 L615.2,92.1 L596.2,83.3 L599.6,79.3 L609.8,75.3 L616.7,71.6 L623.7,65.6 L630.3,60.7 L627.5,69.7 L626.0,76.6 L635.0,73.7 L643.5,82.6 L649.9,82.7 L655.1,85.0 L668.7,79.0 L679.1,77.4 L682.9,83.9 L689.5,83.8 L693.0,83.4 L698.0,91.1 L703.4,95.5 L707.0,93.2 L707.3,97.5 L693.8,97.0 L687.6,96.7 L686.2,98.4 L677.7,93.2 L672.3,96.2 L663.2,96.3 L660.8,100.2 L655.9,99.3 L652.7,101.9 L647.1,103.5 L639.8,116.3 L640.2,117.0 Z M619.9,48.3 L615.7,51.3 L613.5,51.7 L613.7,49.2 L624.2,43.6 L622.2,47.5 L619.9,48.3 Z','Minnesota':'M566.4,78.6 L561.8,79.5 L560.8,95.0 L552.2,102.1 L553.8,105.7 L554.0,112.4 L553.2,125.2 L561.0,129.9 L567.9,135.1 L573.5,142.3 L579.3,148.4 L579.7,155.0 L492.5,155.0 L488.6,109.4 L490.3,99.7 L490.0,87.4 L486.6,79.7 L486.3,72.3 L482.4,48.9 L480.6,34.7 L479.5,23.8 L514.1,14.7 L519.6,16.8 L523.5,30.6 L529.6,32.2 L536.8,35.3 L542.2,33.6 L550.3,32.9 L555.7,37.3 L560.5,42.4 L565.8,39.1 L571.4,42.9 L573.9,46.7 L581.9,43.4 L587.5,45.5 L593.7,45.5 L602.1,48.0 L606.0,48.8 L592.7,54.1 L580.5,62.8 L572.6,70.9 L566.4,78.6 Z','Mississippi':'M625.5,357.8 L631.7,360.3 L625.5,431.7 L624.9,469.2 L619.3,467.1 L609.7,470.9 L605.9,470.1 L602.6,461.0 L572.7,453.1 L572.7,446.7 L575.0,437.7 L577.6,432.9 L583.6,424.0 L580.8,414.0 L582.1,408.1 L581.8,402.1 L582.4,395.1 L582.1,384.7 L584.1,378.3 L587.5,372.8 L590.2,366.8 L593.2,361.7 L594.8,357.8 L625.5,357.8 Z','Missouri':'M569.4,223.9 L574.5,228.6 L574.9,232.8 L577.2,245.0 L587.9,256.2 L590.2,265.5 L595.8,264.3 L596.5,268.9 L594.2,277.2 L599.0,285.8 L602.7,288.4 L608.0,297.2 L608.0,303.3 L614.4,310.4 L610.6,319.0 L608.6,322.0 L607.8,327.9 L593.7,333.9 L598.9,326.6 L525.4,321.9 L523.1,310.0 L519.6,257.4 L514.8,249.4 L513.2,240.6 L507.5,232.2 L522.8,224.8 L569.4,223.9 Z','Montana':'M365.9,23.8 L365.9,96.7 L365.7,119.3 L282.0,119.2 L249.2,131.7 L243.6,125.1 L236.3,130.9 L231.6,130.7 L225.5,131.6 L218.5,133.7 L214.4,124.7 L209.1,122.4 L207.1,116.2 L202.8,106.8 L200.2,102.5 L194.4,108.3 L191.7,103.2 L193.5,98.2 L192.3,88.9 L189.8,80.1 L185.2,76.1 L178.3,67.1 L174.5,64.3 L171.3,54.9 L165.9,23.8 L275.8,23.8 L365.9,23.8 Z','Nebraska':'M377.9,166.9 L458.3,167.0 L467.5,172.5 L471.9,170.6 L488.5,175.1 L492.6,179.1 L497.9,191.4 L498.0,198.5 L501.3,203.8 L502.9,215.2 L503.9,224.4 L511.6,238.4 L399.1,238.4 L365.8,214.5 L377.9,166.9 Z','Nevada':'M149.5,190.8 L199.2,310.0 L197.5,333.2 L193.8,330.5 L188.7,345.4 L190.4,354.4 L169.2,334.5 L141.7,304.8 L100.0,262.3 L100.0,190.9 L149.5,190.8 Z','New Hampshire':'M915.3,112.0 L917.2,158.8 L919.6,163.8 L919.7,170.0 L913.6,171.9 L892.4,173.4 L891.1,168.0 L892.4,163.3 L896.6,148.6 L899.5,141.3 L905.0,133.2 L906.2,125.2 L908.3,118.9 L914.5,113.4 L915.3,112.0 Z','New Jersey':'M862.7,211.3 L866.3,221.6 L862.1,226.8 L867.0,231.4 L859.8,253.7 L853.4,262.5 L847.0,256.6 L840.7,247.8 L841.5,246.0 L847.6,241.2 L853.0,235.4 L849.0,228.5 L846.7,224.7 L849.1,217.8 L852.0,210.3 L855.1,206.0 L862.7,211.3 Z','New Mexico':'M309.6,310.0 L361.0,310.1 L383.3,321.9 L382.6,381.2 L382.2,429.2 L322.6,431.6 L296.5,434.3 L282.5,445.2 L309.6,310.0 Z','New York':'M877.6,118.9 L876.9,128.3 L878.0,137.2 L877.5,148.6 L879.2,154.4 L878.9,173.0 L875.2,189.6 L875.3,209.6 L872.4,214.9 L881.0,215.4 L890.2,214.7 L895.7,213.6 L892.2,218.3 L874.0,224.6 L867.7,225.5 L868.3,214.7 L855.1,206.0 L851.8,204.2 L849.1,196.6 L845.8,194.0 L770.6,190.8 L770.6,184.4 L782.5,174.3 L784.5,168.0 L782.1,160.7 L800.6,158.1 L807.8,161.4 L817.4,160.5 L826.4,154.4 L829.5,147.8 L827.3,141.4 L834.8,134.3 L845.3,122.8 L864.2,119.4 L877.6,118.9 Z','North Carolina':'M750.4,320.4 L774.8,321.0 L837.4,330.2 L832.1,330.5 L825.7,333.2 L822.1,335.3 L827.3,335.2 L834.0,336.2 L838.1,341.1 L835.1,344.1 L825.3,350.2 L826.8,358.3 L825.1,365.8 L816.8,365.6 L807.4,371.6 L800.5,385.2 L791.0,385.1 L753.4,362.0 L751.1,355.2 L749.3,354.1 L724.2,353.9 L714.8,357.7 L694.7,357.9 L698.4,351.8 L703.8,344.3 L712.5,340.6 L720.4,333.9 L723.2,334.7 L732.7,331.0 L737.9,325.4 L750.4,320.4 Z','North Dakota':'M479.5,23.8 L480.6,34.7 L482.4,48.9 L486.3,72.3 L486.6,79.7 L490.0,87.4 L365.9,96.7 L365.9,23.8 L479.5,23.8 Z','Ohio':'M758.0,191.3 L755.6,224.6 L756.7,230.8 L752.8,245.3 L744.2,254.1 L740.5,255.9 L736.5,260.4 L735.2,265.3 L729.6,267.4 L728.4,272.4 L723.4,276.0 L719.2,272.1 L716.1,268.9 L708.0,269.4 L701.6,267.8 L696.1,264.8 L686.4,259.8 L686.5,198.1 L715.6,200.4 L719.4,200.5 L725.3,205.5 L737.7,203.0 L749.8,194.3 L758.0,191.3 Z','Oklahoma':'M431.9,310.0 L523.1,321.9 L525.3,390.2 L517.2,384.8 L511.8,384.6 L506.6,383.1 L501.1,384.2 L494.2,389.0 L489.5,385.2 L484.6,382.5 L479.1,384.8 L475.7,383.8 L468.8,385.1 L465.2,381.4 L460.6,377.8 L457.2,378.0 L450.2,376.2 L445.7,371.9 L438.4,372.4 L433.3,368.1 L403.1,321.9 L383.3,310.0 L431.9,310.0 Z','Oregon':'M46.5,91.2 L51.6,93.5 L54.0,103.5 L69.8,102.3 L79.7,103.2 L89.4,101.4 L96.5,101.9 L107.9,97.5 L116.9,95.4 L153.6,99.6 L158.9,104.6 L154.5,115.8 L152.8,120.9 L149.4,125.2 L147.2,136.9 L151.7,139.3 L149.5,190.8 L100.0,190.9 L60.4,190.5 L29.8,190.8 L26.1,180.3 L24.1,170.8 L26.9,160.5 L30.5,147.7 L32.1,124.7 L34.3,103.5 L34.2,92.7 L43.8,91.9 L46.5,91.2 Z','Pennsylvania':'M770.6,184.7 L844.0,190.8 L847.1,193.9 L848.8,200.2 L854.3,204.3 L852.9,207.7 L847.8,215.3 L846.6,222.0 L848.8,225.5 L853.8,233.3 L847.8,239.3 L843.1,243.1 L836.9,245.1 L758.0,245.1 L758.0,191.3 L761.1,190.0 L770.6,184.7 Z','Rhode Island':'M913.4,198.5 L914.7,202.8 L911.4,203.3 L913.4,198.5 Z M907.8,190.4 L911.2,196.0 L910.9,197.3 L908.6,205.8 L903.3,204.7 L907.8,190.4 Z','South Carolina':'M720.6,356.1 L728.7,353.0 L749.4,356.6 L753.6,359.2 L772.1,362.4 L788.1,386.3 L780.8,396.3 L777.4,405.2 L772.8,408.1 L766.7,414.6 L759.5,419.7 L755.7,423.4 L748.1,426.4 L745.3,415.9 L742.9,409.1 L737.3,401.5 L734.6,394.4 L727.9,385.9 L721.4,377.9 L718.3,369.9 L711.0,365.2 L714.8,357.7 L720.6,356.1 Z','South Dakota':'M365.9,96.7 L490.3,99.7 L488.6,109.4 L492.5,155.0 L491.2,157.4 L492.8,164.0 L490.9,170.4 L492.6,179.1 L488.5,175.1 L471.9,170.6 L467.5,172.5 L458.3,167.0 L377.9,166.9 L365.7,119.3 L365.9,96.7 Z','Tennessee':'M632.4,322.0 L635.8,318.7 L675.2,319.1 L690.9,319.7 L705.4,319.5 L737.9,325.4 L732.7,331.0 L723.2,334.7 L720.4,333.9 L712.5,340.6 L703.8,344.3 L698.4,351.8 L694.7,357.9 L644.0,357.7 L625.5,357.8 L596.5,357.1 L597.8,347.2 L601.5,339.6 L604.5,333.9 L607.7,322.0 L609.7,322.0 L632.4,322.0 Z','Texas':'M403.1,321.9 L433.3,368.1 L438.4,372.4 L445.7,371.9 L450.2,376.2 L457.2,378.0 L460.6,377.8 L465.2,381.4 L468.8,385.1 L475.7,383.8 L479.1,384.8 L484.6,382.5 L489.5,385.2 L494.2,389.0 L501.1,384.2 L506.6,383.1 L511.8,384.6 L517.2,384.8 L525.3,390.2 L530.3,391.2 L532.6,404.9 L536.3,434.6 L541.0,449.5 L539.5,460.7 L538.4,466.5 L538.5,473.5 L536.0,484.4 L524.6,487.7 L521.0,482.0 L517.2,484.1 L518.1,488.9 L515.3,498.1 L500.2,510.2 L496.2,510.7 L492.0,510.3 L488.9,508.0 L490.1,516.1 L486.6,519.2 L479.1,531.9 L474.8,539.9 L476.2,542.2 L474.0,548.7 L475.5,554.2 L477.8,563.9 L479.7,572.5 L472.5,571.9 L463.4,570.9 L455.5,566.6 L449.5,562.5 L445.6,552.3 L442.9,544.3 L442.0,537.0 L438.2,532.8 L434.4,525.1 L428.4,517.9 L425.0,508.8 L422.1,498.3 L416.4,491.9 L412.3,488.0 L402.5,481.6 L394.4,480.0 L389.5,483.3 L384.7,496.2 L381.4,501.1 L374.5,497.5 L362.2,488.5 L355.4,478.7 L352.4,467.6 L349.9,460.6 L340.0,451.0 L334.1,444.4 L327.0,435.6 L322.6,431.6 L382.2,429.2 L382.6,381.2 L383.3,321.9 L403.1,321.9 Z','Utah':'M230.6,190.9 L249.2,214.7 L282.4,259.3 L282.6,282.2 L258.3,309.9 L199.3,190.9 L230.6,190.9 Z','Vermont':'M908.3,118.9 L906.2,125.2 L905.0,133.2 L899.5,141.3 L896.6,148.6 L892.4,163.3 L891.1,168.0 L892.4,173.4 L878.7,170.9 L876.6,150.5 L876.1,142.0 L878.4,132.6 L877.8,123.9 L894.9,119.2 L908.3,118.9 Z','Virginia':'M843.4,285.8 L843.7,289.5 L840.1,296.4 L833.8,307.1 L834.3,296.5 L843.4,285.8 Z M833.1,287.3 L833.4,287.3 L832.6,287.3 L833.1,287.3 Z M794.2,251.2 L804.7,254.6 L809.1,257.0 L812.5,261.7 L816.0,267.3 L812.5,272.1 L812.0,278.0 L817.3,281.0 L824.8,285.6 L827.3,295.5 L826.9,303.2 L828.8,308.0 L823.0,307.1 L825.2,311.2 L835.5,320.7 L761.8,320.8 L738.7,319.8 L714.4,316.1 L718.7,312.6 L721.3,308.9 L727.4,303.6 L733.6,299.2 L738.7,305.2 L744.0,301.9 L750.5,303.1 L758.8,299.9 L761.8,293.5 L766.7,286.2 L771.3,277.5 L775.4,275.3 L779.8,274.3 L785.5,267.9 L794.2,251.2 Z','Washington':'M149.4,23.8 L149.4,85.2 L151.3,91.4 L116.9,95.4 L107.9,97.5 L96.5,101.9 L89.4,101.4 L79.7,103.2 L69.8,102.3 L54.0,103.5 L51.6,93.5 L46.5,91.2 L40.9,89.1 L35.4,89.7 L32.9,84.3 L31.7,77.6 L28.0,63.0 L22.9,50.4 L23.4,38.6 L33.6,43.8 L42.9,44.9 L49.4,45.8 L56.1,50.9 L58.4,57.5 L61.3,63.3 L60.1,52.4 L60.6,44.7 L58.8,36.5 L58.5,29.7 L53.4,26.5 L149.4,23.8 Z M54.7,40.3 L56.9,39.3 L56.5,44.1 L53.9,42.3 L54.7,40.3 Z M49.6,33.8 L51.4,30.6 L53.9,34.4 L53.1,37.7 L49.3,36.8 L49.6,33.8 Z','West Virginia':'M758.0,223.3 L775.4,245.1 L778.5,255.1 L783.9,251.9 L792.2,250.0 L795.5,247.6 L799.9,248.0 L804.7,254.6 L794.2,251.2 L785.5,267.9 L779.8,274.3 L775.4,275.3 L771.3,277.5 L766.7,286.2 L761.8,293.5 L758.8,299.9 L750.5,303.1 L744.0,301.9 L738.7,305.2 L733.6,299.2 L731.6,296.8 L727.6,291.3 L723.0,283.2 L727.8,275.5 L730.5,271.1 L732.7,261.7 L736.9,263.1 L738.6,255.8 L742.4,252.5 L746.3,253.1 L754.4,236.6 L756.7,227.2 L758.0,223.3 Z','Wisconsin':'M593.1,81.8 L598.0,87.3 L622.3,95.7 L631.6,97.2 L637.0,103.1 L635.2,110.6 L637.6,114.5 L639.5,119.8 L633.6,125.8 L634.5,130.3 L639.8,123.1 L646.0,115.3 L649.2,117.1 L642.2,129.9 L641.0,139.3 L637.7,146.0 L636.8,153.5 L635.2,166.9 L636.6,179.0 L589.3,178.6 L582.2,172.9 L580.4,163.7 L579.9,158.5 L578.8,152.2 L576.1,143.2 L568.7,138.2 L562.8,132.5 L557.6,129.5 L554.4,116.4 L555.9,108.7 L551.9,105.5 L556.0,97.0 L561.8,93.6 L565.1,77.5 L570.2,78.8 L586.0,72.6 L585.2,77.4 L593.1,81.8 Z','Wyoming':'M282.0,119.2 L365.7,119.3 L365.8,214.5 L301.3,214.5 L249.2,214.7 L249.2,131.7 L282.0,119.2 Z'};
+</script>
+<script>
+const C = { gold:'#d4a017', goldLt:'#f0c94a', red:'#a3271f', redLt:'#d1483a', teal:'#3a8a7a', tealLt:'#6fc4b2', text:'#f0e6d2', dim:'#a89880' };
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.color = C.text;
+Chart.defaults.borderColor = 'rgba(212,160,23,0.10)';
+
+const chartInstances = {};
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+/* ============ SPOILER STATE ============ */
+let spoilersOn = false;
+
+function project(lon, lat){
+  const LON_MIN=-126, LON_MAX=-66, LAT_MIN=24, LAT_MAX=50, W=1000, H=620;
+  const x = (lon - LON_MIN) / (LON_MAX - LON_MIN) * W;
+  const y = (LAT_MAX - lat) / (LAT_MAX - LAT_MIN) * H;
+  return [x,y];
+}
+
+const svg = document.getElementById('usSvg');
+let mapHtml = '';
+for(const name in US_PATHS){
+  mapHtml += `<path d="${US_PATHS[name]}" fill="#3a2f24" stroke="#1a1410" stroke-width="0.6"/>`;
+}
+svg.innerHTML = mapHtml;
+
+const STAGES = [
+  { n:1, name:'First 15,000 Meters', lon:-117.0, lat:32.9, unlocked:true,
+    detail:'The starting line at San Diego Beach, ending at Santa Maria Novella Church. A pure sprint. Avdul is eliminated in the first 1,000 meters after riding into a grove of cacti while chasing Gyro.' },
+  { n:2, name:'Crossing the Arizona Desert', lon:-112.5, lat:34.5, unlocked:false,
+    detail:'~1,200km through the Arizona Desert to Monument Valley \u2014 one of the longest, harshest stages of the race. Result at the top: Diego 1st, Johnny 2nd, Sandman 3rd, Gyro 4th.' },
+  { n:3, name:'Rocky Mountain Breakdown', lon:-106.0, lat:39.5, unlocked:false,
+    detail:'517km through the Rocky Mountains. Terrain and altitude become as dangerous as any rival racer.' },
+  { n:4, name:'The Small Gravestone on the Wide, Wide Great Plains', lon:-98.5, lat:38.5, unlocked:false,
+    detail:'The race crosses the vast Kansas Plains. The official stage title itself hints at the stage\u2019s cost.' },
+  { n:5, name:'Illinois Skyline', lon:-88.5, lat:41.5, unlocked:false,
+    detail:'The route pushes toward Chicago\u2019s outskirts \u2014 the first real skyline the racers have seen since San Diego.' },
+  { n:6, name:'Michigan Lakeline', lon:-84.7, lat:45.8, unlocked:false,
+    detail:'A crossing along the Michigan Lake Straits near Mackinaw City \u2014 one of the more unusual terrain challenges of the race.' },
+  { n:7, name:'Philadelphia Triangle', lon:-75.16, lat:39.95, unlocked:false,
+    detail:'Philadelphia, Independence Hall, and the surrounding "triangle" of checkpoints as the race nears its final stretch.' },
+  { n:8, name:'Both Sides Now', lon:-74.8, lat:40.2, unlocked:false,
+    detail:'A New Jersey stage, bridging the gap toward the final push into New York.' },
+  { n:9, name:'Stars and Stripes \u2014 the Finish Line', lon:-74.0, lat:40.71, unlocked:false,
+    detail:'Manhattan Island to Trinity Church. The final chapter of the manga is titled "Stars and Stripes - Outro."' }
+];
+
+function renderMap(){
+  document.querySelectorAll('.stage-marker').forEach(m => m.remove());
+  STAGES.forEach((stage,i)=>{
+    const [x,y] = project(stage.lon, stage.lat);
+    const isUnlocked = stage.unlocked || spoilersOn;
+    const marker = document.createElementNS('http://www.w3.org/2000/svg','g');
+    marker.setAttribute('class','stage-marker' + (isUnlocked ? '' : ' locked'));
+    marker.setAttribute('data-idx', i);
+    const fillColor = isUnlocked ? '#d4a017' : '#4a4038';
+    const label = isUnlocked ? stage.n : '?';
+    marker.innerHTML = `<circle cx="${x}" cy="${y}" r="12" fill="${fillColor}" stroke="#f0e6d2" stroke-width="1.5"/>
+      <text x="${x}" y="${y}" fill="#1a1410" font-size="11" font-weight="700" font-family="JetBrains Mono" text-anchor="middle" dominant-baseline="central">${label}</text>`;
+    marker.addEventListener('click', ()=> selectStage(i));
+    svg.appendChild(marker);
+  });
+}
+renderMap();
+
+function selectStage(idx){
+  const stage = STAGES[idx];
+  const isUnlocked = stage.unlocked || spoilersOn;
+  if(!isUnlocked){
+    document.getElementById('stageDetail').innerHTML = `<div class="locked-msg">🔒 Stage ${stage.n} hasn't aired yet. Flip the spoiler toggle above to preview it anyway.</div>`;
+    return;
+  }
+  document.getElementById('stageDetail').innerHTML = `
+    <div class="stage-card">
+      <div class="name">Stage ${stage.n}</div>
+      <div class="meta">${stage.name}</div>
+      <p>${stage.detail}</p>
+    </div>`;
+}
+
+/* ============ GATED CONTENT SECTIONS ============ */
+function renderLegalGate(){
+  const el = document.getElementById('legalGate');
+  if(!spoilersOn){
+    el.innerHTML = `<div class="card"><div class="spoiler-lock"><div class="icon">🔒</div><p>Stage-by-stage legal problems reveal what actually happens in each stage. Flip the spoiler toggle above to unlock them.</p></div></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="card">
+      <h2 style="font-size:16px;">Stage by stage: what would actually get the race shut down</h2>
+      <table>
+        <tr><th>Stage</th><th>The legal problem</th></tr>
+        <tr><td>2</td><td>Diego and Johnny's on-course collisions and sabotage would be assault charges in any real competition, not just a "hazard of racing"</td></tr>
+        <tr><td>3</td><td>Attacks from Valentine's agents (Pork Pie Hat Kid capturing Gyro via grappling hooks) are kidnapping and aggravated assault, committed in view of spectators and press</td></tr>
+        <tr><td>4</td><td>The Boomboom Family's magnetic attacks on competitors are attempted murder with an improvised weapon \u2014 and the fact they're allowed to keep racing after is a due-process failure no modern sanctioning body would permit</td></tr>
+        <tr><td>5\u20136</td><td>A "terrorist from his homeland" is explicitly sent after Gyro \u2014 post-9/11, this alone would trigger an immediate FBI/Homeland Security shutdown of the entire event, not just an elimination</td></tr>
+        <tr><td>7\u20139</td><td>President Valentine secretly running the race as cover for a government relic-hunting operation is textbook abuse-of-office \u2014 a sitting US President personally directing lethal sabotage against private citizens for a covert program is the kind of scandal that ends in impeachment hearings, not a trophy ceremony</td></tr>
+      </table>
+      <p class="note">Several named racers dying over the course of the event, with no independent investigation and prize money still paid out, would itself be obstruction of justice by modern standards.</p>
+      <p class="src">Analysis based on plot summaries from JoJo's Bizarre Wiki and Wikipedia; legal framing is illustrative, not a legal opinion.</p>
+    </div>`;
+}
+
+function renderFullStatsGate(){
+  const el = document.getElementById('fullStatsGate');
+  if(!spoilersOn){
+    el.innerHTML = `<div class="spoiler-lock"><div class="icon">🔒</div><p>Full race totals (final death count, race winner, total prize payout) are hidden until you flip the spoiler toggle above.</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="card">
+      <h2 style="font-size:16px;">The full race, final numbers</h2>
+      <div class="kpi-row">
+        <div class="kpi"><div class="v">88</div><div class="l">deaths across the whole race (0.023% mortality)</div></div>
+        <div class="kpi"><div class="v">$50B</div><div class="l">profit generated by the race</div></div>
+      </div>
+      <p class="note">The race ran Sept 25, 1890 \u2013 Jan 19, 1891 (~116 days). Winner: Pocoloco, who overslept the start and caught up on sheer luck, after Diego Brando's disappearance in the race's final moments.</p>
+      <p class="src">Source: JoJo's Bizarre Wiki (Fandom), Steel Ball Run (race) — fan-catalogued totals; exact per-stage figures vary slightly between wiki sources.</p>
+    </div>`;
+}
+
+function renderCharactersGate(){
+  const el = document.getElementById('charactersGate');
+  if(!spoilersOn){
+    el.innerHTML = `<div class="card"><div class="spoiler-lock"><div class="icon">🔒</div><p>This whole tab is character fates and major plot reveals. Flip the spoiler toggle above to unlock it.</p></div></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="card">
+      <h2><span class="num">05</span>27 named characters die in this story</h2>
+      <p class="note">JoJo's Bizarre Adventure is famous for "anyone can die" \u2014 Steel Ball Run pushes it further than most parts. 27 named characters are catalogued as deceased across the story.</p>
+      <p class="src">Source: JoJo's Bizarre Encyclopedia, "Category: Deceased Characters in Part 7."</p>
+    </div>
+    <div class="card">
+      <h2 style="font-size:16px;">Stands and abilities \u2014 the full roster</h2>
+      <table>
+        <tr><th>User</th><th>Stand / Ability</th><th>What it does</th></tr>
+        <tr><td>Johnny Joestar</td><td>Tusk</td><td>Fires spinning fingernails; evolves through four distinct stages of power</td></tr>
+        <tr><td>Gyro Zeppeli</td><td>The Spin (not a Stand)</td><td>Rotational energy technique channeled through steel balls</td></tr>
+        <tr><td>Funny Valentine</td><td>Dirty Deeds Done Dirt Cheap (D4C)</td><td>Parallel-dimension travel; later gains "Love Train," redirecting misfortune onto others</td></tr>
+        <tr><td>Diego Brando (alt.)</td><td>The World</td><td>Time-stop ability, pulled in from a parallel dimension</td></tr>
+        <tr><td>Magent Magent</td><td>20th Century Boy</td><td>Total invulnerability while holding a specific pose</td></tr>
+        <tr><td>Dr. Ferdinand</td><td>Scary Monsters</td><td>Turns living things into dinosaur-like creatures</td></tr>
+      </table>
+      <p class="note">The Devil's Palm \u2014 a desert region in Stage 2 \u2014 is where proximity to buried Corpse Parts starts awakening latent Stand powers, turning an ordinary horse race into a Stand-user battlefield.</p>
+      <p class="src">Source: JoJo's Bizarre Wiki, TV Tropes (Steel Ball Run manga page).</p>
+    </div>
+    <div class="card">
+      <h2 style="font-size:16px;">The Saint's Corpse</h2>
+      <p>The race is secretly a cover for collecting scattered parts of a 1,900-year-old corpse, heavily implied to be Jesus Christ's, sought by President Funny Valentine for its reality-altering power. Each part grants a different ability to whoever holds it.</p>
+      <p class="src">Source: JoJo's Bizarre Wiki, "Saint's Corpse."</p>
+    </div>`;
+}
+
+/* ============ TOGGLE ============ */
+document.getElementById('spoilerToggle').addEventListener('click', function(){
+  spoilersOn = !spoilersOn;
+  this.classList.toggle('on', spoilersOn);
+  const bar = document.getElementById('spoilerBar');
+  const label = bar.querySelector('.label');
+  if(spoilersOn){
+    bar.style.background = C.teal;
+    label.innerHTML = '<b>⚠ FULL SPOILERS ENABLED</b>Showing the whole race — later stages, final numbers, character fates. Flip back anytime.';
+  } else {
+    bar.style.background = C.red;
+    label.innerHTML = '<b>⚠ SPOILER PROTECTION IS ON</b>Only Episode 1 (Stage 1) content is shown. Flip this to see the full race — later stages, the ending, character fates.';
+  }
+  renderMap();
+  if(document.getElementById('stageDetail').querySelector('.stage-card, .locked-msg')){
+    document.getElementById('stageDetail').innerHTML = '<div class="stage-placeholder">Tap a checkpoint on the map above.</div>';
+  }
+  renderFullStatsGate();
+  renderCharactersGate();
+  renderLegalGate();
+});
+
+renderFullStatsGate();
+renderCharactersGate();
+renderLegalGate();
+
+makeChart('chartPrizes', {
+  type:'bar',
+  data:{ labels:['1st place','2nd place','3rd place','4th place','5th place'],
+    datasets:[{ label:'Prize (USD)', data:[60000000,1000000,500000,250000,120000], backgroundColor:C.gold }]},
+  options:{ indexAxis:'y', scales:{ x:{ type:'logarithmic' } }, plugins:{legend:{display:false},
+    tooltip:{ callbacks:{ label:(ctx)=> '$'+ctx.raw.toLocaleString() } } } }
+});
+
+makeChart('chartChapters', {
+  type:'bar',
+  data:{ labels:[['Stage 1','(aired)'],['Stage 2','(chapters only)'],['Stages 3\u20139','(chapters only)']],
+    datasets:[{ label:'Chapters', data:[12,16,67], backgroundColor:[C.gold, C.teal, '#5a4d3c'] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+makeChart('chartAnimeTimeline', {
+  type:'bar',
+  data:{ labels:[['Episode 1','(Stage 1)'],['Next cours','(Stages 2\u20133)'],['Beyond','(Stages 4\u20139)']],
+    datasets:[{ label:'Status', data:[1,1,1], backgroundColor:[C.gold, C.teal, '#4a4038'] }]},
+  options:{ indexAxis:'y', scales:{ x:{ display:false } }, plugins:{legend:{display:false},
+    tooltip:{ callbacks:{ label:(ctx)=> ['Aired \u2014 March 19, 2026','Airs weekly from Sept 25, 2026','Not yet announced'][ctx.dataIndex] } } } }
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
