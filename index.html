@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>@dumbdashboards — all the dashboards</title>
 <meta name="description" content="Interactive dashboards on pop culture and sports. Free to open instantly or download as HTML.">
+<link rel="canonical" href="https://dumb-dashboards.github.io/dumb-dashboards/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="@dumbdashboards — all the dashboards">
+<meta property="og:description" content="Interactive dashboards on pop culture and sports. Free to open instantly or download as HTML.">
+<meta property="og:url" content="https://dumb-dashboards.github.io/dumb-dashboards/">
+<meta property="og:image" content="https://dumb-dashboards.github.io/dumb-dashboards/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="@dumbdashboards — all the dashboards">
+<meta name="twitter:description" content="Interactive dashboards on pop culture and sports.">
+<meta name="twitter:image" content="https://dumb-dashboards.github.io/dumb-dashboards/og-image.png">
+<meta name="theme-color" content="#121a17">
 <style>
 :root{--bg:#121a17;--card:#1b2823;--card2:#223330;--ink:#f3efe3;--mute:#9fb0a8;--acc:#f0a83a;--line:#2d413b}
 *{box-sizing:border-box}
@@ -27,6 +40,7 @@ input[type=search]:focus{outline:2px solid var(--acc);outline-offset:1px}
 .meta{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--mute)}
 .ep{color:var(--acc);font-weight:700;letter-spacing:.08em}
 .card h2{margin:0;font-size:1.08rem;line-height:1.25}
+.desc{margin:0;color:var(--mute);font-size:.9rem}
 .actions{margin-top:auto;display:flex;gap:8px}
 .btn{flex:1;text-align:center;padding:10px 12px;border-radius:10px;font-size:.92rem;font-weight:700;text-decoration:none}
 .open{background:var(--acc);color:#1a1a12}
@@ -61,28 +75,28 @@ footer a{color:var(--acc)}
 
 <script>
 /* To add a dashboard, add one line below.
-   file = name of the .html file in the repository, ep = episode number (or "" if none),
+   file = name of the .html file in the repository, desc = one short line, ep = episode number (or "" if none),
    tag = one of: Music, Sport, Film & TV, Anime & Games, Other. Newest go on top. */
 const DASHBOARDS = [
-  {file:"fatbearweek-dashboard.html", ep:"19", title:"Fat Bear Week — The Data", tag:"Other"},
-  {file:"oasis-dashboard.html", ep:"18", title:"Oasis Live '25 / '27 — Tour Analytics", tag:"Music"},
-  {file:"sbr-dashboard.html", ep:"17", title:"Steel Ball Run — Race Analytics", tag:"Anime & Games"},
-  {file:"harrystyles-dashboard.html", ep:"16", title:"Together, Together — Tour Analytics", tag:"Music"},
-  {file:"jumpscare-dashboard.html", ep:"15", title:"Jump Scare Analytics — Q3 Report", tag:"Film & TV"},
-  {file:"dumbquestions-dashboard.html", ep:"14", title:"The Dumb Questions Machine", tag:"Other"},
-  {file:"silenthill-dashboard.html", ep:"13", title:"Silent Hill — Case File", tag:"Anime & Games"},
-  {file:"secretlair-dashboard.html", ep:"12", title:"Secret Lair — The Vault Ledger", tag:"Anime & Games"},
-  {file:"anatomy-impact-football.html", ep:"11", title:"Anatomy of the Impact — Football Strike", tag:"Sport"},
-  {file:"f1-dashboard.html", ep:"10", title:"F1 2026 — The Reset", tag:"Sport"},
-  {file:"kingdomhearts-dashboard.html", ep:"09", title:"Kingdom Hearts — The Data Corridor", tag:"Anime & Games"},
-  {file:"himym-dashboard.html", ep:"08", title:"HIMYM — The MacLaren's Report", tag:"Film & TV"},
-  {file:"sinner-dashboard.html", ep:"07", title:"Sinner — Court Vision", tag:"Sport"},
-  {file:"onepiece-dashboard.html", ep:"06", title:"One Piece — Bounty Board", tag:"Anime & Games"},
-  {file:"strokes-dashboard.html", ep:"05", title:"The Strokes — Channel Strip 001", tag:"Music"},
-  {file:"coyote-dashboard.html", ep:"04", title:"The People (Coyote) v. ACME Corp.", tag:"Film & TV"},
-  {file:"spiderman-dashboard.html", ep:"03", title:"Spidey-Metrics — Three Eras, Compared", tag:"Film & TV"},
-  {file:"odyssey-map.html", ep:"02", title:"The Odyssey — A Ten-Year Delay Report", tag:"Other"},
-  {file:"trolley-game.html", ep:"01", title:"Trolley Tracks — The Impossible Dilemma", tag:"Other"}
+  {file:"fatbearweek-dashboard.html", ep:"19", title:"Fat Bear Week — The Data", tag:"Other", desc:"2.5 million votes, a 16-bear bracket and a salmon river in Katmai National Park."},
+  {file:"oasis-dashboard.html", ep:"18", title:"Oasis Live '25 / '27 — Tour Analytics", tag:"Music", desc:"The reunion tour that grossed $525M, mapped region by region."},
+  {file:"sbr-dashboard.html", ep:"17", title:"Steel Ball Run — Race Analytics", tag:"Anime & Games", desc:"A data audit of the deadliest, richest horse race in fiction."},
+  {file:"harrystyles-dashboard.html", ep:"16", title:"Together, Together — Tour Analytics", tag:"Music", desc:"Three tours, 250+ shows and a song ranked #5 all-time on Spotify."},
+  {file:"jumpscare-dashboard.html", ep:"15", title:"Jump Scare Analytics — Q3 Report", tag:"Film & TV", desc:"A quantitative review of horror-cinema startle events, ahead of the Resident Evil reboot."},
+  {file:"dumbquestions-dashboard.html", ep:"14", title:"The Dumb Questions Machine", tag:"Other", desc:"Six useless calculations, done with real physics. Spin the wheel."},
+  {file:"silenthill-dashboard.html", ep:"13", title:"Silent Hill — Case File", tag:"Anime & Games", desc:"25 years, 17.1 million copies and a 12-year silence: a full audit ahead of Townfall."},
+  {file:"secretlair-dashboard.html", ep:"12", title:"Secret Lair — The Vault Ledger", tag:"Anime & Games", desc:"Six years of drops, a Lofi Girl crossover and a full audit of the vault."},
+  {file:"anatomy-impact-football.html", ep:"11", title:"Anatomy of the Impact — Football Strike", tag:"Sport", desc:"Estimated effects on the body of being hit by a football at 211 km/h."},
+  {file:"f1-dashboard.html", ep:"10", title:"F1 2026 — The Reset", tag:"Sport", desc:"A data look at Formula 1's 2026 reset."},
+  {file:"kingdomhearts-dashboard.html", ep:"09", title:"Kingdom Hearts — The Data Corridor", tag:"Anime & Games", desc:"34 games, 25 years and Kingdom Hearts IV on the way."},
+  {file:"himym-dashboard.html", ep:"08", title:"HIMYM — The MacLaren's Report", tag:"Film & TV", desc:"208 episodes, 9 seasons and one running gag that tracks the show's decline."},
+  {file:"sinner-dashboard.html", ep:"07", title:"Sinner — Court Vision", tag:"Sport", desc:"World No. 1, six straight Masters 1000 titles and a return game that shouldn't exist."},
+  {file:"onepiece-dashboard.html", ep:"06", title:"One Piece — Bounty Board", tag:"Anime & Games", desc:"29 years, 600M+ copies and a bounty from 30 million to 3 billion berries. Spoilers."},
+  {file:"strokes-dashboard.html", ep:"05", title:"The Strokes — Channel Strip 001", tag:"Music", desc:"Every lyric counted, every chart position verified, every live play logged."},
+  {file:"coyote-dashboard.html", ep:"04", title:"The People (Coyote) v. ACME Corp.", tag:"Film & TV", desc:"76 years of product liability, itemized, in The People v. ACME Corp."},
+  {file:"spiderman-dashboard.html", ep:"03", title:"Spidey-Metrics — Three Eras, Compared", tag:"Film & TV", desc:"Three actors, three timelines, one very specific set of KPIs."},
+  {file:"odyssey-map.html", ep:"02", title:"The Odyssey — A Ten-Year Delay Report", tag:"Other", desc:"A three-day sail home that took ten years. Tap each seal on the map."},
+  {file:"trolley-game.html", ep:"01", title:"Trolley Tracks — The Impossible Dilemma", tag:"Other", desc:"12 impossible dilemmas across 4 flavors of chaos. Built for parties."}
 ];
 
 const grid = document.getElementById('grid');
@@ -98,12 +112,13 @@ function render(){
   const term = q.value.trim().toLowerCase();
   const list = DASHBOARDS.filter(d =>
     (active === 'All' || d.tag === active) &&
-    (!term || (d.title + ' ' + d.tag).toLowerCase().includes(term)));
+    (!term || (d.title + ' ' + d.tag + ' ' + d.desc).toLowerCase().includes(term)));
   grid.innerHTML = list.map(d => {
     const id = d.ep ? 'ep' + parseInt(d.ep, 10) : d.file.replace('.html','');
     return `<article class="card" id="${id}">
       <div class="meta"><span class="ep">${d.ep ? 'EP. ' + esc(d.ep) : ''}</span><span>${esc(d.tag)}</span></div>
       <h2>${esc(d.title)}</h2>
+      <p class="desc">${esc(d.desc)}</p>
       <div class="actions">
         <a class="btn open" href="${esc(d.file)}">Open</a>
         <a class="btn dl" href="${esc(d.file)}" download>Download HTML</a>
