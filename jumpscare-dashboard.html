@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUMP SCARE ANALYTICS — Q3 REPORT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0d0d0f; --bg2:#050506;
+    --panel:#18181b; --panel2:#0f0f11;
+    --yellow:#f2c811; --yellow-dim:#8a7409;
+    --red:#c0392b; --red-lt:#e05c4a;
+    --white:#f2f0ea; --dim:#8a8a92;
+    --line: rgba(242,200,17,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--white);
+    font-family:'IBM Plex Sans',sans-serif;
+    padding-bottom:50px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--yellow);}
+
+  .tape{
+    background: repeating-linear-gradient(-45deg, var(--yellow), var(--yellow) 14px, #1a1a1a 14px, #1a1a1a 28px);
+    height:10px; width:100%;
+  }
+
+  .hero{ max-width:960px; margin:0 auto 16px; padding:28px 24px 22px; text-align:center; border-bottom:1px solid var(--line);}
+  .hero h1{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:clamp(24px,5.4vw,38px); color:var(--white); letter-spacing:-0.5px;}
+  .hero h1 span{ color:var(--yellow);}
+  .hero .sub{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--dim); margin-top:10px; max-width:600px; margin-left:auto; margin-right:auto; line-height:1.7;}
+
+  .nav{ max-width:960px; margin:0 auto 18px; display:flex; gap:8px; padding:0 24px; flex-wrap:wrap; justify-content:center;}
+  .tab-btn{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:12px; letter-spacing:0.5px;
+    background:var(--panel); color:var(--dim); border:1px solid var(--line); border-radius:3px; padding:9px 16px; cursor:pointer; }
+  .tab-btn.active{ background:var(--yellow); color:#0d0d0f; border-color:var(--yellow);}
+
+  .filter-row{ display:flex; gap:6px; margin:0 0 12px; flex-wrap:wrap; }
+  .filter-btn{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11px; letter-spacing:0.5px;
+    background:var(--panel2); color:var(--dim); border:1px solid var(--line); border-radius:3px; padding:7px 13px; cursor:pointer; }
+  .filter-btn.active{ background:var(--yellow); color:#0d0d0f; border-color:var(--yellow);}
+
+  .panel{ display:none; max-width:960px; margin:0 auto; padding:0 24px; }
+  .panel.active{ display:block; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  canvas{ max-width:100%; }
+
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    padding:20px 20px 18px; margin-bottom:16px;
+  }
+  .card h2{ font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:700; margin-bottom:2px; color:var(--white);}
+  .card h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--yellow); margin-right:8px; font-weight:400;}
+  .card p{ font-size:14px; line-height:1.6; color:var(--white);}
+  .card .note{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--dim); margin-top:8px; line-height:1.65;}
+  .card .src{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--dim); opacity:0.7; margin-top:4px;}
+
+  .kpi-row{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; }
+  .kpi{ flex:1; min-width:140px; background:var(--panel2); border:1px solid var(--line); border-radius:4px; padding:12px 14px; }
+  .kpi .v{ font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; color:var(--yellow); }
+  .kpi .l{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:0.5px; text-transform:uppercase; margin-top:2px;}
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'IBM Plex Mono',monospace; }
+  th{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; color:var(--dim); border-bottom:1px solid var(--yellow);}
+  td.big{ font-family:'IBM Plex Mono'; font-weight:700; font-size:14px; color:var(--white);}
+
+  .discrepancy-box{ display:flex; gap:12px; margin-top:10px; }
+  .discrepancy-box > div{ flex:1; background:var(--panel2); border-radius:4px; padding:14px; text-align:center; }
+  .discrepancy-box .src-name{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px;}
+  .discrepancy-box .src-val{ font-family:'IBM Plex Mono'; font-size:32px; font-weight:700; color:var(--yellow); margin:4px 0;}
+  .vs-badge{ display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:12px; color:var(--red-lt); font-weight:700; flex:0 0 40px !important; }
+
+  details summary{ font-family:'IBM Plex Mono'; font-size:11px; color:var(--dim); cursor:pointer;}
+  details p{ font-size:11px; color:var(--dim); line-height:1.6; font-family:'IBM Plex Mono',monospace;}
+
+  footer{ max-width:960px; margin:20px auto 0; padding:0 24px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--dim); text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="tape"></div>
+
+<div class="hero">
+  <div class="eyebrow">@dumbdashboards — ep. 15 — internal memo</div>
+  <h1>JUMP SCARE ANALYTICS<br><span>Q3 2026 REPORT</span></h1>
+  <div class="sub">A quantitative review of horror-cinema startle events, prepared ahead of Zach Cregger's Resident Evil reboot (Sept 2026). Methodology varies by source; discrepancies are flagged, not hidden.</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="sources">Source Discrepancy</button>
+  <button class="tab-btn" data-tab="records">All-Time Records</button>
+  <button class="tab-btn" data-tab="methods">Villains & Methods</button>
+</div>
+
+<!-- ===================== OVERVIEW ===================== -->
+<div class="panel active" id="panel-overview">
+
+  <div class="card">
+    <h2><span class="num">01</span>THE HOOK: RESIDENT EVIL ALREADY HOLDS A TOP SLOT</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">29</div><div class="l">RE: Final Chapter (2016) jump scares</div></div>
+      <div class="kpi"><div class="v">#3</div><div class="l">tied for, all-time franchise ranking</div></div>
+      <div class="kpi"><div class="v">2026</div><div class="l">Cregger reboot releases this month</div></div>
+    </div>
+    <p class="note">Resident Evil: The Final Chapter (2016) is tied for the 3rd-highest jump-scare count ever logged in the tracking community's database. Zach Cregger — director of Barbarian and Weapons — now helms the franchise reboot.</p>
+    <p class="src">Source: WheresTheJump.com franchise leaderboard.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:15px;">THE TREND NOBODY EXPECTED: SCARES ARE DOWN, NOT UP</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">1981</div><div class="l">peak year (The Evil Dead: 1 scare every 4 min)</div></div>
+      <div class="kpi"><div class="v">↓</div><div class="l">declining since, despite more horror films being made</div></div>
+    </div>
+    <p class="note">Popular assumption: horror keeps escalating. The data says otherwise — jump-scare density peaked around 1981 and has been on a genuine decline since, even as horror output has grown. One proposed cause: the rise of "elevated horror" (character- and visual-driven, not scare-driven) starting in the mid-2010s.</p>
+    <p class="src">Source: Washington Post Department of Data analysis, using WheresTheJump.com's tracked-film database.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:15px;">REMAKES: A SYSTEMATIC, RECENT DECLINE</h2>
+    <canvas id="chartRemake" height="180"></canvas>
+    <p class="note">Of 34 remake/original pairs studied, only 6 remakes had fewer scares than their source film. 5 of those 6 were made in the last decade — and every single remake released since 2020 has had fewer scares than its original.</p>
+    <p class="src">Source: Washington Post Department of Data.</p>
+  </div>
+
+</div>
+
+<!-- ===================== SOURCE DISCREPANCY ===================== -->
+<div class="panel" id="panel-sources">
+
+  <div class="card">
+    <h2><span class="num">02</span>THE CREGGER FILMOGRAPHY: TWO TRACKERS, TWO ANSWERS</h2>
+    <p style="font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--dim);">BARBARIAN (2022)</p>
+    <div class="discrepancy-box">
+      <div><div class="src-name">WhenJumpScare.com</div><div class="src-val">20</div></div>
+      <div class="vs-badge">VS</div>
+      <div><div class="src-name">NotScare.me</div><div class="src-val">21</div></div>
+    </div>
+    <p style="font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--dim); margin-top:18px;">WEAPONS (2025)</p>
+    <div class="discrepancy-box">
+      <div><div class="src-name">WhenJumpScare.com</div><div class="src-val">9</div></div>
+      <div class="vs-badge">VS</div>
+      <div><div class="src-name">NotScare.me</div><div class="src-val">18</div></div>
+    </div>
+    <p class="note">For Cregger's most recent film, the two leading trackers don't just disagree — one counts exactly double the other. "Jump scare" has no industry-standard definition; every count on this page is one tracker's judgment call, not an objective measurement.</p>
+    <p class="src">Source: WhenJumpScare.com, NotScare.me — accessed August 2026.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:15px;">WHAT A "MAJOR" SCARE EVEN MEANS</h2>
+    <div class="filter-row" id="severityToggle">
+      <button class="filter-btn active" data-mode="raw">Raw count</button>
+      <button class="filter-btn" data-mode="pct">Share of total (%)</button>
+    </div>
+    <canvas id="chartSeverity" height="200"></canvas>
+    <p class="note">Both trackers split scares into "major" and "minor" — but the ratio each assigns to the same film varies enormously. Severity classification is even less standardized than the raw count.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:15px;">THE DATABASE ITSELF, BY THE NUMBERS</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">424,613</div><div class="l">films indexed (WhenJumpScare)</div></div>
+      <div class="kpi"><div class="v">9,506</div><div class="l">individual timecodes logged</div></div>
+    </div>
+    <p class="note">One tracker alone has attempted to index nearly half a million films — but has only actually logged timecodes for 9,506 individual scares. Coverage is a rounding error against ambition.</p>
+  </div>
+
+</div>
+
+<!-- ===================== ALL-TIME RECORDS ===================== -->
+<div class="panel" id="panel-records">
+
+  <div class="card">
+    <h2><span class="num">03</span>THE ALL-TIME LEADERBOARD, BY DECADE</h2>
+    <div class="filter-row" id="decadeFilter">
+      <button class="filter-btn active" data-decade="all">All decades</button>
+      <button class="filter-btn" data-decade="1970s">1970s</button>
+      <button class="filter-btn" data-decade="1980s">1980s</button>
+      <button class="filter-btn" data-decade="2000s">2000s</button>
+      <button class="filter-btn" data-decade="2010s">2010s</button>
+    </div>
+    <canvas id="chartLeaderboard" height="320"></canvas>
+    <p class="note" id="leaderboardNote">The record holder, "The Haunting in Connecticut 2" (2013), logged 32 jump scares — more than 5x the count in "Halloween" (1978). This is the closest thing horror has to an inflation index. The tracker's own database only has one entry that qualifies for the 1980s top list — coverage gaps are real and shown, not smoothed over.</p>
+    <p class="src">Source: WheresTheJump.com, "Horror Movies With the Most Jump Scares."</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:15px;">TV HOLDS ITS OWN RECORD</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">21</div><div class="l">jump scares, single episode (Guinness World Record)</div></div>
+      <div class="kpi"><div class="v">150+</div><div class="l">across director Mike Flanagan's full career</div></div>
+    </div>
+    <p class="note">Flanagan's "The Midnight Club" premiere holds the official Guinness World Record for most jump scares in a single TV episode — more than an entire season of his own "Haunting of Bly Manor" (16 total) or "Midnight Mass" (11 total).</p>
+    <p class="src">Source: Guinness World Records; Deadline interview with Mike Flanagan.</p>
+  </div>
+
+</div>
+
+<!-- ===================== VILLAINS & METHODS ===================== -->
+<div class="panel" id="panel-methods">
+
+  <div class="card">
+    <h2><span class="num">04</span>JUMP SCARES PER FILM, BY FRANCHISE VILLAIN</h2>
+    <canvas id="chartVillain" height="220"></canvas>
+    <p class="note">Michael Myers (Halloween) averages 11 jump scares per appearance, alongside an average 18 on-screen kills — the highest combined "villain effectiveness score" (8.71/10) in a dedicated franchise study.</p>
+    <p class="src">Source: Euronews / industry study on horror villain effectiveness, Oct 2022.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:15px;">A COMPLETELY DIFFERENT METHOD: HEART RATE, NOT HEAD COUNT</h2>
+    <canvas id="chartHeartRate" height="200"></canvas>
+    <p class="note">One study skipped manual counting entirely and monitored real viewers' heart rates instead. By that method, "Insidious" (2010) recorded a +23.1 BPM average increase over resting heart rate — the highest tension score in the study, using a completely different methodology than any manual jump-scare count on this page.</p>
+    <p class="src">Source: Atom Tickets biometric horror-film study.</p>
+  </div>
+
+  <details>
+    <summary>Methodology note</summary>
+    <p>No governing body defines what counts as a "jump scare." Every number in this report comes from a specific named source using its own criteria (manual review, community submission, or biometric monitoring). Where two sources disagree, both are shown rather than reconciled into a single false-precise figure. This report treats jump scares as a genuine, if informally measured, cultural data point — same as any other proxy metric.</p>
+  </details>
+
+</div>
+
+<footer>JUMP SCARE ANALYTICS — Q3 2026 REPORT · @dumbdashboards · data collected August 2026</footer>
+
+<script>
+const C = { yellow:'#f2c811', yellowDim:'#8a7409', red:'#c0392b', redLt:'#e05c4a', white:'#f2f0ea', dim:'#8a8a92' };
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.color = C.white;
+Chart.defaults.borderColor = 'rgba(242,200,17,0.10)';
+
+const chartInstances = {};
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  chartInstances[id] = new Chart(ctx, config);
+}
+
+makeChart('chartRemake', {
+  type:'bar',
+  data:{ labels:[['More scares','than original'],['Fewer scares','than original']],
+    datasets:[{ label:'Remakes (of 34 studied)', data:[28,6], backgroundColor:[C.red, C.yellow] }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+const SEVERITY_RAW = { major:[5,2,2,3], minor:[15,19,7,15] };
+function drawSeverity(mode){
+  let major, minor;
+  if(mode==='raw'){ major=SEVERITY_RAW.major; minor=SEVERITY_RAW.minor; }
+  else{
+    major = SEVERITY_RAW.major.map((m,i)=> Math.round(m/(m+SEVERITY_RAW.minor[i])*100));
+    minor = SEVERITY_RAW.minor.map((m,i)=> Math.round(m/(m+SEVERITY_RAW.major[i])*100));
+  }
+  makeChart('chartSeverity', {
+    type:'bar',
+    data:{ labels:[['Barbarian','(WhenJumpScare)'],['Barbarian','(NotScare)'],['Weapons','(WhenJumpScare)'],['Weapons','(NotScare)']],
+      datasets:[
+        {label:'Major', data:major, backgroundColor:C.red},
+        {label:'Minor', data:minor, backgroundColor:C.yellowDim}
+      ]},
+    options:{ indexAxis:'y', scales: mode==='pct' ? { x:{ stacked:true, max:100, ticks:{callback:v=>v+'%'} }, y:{ stacked:true } } : { x:{ stacked:true }, y:{ stacked:true } } }
+  });
+}
+drawSeverity('raw');
+document.querySelectorAll('#severityToggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#severityToggle button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    drawSeverity(btn.dataset.mode);
+  });
+});
+
+const LEADERBOARD_FILMS = [
+  { name:'Suspiria', year:1977, decade:'1970s', count:6 },
+  { name:'When a Stranger Calls', year:1979, decade:'1970s', count:5 },
+  { name:'Deep Red', year:1975, decade:'1970s', count:7 },
+  { name:'The Amityville Horror', year:1979, decade:'1970s', count:8 },
+  { name:'The Exorcist', year:1973, decade:'1970s', count:10 },
+  { name:'Alien', year:1979, decade:'1970s', count:11 },
+  { name:'Halloween', year:1978, decade:'1970s', count:13 },
+  { name:'Evil Dead II', year:1987, decade:'1980s', count:27 },
+  { name:'Scream 3', year:2000, decade:'2000s', count:23 },
+  { name:'Freddy vs. Jason', year:2003, decade:'2000s', count:24 },
+  { name:'The Grudge', year:2004, decade:'2000s', count:23 },
+  { name:'The Messengers', year:2007, decade:'2000s', count:27 },
+  { name:'Drag Me To Hell', year:2009, decade:'2000s', count:23 },
+  { name:'Friday the 13th', year:2009, decade:'2000s', count:23 },
+  { name:'Haunting in Connecticut', year:2009, decade:'2000s', count:26 },
+  { name:'Insidious', year:2010, decade:'2010s', count:24 },
+  { name:'The Quiet Ones', year:2014, decade:'2010s', count:23 },
+  { name:'Annabelle: Creation', year:2017, decade:'2010s', count:23 },
+  { name:'Extraterrestrial', year:2014, decade:'2010s', count:30 },
+  { name:'Paranormal Activity 5', year:2015, decade:'2010s', count:29 },
+  { name:'RE: Final Chapter', year:2016, decade:'2010s', count:29 },
+  { name:'Haunting in CT 2', year:2013, decade:'2010s', count:32 }
+];
+
+function drawLeaderboard(decade){
+  let films = decade==='all' ? LEADERBOARD_FILMS.slice() : LEADERBOARD_FILMS.filter(f=>f.decade===decade);
+  films = films.sort((a,b)=>b.count-a.count);
+  if(decade==='all') films = films.slice(0,10); // top 10 overall to keep it readable
+  makeChart('chartLeaderboard', {
+    type:'bar',
+    data:{ labels: films.map(f=>[f.name, '('+f.year+')']),
+      datasets:[{ label:'Jump scares logged', data: films.map(f=>f.count),
+        backgroundColor: films.map(f=> f.count>=29 ? C.red : C.yellowDim) }]},
+    options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+  });
+  const noteEl = document.getElementById('leaderboardNote');
+  if(decade==='1980s'){
+    noteEl.textContent = 'The tracker\'s database only has one film that qualifies for the 1980s top list (Evil Dead II, 1987, 27 scares) — a real coverage gap, shown as-is rather than padded out.';
+  } else if(decade==='all'){
+    noteEl.textContent = 'Top 10 shown across all tracked decades. The record holder, "The Haunting in Connecticut 2" (2013), logged 32 jump scares — more than 5x the count in "Halloween" (1978).';
+  } else {
+    noteEl.textContent = 'Every film shown here with a confirmed jump-scare count from the tracker\'s ' + decade + ' list, sorted highest to lowest.';
+  }
+}
+drawLeaderboard('all');
+document.querySelectorAll('#decadeFilter button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#decadeFilter button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    drawLeaderboard(btn.dataset.decade);
+  });
+});
+
+makeChart('chartVillain', {
+  type:'bar',
+  data:{ labels:[['Michael Myers','(Halloween)'],['Kayako','(The Grudge)']],
+    datasets:[{ label:'Avg. jump scares per film', data:[11,13], backgroundColor:C.yellow }]},
+  options:{ plugins:{legend:{display:false}} }
+});
+
+makeChart('chartHeartRate', {
+  type:'bar',
+  data:{ labels:['Insidious (2010)'],
+    datasets:[{ label:'Avg. heart rate increase (BPM)', data:[23.1], backgroundColor:C.redLt }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
