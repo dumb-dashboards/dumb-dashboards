@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>@dumbdashboards — tutte le dashboard</title>
-<meta name="description" content="Dashboard interattive su cultura pop e sport. Gratuite, apribili al volo o scaricabili in HTML.">
+<title>@dumbdashboards — all the dashboards</title>
+<meta name="description" content="Interactive dashboards on pop culture and sports. Free to open instantly or download as HTML.">
 <style>
 :root{--bg:#121a17;--card:#1b2823;--card2:#223330;--ink:#f3efe3;--mute:#9fb0a8;--acc:#f0a83a;--line:#2d413b}
 *{box-sizing:border-box}
@@ -41,63 +41,63 @@ footer a{color:var(--acc)}
 <div class="wrap">
   <header>
     <div class="handle">@DUMBDASHBOARDS</div>
-    <h1>Tutte le dashboard</h1>
-    <p>Dati, cultura pop e sport. Aprile direttamente qui, oppure scarica l'HTML e usale come vuoi.</p>
+    <h1>All the dashboards</h1>
+    <p>Data, pop culture and sports. Open them right here, or download the HTML and use them however you like.</p>
   </header>
 
   <div class="tools">
-    <input type="search" id="q" placeholder="Cerca una dashboard…" aria-label="Cerca una dashboard">
+    <input type="search" id="q" placeholder="Search a dashboard…" aria-label="Search a dashboard">
     <div class="chips" id="chips"></div>
   </div>
 
   <main class="grid" id="grid"></main>
-  <div class="empty" id="empty">Nessuna dashboard trovata.</div>
+  <div class="empty" id="empty">No dashboards found.</div>
 
   <footer>
-    Gratis, senza scopi commerciali. Se le usi, cita
+    Free to use, no commercial purposes. If you use them, please credit
     <a href="https://www.instagram.com/dumbdashboards/">@dumbdashboards</a>.
   </footer>
 </div>
 
 <script>
-/* Per aggiungere una dashboard basta una riga qui sotto.
-   file = nome del file .html nel repository, ep = numero episodio (o "" se non c'è),
-   tag = una tra: Musica, Sport, Cinema & TV, Anime & Giochi, Altro. Le più recenti vanno in alto. */
+/* To add a dashboard, add one line below.
+   file = name of the .html file in the repository, ep = episode number (or "" if none),
+   tag = one of: Music, Sport, Film & TV, Anime & Games, Other. Newest go on top. */
 const DASHBOARDS = [
-  {file:"fatbearweek-dashboard.html", ep:"19", title:"Fat Bear Week — The Data", tag:"Altro"},
-  {file:"oasis-dashboard.html", ep:"18", title:"Oasis Live '25 / '27 — Tour Analytics", tag:"Musica"},
-  {file:"sbr-dashboard.html", ep:"17", title:"Steel Ball Run — Race Analytics", tag:"Anime & Giochi"},
-  {file:"harrystyles-dashboard.html", ep:"16", title:"Together, Together — Tour Analytics", tag:"Musica"},
-  {file:"jumpscare-dashboard.html", ep:"15", title:"Jump Scare Analytics — Q3 Report", tag:"Cinema & TV"},
-  {file:"dumbquestions-dashboard.html", ep:"14", title:"The Dumb Questions Machine", tag:"Altro"},
-  {file:"silenthill-dashboard.html", ep:"13", title:"Silent Hill — Case File", tag:"Anime & Giochi"},
-  {file:"secretlair-dashboard.html", ep:"12", title:"Secret Lair — The Vault Ledger", tag:"Anime & Giochi"},
+  {file:"fatbearweek-dashboard.html", ep:"19", title:"Fat Bear Week — The Data", tag:"Other"},
+  {file:"oasis-dashboard.html", ep:"18", title:"Oasis Live '25 / '27 — Tour Analytics", tag:"Music"},
+  {file:"sbr-dashboard.html", ep:"17", title:"Steel Ball Run — Race Analytics", tag:"Anime & Games"},
+  {file:"harrystyles-dashboard.html", ep:"16", title:"Together, Together — Tour Analytics", tag:"Music"},
+  {file:"jumpscare-dashboard.html", ep:"15", title:"Jump Scare Analytics — Q3 Report", tag:"Film & TV"},
+  {file:"dumbquestions-dashboard.html", ep:"14", title:"The Dumb Questions Machine", tag:"Other"},
+  {file:"silenthill-dashboard.html", ep:"13", title:"Silent Hill — Case File", tag:"Anime & Games"},
+  {file:"secretlair-dashboard.html", ep:"12", title:"Secret Lair — The Vault Ledger", tag:"Anime & Games"},
   {file:"anatomy-impact-football.html", ep:"11", title:"Anatomy of the Impact — Football Strike", tag:"Sport"},
   {file:"f1-dashboard.html", ep:"10", title:"F1 2026 — The Reset", tag:"Sport"},
-  {file:"kingdomhearts-dashboard.html", ep:"09", title:"Kingdom Hearts — The Data Corridor", tag:"Anime & Giochi"},
-  {file:"himym-dashboard.html", ep:"08", title:"HIMYM — The MacLaren's Report", tag:"Cinema & TV"},
+  {file:"kingdomhearts-dashboard.html", ep:"09", title:"Kingdom Hearts — The Data Corridor", tag:"Anime & Games"},
+  {file:"himym-dashboard.html", ep:"08", title:"HIMYM — The MacLaren's Report", tag:"Film & TV"},
   {file:"sinner-dashboard.html", ep:"07", title:"Sinner — Court Vision", tag:"Sport"},
-  {file:"onepiece-dashboard.html", ep:"06", title:"One Piece — Bounty Board", tag:"Anime & Giochi"},
-  {file:"strokes-dashboard.html", ep:"05", title:"The Strokes — Channel Strip 001", tag:"Musica"},
-  {file:"coyote-dashboard.html", ep:"04", title:"The People (Coyote) v. ACME Corp.", tag:"Cinema & TV"},
-  {file:"spiderman-dashboard.html", ep:"03", title:"Spidey-Metrics — Three Eras, Compared", tag:"Cinema & TV"},
-  {file:"odyssey-map.html", ep:"02", title:"The Odyssey — A Ten-Year Delay Report", tag:"Altro"},
-  {file:"trolley-game.html", ep:"01", title:"Trolley Tracks — The Impossible Dilemma", tag:"Altro"}
+  {file:"onepiece-dashboard.html", ep:"06", title:"One Piece — Bounty Board", tag:"Anime & Games"},
+  {file:"strokes-dashboard.html", ep:"05", title:"The Strokes — Channel Strip 001", tag:"Music"},
+  {file:"coyote-dashboard.html", ep:"04", title:"The People (Coyote) v. ACME Corp.", tag:"Film & TV"},
+  {file:"spiderman-dashboard.html", ep:"03", title:"Spidey-Metrics — Three Eras, Compared", tag:"Film & TV"},
+  {file:"odyssey-map.html", ep:"02", title:"The Odyssey — A Ten-Year Delay Report", tag:"Other"},
+  {file:"trolley-game.html", ep:"01", title:"Trolley Tracks — The Impossible Dilemma", tag:"Other"}
 ];
 
 const grid = document.getElementById('grid');
 const chipsEl = document.getElementById('chips');
 const q = document.getElementById('q');
 const empty = document.getElementById('empty');
-const tags = ['Tutte', ...Array.from(new Set(DASHBOARDS.map(d => d.tag)))];
-let active = 'Tutte';
+const tags = ['All', ...Array.from(new Set(DASHBOARDS.map(d => d.tag)))];
+let active = 'All';
 
 function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 function render(){
   const term = q.value.trim().toLowerCase();
   const list = DASHBOARDS.filter(d =>
-    (active === 'Tutte' || d.tag === active) &&
+    (active === 'All' || d.tag === active) &&
     (!term || (d.title + ' ' + d.tag).toLowerCase().includes(term)));
   grid.innerHTML = list.map(d => {
     const id = d.ep ? 'ep' + parseInt(d.ep, 10) : d.file.replace('.html','');
@@ -105,8 +105,8 @@ function render(){
       <div class="meta"><span class="ep">${d.ep ? 'EP. ' + esc(d.ep) : ''}</span><span>${esc(d.tag)}</span></div>
       <h2>${esc(d.title)}</h2>
       <div class="actions">
-        <a class="btn open" href="${esc(d.file)}">Apri</a>
-        <a class="btn dl" href="${esc(d.file)}" download>Scarica HTML</a>
+        <a class="btn open" href="${esc(d.file)}">Open</a>
+        <a class="btn dl" href="${esc(d.file)}" download>Download HTML</a>
       </div>
     </article>`;
   }).join('');
