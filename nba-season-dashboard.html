@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBA 2026-27 — TIP-OFF BOARD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#0e0c0a; --bg2:#070605;
+--panel:#1a1512; --panel2:#0f0c0a;
+--orange:#e8650f; --orange-lt:#f5934f;
+--green:#1fa05c; --green-lt:#4ecb87;
+--red:#c6342a; --red-lt:#e06256;
+--text:#f3efe8; --dim:#9a8d7f;
+--line: rgba(232,101,15,0.16);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+color:var(--text);
+font-family:'Space Grotesk',sans-serif;
+padding-bottom:40px;
+-webkit-font-smoothing:antialiased;
+}
+.teko{font-family:'Teko',sans-serif; font-weight:600;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--orange-lt);}
+.ticker-wrap{ background:#000; border-bottom:2px solid var(--orange); overflow:hidden; white-space:nowrap; padding:7px 0; }
+.ticker{ display:inline-block; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11.5px; color:var(--orange-lt); animation:scroll-left 36s linear infinite; }
+@keyframes scroll-left{ 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
+.hero{ max-width:960px; margin:0 auto; padding:24px 20px 16px; text-align:center; }
+.hero h1{ font-family:'Teko',sans-serif; font-weight:700; font-size:clamp(38px,9vw,60px); line-height:0.95; margin:0; letter-spacing:0.5px; color:var(--text);}
+.hero h1 span{ color:var(--orange-lt);}
+.hero .sub{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--dim); margin-top:10px; max-width:580px; margin-left:auto; margin-right:auto; line-height:1.7;}
+.nav{ max-width:960px; margin:0 auto 18px; display:flex; gap:8px; padding:0 20px; flex-wrap:wrap; justify-content:center;}
+.tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11.5px; letter-spacing:0.3px;
+background:rgba(255,255,255,0.04); color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:9px 15px; cursor:pointer; }
+.tab-btn.active{ background:var(--orange); color:#0e0c0a; border-color:var(--orange);}
+.panel{ display:none; max-width:960px; margin:0 auto; padding:0 20px; }
+.panel.active{ display:block; }
+.card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px 20px 18px; margin-bottom:16px; }
+.card h2{ font-family:'Teko',sans-serif; font-weight:600; font-size:26px; margin:0 0 4px; letter-spacing:0.3px;}
+.card h2 .num{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--orange-lt); margin-right:8px; font-weight:400;}
+.card p{ font-size:14.5px; line-height:1.6;}
+.card .src{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--dim); margin-top:8px;}
+.kpi-row{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; }
+.kpi{ flex:1; min-width:130px; background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+.kpi .v{ font-family:'Teko',sans-serif; font-weight:600; font-size:30px; color:var(--orange-lt); line-height:1;}
+.kpi .l{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--dim); text-transform:uppercase; margin-top:3px;}
+table{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+th,td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace; }
+th{ font-size:9.5px; text-transform:uppercase; color:var(--dim); border-bottom:1px solid var(--orange);}
+.odds-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
+.odds-row:last-child{ border-bottom:none; }
+.odds-team{ flex:0 0 120px; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12.5px; }
+.odds-bar-track{ flex:1; height:20px; background:#241d17; border-radius:4px; overflow:hidden; }
+.odds-bar-fill{ height:100%; background:linear-gradient(90deg, var(--orange), var(--orange-lt)); border-radius:4px; }
+.odds-pct{ flex:0 0 48px; text-align:right; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--orange-lt); }
+.filter-row{ display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 14px; }
+.filter-btn{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px;
+background:var(--panel2); color:var(--dim); border:1px solid var(--line); border-radius:16px; padding:7px 13px; cursor:pointer; }
+.filter-btn.active{ background:var(--orange); color:#0e0c0a; border-color:var(--orange); }
+.ring-wrap{ display:flex; justify-content:center; margin:10px 0; }
+.ring-wrap svg{ max-width:260px; width:100%; }
+.hbar-row{ margin-bottom:12px; }
+.hbar-label{ display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11.5px; margin-bottom:4px; }
+.hbar-label b{ color:var(--text); }
+.hbar-label span{ color:var(--orange-lt); font-weight:700; }
+.hbar-track{ height:16px; background:#241d17; border-radius:4px; overflow:hidden; }
+.hbar-fill{ height:100%; border-radius:4px; background:linear-gradient(90deg, var(--orange), var(--orange-lt)); }
+.hbar-sub{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--dim); margin-top:3px; }
+.move-card{ display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--line); }
+.move-card:last-child{ border-bottom:none; }
+.move-arrow{ font-family:'Teko',sans-serif; font-size:28px; color:var(--orange-lt); flex:0 0 30px; }
+.move-text b{ font-family:'JetBrains Mono',monospace; }
+details summary{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim); cursor:pointer; }
+details p{ font-size:11px; color:var(--dim); line-height:1.6; }
+footer{ max-width:960px; margin:12px auto 0; padding:0 20px; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--dim); text-align:center;}
+</style>
+<meta name="description" content="A new season, a superteam in Philly and a betting market that already moved: odds, MVP race and opening-night history.">
+<link rel="canonical" href="https://dumb-dashboards.github.io/dumb-dashboards/nba-season-dashboard.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="NBA 2026-27 — Tip-Off Board — @dumbdashboards">
+<meta property="og:description" content="A new season, a superteam in Philly and a betting market that already moved: odds, MVP race and opening-night history.">
+<meta property="og:url" content="https://dumb-dashboards.github.io/dumb-dashboards/nba-season-dashboard.html">
+<meta property="og:image" content="https://dumb-dashboards.github.io/dumb-dashboards/thumbs/nba-season.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NBA 2026-27 — Tip-Off Board — @dumbdashboards">
+<meta name="twitter:description" content="A new season, a superteam in Philly and a betting market that already moved: odds, MVP race and opening-night history.">
+<meta name="twitter:image" content="https://dumb-dashboards.github.io/dumb-dashboards/thumbs/nba-season.jpg">
+</head>
+<body>
+<div class="ticker-wrap"><div class="ticker" id="tickerText"></div></div>
+<div class="hero">
+<div class="eyebrow">@dumbdashboards — ep. 21</div>
+<h1>NBA 2026-27<br><span>TIP-OFF BOARD</span></h1>
+<div class="sub">A new season, a new superteam in Philly, a vacancy in Milwaukee, and a betting market that's already moved. Real odds, real stat lines, filterable.</div>
+</div>
+<div class="nav">
+<button class="tab-btn active" data-tab="tipoff">Tip-Off</button>
+<button class="tab-btn" data-tab="earthquake">The Earthquake</button>
+<button class="tab-btn" data-tab="odds">Title Odds</button>
+<button class="tab-btn" data-tab="mvp">MVP Race</button>
+<button class="tab-btn" data-tab="rookies">Rookie Watch</button>
+<button class="tab-btn" data-tab="openers">Openers Through History</button>
+<button class="tab-btn" data-tab="lastseason">Last Season, By The Numbers</button>
+</div>
+<!-- ===================== TIP-OFF ===================== -->
+<div class="panel active" id="panel-tipoff">
+<div class="card">
+<h2><span class="num">01</span>Opening night, Oct 20</h2>
+<div class="kpi-row">
+<div class="kpi"><div class="v">81st</div><div class="l">season in league history</div></div>
+<div class="kpi"><div class="v">Celtics–Pistons</div><div class="l">3pm et opener, east's top 2 seeds</div></div>
+</div>
+<p>Same night, the Knicks get their championship rings at the Garden before hosting the 76ers — who now feature LeBron James and Jaylen Brown making their Philadelphia debuts.</p>
+<p class="src">SOURCE: CBS SPORTS, NBA.COM SCHEDULE RELEASE.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">The season at a glance</h2>
+<div class="kpi-row">
+<div class="kpi"><div class="v">Oct 30–Dec 11</div><div class="l">nba cup, 4th edition</div></div>
+<div class="kpi"><div class="v">6</div><div class="l">teams with new head coaches (3 first-timers)</div></div>
+</div>
+<p>Defending champs: the New York Knicks, who beat San Antonio 4–1 in the 2026 Finals — a rematch of that season's NBA Cup final.</p>
+<p class="src">SOURCE: WIKIPEDIA "2026–27 NBA SEASON"; NBA.COM.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">One rule change, already visible</h2>
+<p>The first preseason game already showcased a rule tweak reporters flagged as a genuine on-court improvement — early buzz suggests it's here to stay.</p>
+<p class="src">SOURCE: SI.COM PRESEASON COVERAGE.</p>
+</div>
+</div>
+<!-- ===================== THE EARTHQUAKE ===================== -->
+<div class="panel" id="panel-earthquake">
+<div class="card">
+<h2><span class="num">02</span>The offseason that reshaped three franchises</h2>
+<div class="move-card">
+<div class="move-arrow">→</div>
+<div class="move-text"><b>LeBron James</b> signs with the <b>Philadelphia 76ers</b>, joining Jaylen Brown. Shifted the Sixers' title odds immediately — now 4th-shortest in the league.</div>
+</div>
+<div class="move-card">
+<div class="move-arrow">→</div>
+<div class="move-text"><b>Giannis Antetokounmpo</b> traded out of <b>Milwaukee</b> after a saga described as creating "a dreadful vibe" in the franchise — the Bucks' first season without him in over a decade.</div>
+</div>
+<div class="move-card">
+<div class="move-arrow">→</div>
+<div class="move-text"><b>Kawhi Leonard</b> returns to the <b>Toronto Raptors</b> on a finalized multi-year extension, seven years after leading the franchise to its only title in 2019.</div>
+</div>
+<p class="src">SOURCE: ESPN NBA PRESEASON BUZZ; COVERS.COM.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">Smaller stories still shaking out</h2>
+<table>
+<tr><th>Player</th><th>Situation</th></tr>
+<tr><td>Nikola Jokic</td><td>Says he'll re-sign with Denver "next year"</td></tr>
+<tr><td>Karl-Anthony Towns</td><td>Wants a new extension to stay with the Knicks</td></tr>
+<tr><td>Ja Morant</td><td>Vets Holiday &amp; Lillard expected to be steadying influences</td></tr>
+<tr><td>Anthony Edwards</td><td>Ceding point-guard duties to Lonzo Ball</td></tr>
+</table>
+<p class="src">SOURCE: ESPN NBA PRESEASON BUZZ, MEDIA DAY COVERAGE.</p>
+</div>
+</div>
+<!-- ===================== TITLE ODDS ===================== -->
+<div class="panel" id="panel-odds">
+<div class="card">
+<h2><span class="num">03</span>2027 championship odds</h2>
+<div id="titleOddsRows"></div>
+<p class="src">SOURCE: POLYMARKET / COVERS.COM, FANATICS SPORTSBOOK — AS OF EARLY OCTOBER 2026.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">The LeBron effect, in one line</h2>
+<p>Before the signing, Philadelphia wasn't a title-market fixture. After: 4th shortest odds in the league, ahead of Boston. Markets moved on a single transaction.</p>
+</div>
+</div>
+<!-- ===================== MVP RACE ===================== -->
+<div class="panel" id="panel-mvp">
+<div class="card">
+<h2><span class="num">04</span>MVP odds, wide open at the top</h2>
+<div id="mvpOddsRows"></div>
+<p class="src">SOURCE: DRAFTKINGS, VIA MULTIPLE OUTLETS — PRESEASON OPENING LINES.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">Last season's stat line, head to head</h2>
+<p class="note" style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--dim); margin:0 0 6px;">Tap to add or remove a player — overlay as many as you want.</p>
+<div class="filter-row" id="mvpFilter"></div>
+<div class="ring-wrap"><div id="mvpRadar"></div></div>
+<div id="mvpRadarLegend" style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px; margin:6px 0 10px;"></div>
+<p class="src" id="mvpRadarSrc"></p>
+</div>
+</div>
+<!-- ===================== ROOKIE WATCH ===================== -->
+<div class="panel" id="panel-rookies">
+<div class="card">
+<h2><span class="num">05</span>A rookie class the league is already talking about</h2>
+<div class="kpi-row">
+<div class="kpi"><div class="v">Darryn Peterson</div><div class="l">rookie of the year favorite</div></div>
+<div class="kpi"><div class="v">Cameron Boozer</div><div class="l">co-favorite, after summer league</div></div>
+</div>
+<p>Described as one of the most anticipated draft classes in recent memory, headlined by the top two picks.</p>
+<p class="src">SOURCE: SI.COM.</p>
+</div>
+<details>
+<summary>Methodology note</summary>
+<p>Odds are preseason opening or early-October lines and shift constantly once games tip off — treat every figure here as a snapshot, not a live line. Player stat lines are final 2025-26 regular season per-game averages, the most recent complete season available. The 2026-27 season itself had not generated meaningful statistics at the time this dashboard was built.</p>
+</details>
+</div>
+<!-- ===================== OPENERS THROUGH HISTORY ===================== -->
+<div class="panel" id="panel-openers">
+<div class="card">
+<h2><span class="num">06</span>The bar every new opener is chasing</h2>
+<div class="kpi-row">
+<div class="kpi"><div class="v">56 / 29</div><div class="l">Wilt Chamberlain, 1962 — pts/reb, still the opening-night scoring record</div></div>
+<div class="kpi"><div class="v">54</div><div class="l">Michael Jordan, 1989 — one of only 6 fifty-point games ever on a season opener</div></div>
+</div>
+<p>Of 587 games of 50+ points in NBA history, only six have landed in a team's season opener — and Jordan's is the only one that fell on the league's actual opening night of that season.</p>
+<p class="src">SOURCE: NBA.COM "STARTING 5," CLUTCHPOINTS.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">Best individual opening-night stat lines ever</h2>
+<div id="openerBars"></div>
+<p class="src">SOURCE: CLUTCHPOINTS, NBA.COM HISTORICAL RECAPS.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">The record this season's opener has to beat</h2>
+<p>The most recent landmark came in 2024: the defending-champion Celtics' ring night. Boston drained <b>29 three-pointers</b> — a new NBA single-game record for any game, opener or not — after becoming the first team ever to hit 10 threes in the opening quarter of a season. It shattered the previous opening-night 3PT record of 23, set by the Hornets in 2019.</p>
+<p class="src">SOURCE: NBA.COM "STARTING 5, OCT. 23."</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">Openers favor the champs</h2>
+<div class="kpi-row">
+<div class="kpi"><div class="v">60-16</div><div class="l">teams' record (.789) in their first game after winning it all</div></div>
+<div class="kpi"><div class="v">Spurs &amp; Celtics</div><div class="l">highest all-time season-opener winning percentages</div></div>
+</div>
+</div>
+</div>
+<!-- ===================== LAST SEASON, BY THE NUMBERS ===================== -->
+<div class="panel" id="panel-lastseason">
+<div class="card">
+<h2><span class="num">07</span>Does the best regular season actually win the title?</h2>
+<div class="ring-wrap"><div id="championWinsChart"></div></div>
+<p>Ten champions, ten different win totals — anywhere from 46 to 68. The 2024-25 Thunder put up the most regular-season wins by an eventual champion since the 1996-97 Bulls. There's no fixed number a team needs; there's a wide band, and recent years have trended toward the higher end of it.</p>
+<p class="src">SOURCE: BASKETBALL-REFERENCE / WIKIPEDIA TEAM SEASON PAGES; SI.COM (OKC 2025 ANALYSIS).</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">The single-game scoring explosions of 2025-26</h2>
+<div id="lastSeasonBars"></div>
+<p class="src">SOURCE: NBA.COM "5 BEST INDIVIDUAL PERFORMANCES"; STATITUDES MEGA STATISTICAL RECAP.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">Bam Adebayo's night, in context</h2>
+<div class="kpi-row">
+<div class="kpi"><div class="v">83 PTS</div><div class="l">2nd-highest scoring game in NBA history</div></div>
+<div class="kpi"><div class="v">36 / 43</div><div class="l">free throws made/attempted — both new NBA single-game records</div></div>
+</div>
+<p>March 10, 2026, vs. Washington. Nine rebounds, three assists, two steals, two blocks on top of it, in 42 minutes.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">A streak that outlived three presidencies, over</h2>
+<p>LeBron James' NBA-record streak of <b>1,297 consecutive regular-season games</b> scoring in double figures ended in December 2025 — one of the quieter, stranger headlines of the whole season.</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">Team offenses that rewrote their own record books</h2>
+<div id="teamRecordBars"></div>
+<p class="note" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim);">Each bar is that franchise's own single-season scoring-average record — not a league-wide ranking.</p>
+<p class="src">SOURCE: STATITUDES, "2025-26 MEGA STATISTICAL RECAP."</p>
+</div>
+<div class="card">
+<h2 style="font-size:22px;">And the most lopsided night of the year</h2>
+<p>The Knicks beat the Nets <b>120-66</b> in January 2026 — a 54-point margin, the largest win in franchise history. The season's single highest-scoring game, meanwhile, needed two teams: Bulls 152, Hawks 150, on December 21, 2025.</p>
+<p class="src">SOURCE: ESPN; LANDOFBASKETBALL.COM.</p>
+</div>
+</div>
+<footer>NBA 2026-27 — TIP-OFF BOARD · @dumbdashboards · OCTOBER 2026</footer>
+<script>
+const C = { orange:'#e8650f', orangeLt:'#f5934f', green:'#1fa05c', greenLt:'#4ecb87', red:'#c6342a', redLt:'#e06256', text:'#f3efe8', dim:'#9a8d7f' };
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+btn.classList.add('active');
+document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+});
+});
+/* ===== Title odds bars ===== */
+const TITLE_ODDS = [
+['Spurs', 23], ['Thunder', 19], ['Knicks', 13], ['76ers', 11], ['Celtics', 8]
+];
+document.getElementById('titleOddsRows').innerHTML = TITLE_ODDS.map(([team,pct])=>`
+<div class="odds-row">
+<div class="odds-team">${team}</div>
+<div class="odds-bar-track"><div class="odds-bar-fill" style="width:${pct*3}%;"></div></div>
+<div class="odds-pct">${pct}%</div>
+</div>`).join('');
+/* ===== MVP odds bars ===== */
+const MVP_ODDS = [
+['Wembanyama', '+200'], ['Gilgeous-Alexander', '+350'], ['Jokic', '+450'], ['Doncic', '+600'], ['Giannis', '+1400']
+];
+function oddsToImpliedPct(odds){
+const n = parseInt(odds.replace('+',''));
+return Math.round(100/(n/100+1));
+}
+document.getElementById('mvpOddsRows').innerHTML = MVP_ODDS.map(([name,odds])=>{
+const pct = oddsToImpliedPct(odds);
+return `<div class="odds-row">
+<div class="odds-team">${name}</div>
+<div class="odds-bar-track"><div class="odds-bar-fill" style="width:${pct*2.2}%;"></div></div>
+<div class="odds-pct">${odds}</div>
+</div>`;
+}).join('');
+/* ===== MVP radar, filterable ===== */
+const PLAYERS = {
+wemby: { name:'Victor Wembanyama', team:'SAS', color:C.orangeLt, stats:{ PTS:25.0, REB:11.5, AST:3.1, BLK:3.1 } },
+sga: { name:'Shai Gilgeous-Alexander', team:'OKC', color:C.greenLt, stats:{ PTS:31.1, REB:4.3, AST:6.6, BLK:1.0 } },
+jokic: { name:'Nikola Jokic', team:'DEN', color:C.redLt, stats:{ PTS:27.7, REB:12.9, AST:10.7, BLK:0.6 } },
+luka: { name:'Luka Doncic', team:'LAL', color:'#5a8bf5', stats:{ PTS:33.5, REB:7.7, AST:8.3, BLK:0.5 } }
+};
+const RADAR_MAX = { PTS:35, REB:14, AST:12, BLK:3.2 };
+function radarChart(playerList){
+const labels = Object.keys(RADAR_MAX);
+const cx=145, cy=130, maxR=85, n=labels.length;
+const angleFor = i => (i * 2*Math.PI/n) - Math.PI/2;
+const pointAt = (i, val, maxVal) => {
+const a = angleFor(i);
+const r = Math.min(val/maxVal,1) * maxR;
+return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+};
+let svg = `<svg viewBox="0 0 290 320" xmlns="http://www.w3.org/2000/svg">`;
+[25,50,75,100].forEach(pct=>{
+const pts = labels.map((lab,i)=> pointAt(i, pct/100*RADAR_MAX[lab], RADAR_MAX[lab]).join(',')).join(' ');
+svg += `<polygon points="${pts}" fill="none" stroke="#3a3028" stroke-width="0.6" stroke-dasharray="2,2" opacity="0.6"/>`;
+});
+labels.forEach((lab,i)=>{
+const [ex,ey] = pointAt(i, RADAR_MAX[lab], RADAR_MAX[lab]);
+svg += `<line x1="${cx}" y1="${cy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="#3a3028" stroke-width="0.6" opacity="0.6"/>`;
+const [lx,ly] = pointAt(i, RADAR_MAX[lab]*1.24, RADAR_MAX[lab]);
+svg += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-family="JetBrains Mono" font-size="12" font-weight="700" fill="#f3efe8">${lab}</text>`;
+});
+// draw each overlaid player's polygon, most-recently-added on top
+playerList.forEach(p=>{
+const sPts = labels.map((lab,i)=> pointAt(i, p.stats[lab], RADAR_MAX[lab]).join(',')).join(' ');
+svg += `<polygon points="${sPts}" fill="${p.color}" fill-opacity="0.18" stroke="${p.color}" stroke-width="2.5"/>`;
+});
+playerList.forEach(p=>{
+labels.forEach((lab,i)=>{
+const [vx,vy] = pointAt(i, p.stats[lab], RADAR_MAX[lab]);
+svg += `<circle cx="${vx.toFixed(1)}" cy="${vy.toFixed(1)}" r="4" fill="${p.color}"/>`;
+});
+});
+svg += `<circle cx="${cx}" cy="${cy}" r="2.5" fill="#f3efe8"/>`;
+svg += `</svg>`;
+return svg;
+}
+let activePlayers = new Set(['wemby']);
+function renderMvpRadar(){
+const list = Object.entries(PLAYERS).filter(([key])=>activePlayers.has(key)).map(([key,p])=>p);
+document.getElementById('mvpRadar').innerHTML = radarChart(list);
+const legend = list.map(p=>`<span style="color:${p.color}; font-weight:700;">■ ${p.name}</span>`).join('  ');
+document.getElementById('mvpRadarLegend').innerHTML = legend;
+document.getElementById('mvpRadarSrc').textContent = list.map(p=>
+`${p.name} (${p.team}): ${Object.entries(p.stats).map(([k,v])=>k+' '+v).join(', ')}.`
+).join('  ') + ' SOURCE: ESPN / BASKETBALL-REFERENCE 2025-26 LEADERS.';
+}
+document.getElementById('mvpFilter').innerHTML = Object.entries(PLAYERS).map(([key,p])=>
+`<button class="filter-btn${activePlayers.has(key)?' active':''}" data-player="${key}">${p.name.split(' ').pop()}</button>`
+).join('');
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+const key = btn.dataset.player;
+if(activePlayers.has(key)){
+if(activePlayers.size > 1){ activePlayers.delete(key); btn.classList.remove('active'); }
+} else {
+activePlayers.add(key); btn.classList.add('active');
+}
+renderMvpRadar();
+});
+});
+renderMvpRadar();
+/* ===== Reusable horizontal bar chart ===== */
+function hbarChart(containerId, rows, maxVal){
+const html = rows.map(r => `
+<div class="hbar-row">
+<div class="hbar-label"><b>${r.label}</b><span>${r.value}${r.unit||''}</span></div>
+<div class="hbar-track"><div class="hbar-fill" style="width:${(r.value/maxVal*100).toFixed(1)}%;"></div></div>
+${r.sub ? `<div class="hbar-sub">${r.sub}</div>` : ''}
+</div>`).join('');
+document.getElementById(containerId).innerHTML = html;
+}
+hbarChart('openerBars', [
+{ label:'Wilt Chamberlain (1962)', value:56, unit:' PTS', sub:'+29 REB — still the all-time opening-night scoring record' },
+{ label:'Michael Jordan (1989)', value:54, unit:' PTS', sub:"One of only 6 fifty-point games ever in a season opener" },
+{ label:'Kevin Durant (2013)', value:42, unit:' PTS', sub:"Opened his eventual MVP season this way" },
+{ label:'Luka Doncic (2023)', value:33, unit:' PTS', sub:'+13 REB, +10 AST, game-winner — 3rd 30pt triple-double opener ever' },
+{ label:'Shai Gilgeous-Alexander (2023)', value:31, unit:' PTS', sub:'+10 AST — joined Russell Westbrook in franchise history' },
+{ label:'Giannis Antetokounmpo (2019)', value:30, unit:' PTS', sub:'Full triple-double, opening night' }
+], 56);
+hbarChart('lastSeasonBars', [
+{ label:'Bam Adebayo, Mar 10 2026', value:83, unit:' PTS', sub:'2nd-highest scoring game in NBA history' },
+{ label:'Luka Doncic, Mar 19 2026', value:60, unit:' PTS', sub:'Season-high, broke a Heat opponent-scoring record' },
+{ label:'Kawhi Leonard, Dec 2025', value:55, unit:' PTS', sub:'Career-high, Clippers franchise record' },
+{ label:'Anthony Edwards, Dec 25 2025', value:44, unit:' PTS', sub:'Christmas Day — lost an OT thriller to Jokic/Murray' }
+], 83);
+/* ===== Champion regular-season wins, trend line ===== */
+function lineChart(containerId, points, opts){
+opts = opts || {};
+const W=290, H=190, padL=34, padR=14, padT=14, padB=28;
+const plotW = W-padL-padR, plotH = H-padT-padB;
+const minY = opts.minY!==undefined ? opts.minY : Math.min(...points.map(p=>p.y));
+const maxY = opts.maxY!==undefined ? opts.maxY : Math.max(...points.map(p=>p.y));
+const xFor = i => padL + (i/(points.length-1))*plotW;
+const yFor = v => padT + plotH - ((v-minY)/(maxY-minY))*plotH;
+let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:360px;width:100%;">`;
+[0,0.25,0.5,0.75,1].forEach(f=>{
+const y = padT + plotH*(1-f);
+const val = Math.round(minY + f*(maxY-minY));
+svg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#3a3028" stroke-width="0.6" stroke-dasharray="2,2"/>`;
+svg += `<text x="${padL-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="JetBrains Mono" font-size="8" fill="#9a8d7f">${val}</text>`;
+});
+const linePts = points.map((p,i)=> `${xFor(i).toFixed(1)},${yFor(p.y).toFixed(1)}`).join(' ');
+svg += `<polyline points="${linePts}" fill="none" stroke="#e8650f" stroke-width="2.5"/>`;
+points.forEach((p,i)=>{
+const x=xFor(i), y=yFor(p.y);
+svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#f5934f"/>`;
+svg += `<text x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" font-weight="700" fill="#f3efe8">${p.y}</text>`;
+svg += `<text x="${x.toFixed(1)}" y="${H-10}" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="#9a8d7f">${p.label}</text>`;
+});
+svg += `</svg>`;
+document.getElementById(containerId).innerHTML = svg;
+}
+lineChart('championWinsChart', [
+{ label:"'16", y:57, team:'CLE' },
+{ label:"'17", y:67, team:'GSW' },
+{ label:"'18", y:58, team:'GSW' },
+{ label:"'19", y:58, team:'TOR' },
+{ label:"'20", y:52, team:'LAL' },
+{ label:"'21", y:46, team:'MIL' },
+{ label:"'22", y:53, team:'GSW' },
+{ label:"'23", y:53, team:'DEN' },
+{ label:"'24", y:64, team:'BOS' },
+{ label:"'25", y:68, team:'OKC' }
+], { minY:40, maxY:72 });
+hbarChart('teamRecordBars', [
+{ label:'Timberwolves', value:118.0, unit:' PPG', sub:'New franchise single-season scoring-average record' },
+{ label:'Jazz', value:117.6, unit:' PPG', sub:'New franchise record' },
+{ label:'Hornets', value:116.0, unit:' PPG', sub:'New franchise record, alongside most 3PM in team history' },
+{ label:'Raptors', value:114.6, unit:' PPG', sub:'New franchise record; also set single-game record, 145 pts' }
+], 118.0);
+/* ===== Ticker ===== */
+const tickerItems = [
+'TIP-OFF OCT 20: CELTICS @ PISTONS',
+'TITLE ODDS: SPURS 23% · THUNDER 19% · KNICKS 13%',
+'MVP FAVORITE: WEMBANYAMA +200',
+'LEBRON JAMES → 76ERS',
+'GIANNIS ANTETOKOUNMPO OUT OF MILWAUKEE',
+'KAWHI LEONARD → RAPTORS, EXTENSION FINALIZED'
+].join('   •   ');
+document.getElementById('tickerText').textContent = tickerItems + '   •   ' + tickerItems;
+</script>
+</body>
+</html>
