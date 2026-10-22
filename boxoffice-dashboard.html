@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOX OFFICE DISASTERS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#ed1c24; --red-dk:#96121a;
+    --ink:#0c0b0a;
+    --bg:#0a0909; --bg2:#161413;
+    --cream:#f0ece3;
+    --dim:#968d84;
+    --panel:#15120f;
+    --line:#2d2823;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--cream);
+    font-family:'Archivo',sans-serif;
+    padding-bottom:40px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .black{font-family:'Archivo Black',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  .masthead{ max-width:720px; margin:0 auto; padding:22px 16px 10px; }
+  .masthead .kicker{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+  .masthead h1{ font-family:'Archivo Black',sans-serif; font-size:clamp(34px,9vw,52px); margin:10px 0 2px; color:var(--cream); line-height:0.98;}
+  .masthead h1 .hl{ color:var(--red); }
+  .masthead .sub{ font-family:'Archivo',sans-serif; font-weight:500; font-size:14px; color:var(--dim); margin-top:10px; max-width:560px; }
+
+  .nav{ max-width:720px; margin:16px auto; display:flex; gap:7px; padding:0 16px; flex-wrap:wrap;}
+  .tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; letter-spacing:0.3px;
+    background:transparent; color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:8px 15px; cursor:pointer; }
+  .tab-btn.active{ background:var(--red); color:#fff; border-color:var(--red); }
+
+  .panel{ display:none; max-width:720px; margin:0 auto; padding:0 16px; }
+  .panel.active{ display:block; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px 20px 18px; margin-bottom:16px; }
+  .card h2{ font-family:'Archivo Black',sans-serif; font-size:22px; margin:0 0 10px; letter-spacing:0.2px; color:var(--cream);}
+  .card p{ font-size:15px; line-height:1.6; font-weight:400; }
+  .card .src{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-top:10px; }
+
+  .kpi-row{ display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
+  .kpi{ flex:1; min-width:125px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px 12px; }
+  .kpi .v{ font-family:'Archivo Black',sans-serif; font-size:24px; color:var(--red); }
+  .kpi .l{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); text-transform:uppercase; margin-top:3px; font-weight:700;}
+
+  .rank-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .rank-row .num{ font-family:'Archivo Black',sans-serif; font-size:18px; color:var(--dim); flex:0 0 32px; }
+  .rank-row .info{ flex:1; }
+  .rank-row .title{ font-weight:600; font-size:14px; color:var(--cream);}
+  .rank-row .bar-track{ height:8px; background:var(--bg); border-radius:4px; margin-top:6px; overflow:hidden;}
+  .rank-row .bar-fill{ height:100%; background:var(--red); }
+  .rank-row .loss{ font-family:'Archivo Black',sans-serif; font-size:16px; color:var(--red); flex:0 0 65px; text-align:right;}
+
+  .index-card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:12px; }
+  .index-card .film{ font-family:'Archivo Black',sans-serif; font-size:17px; color:var(--cream);}
+  .index-card .index-num{ font-family:'Archivo Black',sans-serif; font-size:42px; color:var(--red); text-align:center; margin:6px 0;}
+  .index-card .index-label{ font-family:'JetBrains Mono',monospace; font-size:9px; text-align:center; color:var(--dim); text-transform:uppercase; font-weight:700;}
+  .index-card .detail{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-top:10px; border-top:1px dotted var(--line); padding-top:8px;}
+
+  .speech-bubble{ background:var(--bg); border-left:3px solid var(--red); border-radius:4px; padding:14px 16px; margin:14px 0; font-weight:500; font-size:14px; color:var(--cream);}
+
+  details summary{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--dim); cursor:pointer; font-weight:700;}
+  details p{ font-size:12px; color:var(--dim); line-height:1.6; }
+
+  footer{ max-width:720px; margin:14px auto 0; padding:0 16px; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); text-align:center; font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="kicker">@dumbdashboards — ep. 22</div>
+  <h1>BOX OFFICE <span class="hl">DISASTERS</span></h1>
+  <div class="sub">Hollywood's biggest money bonfires, ranked, charted, and measured in a unit nobody asked for: how many times you'd personally need to go back and watch it again.</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="today">Fresh Wreckage</button>
+  <button class="tab-btn" data-tab="rollcall">Hall of Shame</button>
+  <button class="tab-btn" data-tab="rewatch">Rewatch-O-Meter</button>
+  <button class="tab-btn" data-tab="pizza">The Pizza Principle</button>
+  <button class="tab-btn" data-tab="autopsy">How It Happens</button>
+</div>
+
+<!-- ===================== FRESH WRECKAGE ===================== -->
+<div class="panel active" id="panel-today">
+  <div class="card">
+    <h2>"DIGGER" GOES DOWN</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">$170M</div><div class="l">production budget</div></div>
+      <div class="kpi"><div class="v">$20M</div><div class="l">opening weekend, worldwide</div></div>
+      <div class="kpi"><div class="v">3 DAYS</div><div class="l">from release to punchline</div></div>
+    </div>
+    <p>Tom Cruise's star power met a 51% Rotten Tomatoes score and a "C+" CinemaScore, and lost. Projected loss: <b>~$150 million</b> — instantly one of the largest studio bellyflops of the decade.</p>
+    <div class="speech-bubble">"Unpleasant." "Baffling." — actual review pull-quotes the studio's own marketing leaned into, hoping chaos would sell tickets. It did not.</div>
+    <p class="src">SOURCE: VARIETY, "'DIGGER' DOWN," OCT 5 2026.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">TELEGRAMS OF CONDOLENCE</h2>
+    <p><b>Cutthroat Island</b> (1995), relieved after 31 lonely years as cinema's biggest punching bag, finally has company.</p>
+    <p><b>John Carter</b> (2012), politely noting that "losing the most money" and "losing it most embarrassingly" are in fact two separate trophies.</p>
+    <p>The <b>$10 average movie ticket</b>, which did absolutely nothing wrong and would like that on the record.</p>
+  </div>
+</div>
+
+<!-- ===================== HALL OF SHAME ===================== -->
+<div class="panel" id="panel-rollcall">
+  <div class="card">
+    <h2>THE HALL OF SHAME</h2>
+    <p>Twelve legendary disasters, every loss converted to 2026 dollars so a 1980 catastrophe can be fairly compared to one from last year.</p>
+    <div id="rollCallRows"></div>
+    <p class="src">SOURCE: VALUEADDVC.COM (2026); CROSS-CHECKED AGAINST SCREENRANT, JUSTWATCH, BOX OFFICE MOJO.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">WORST IN SHOW</h2>
+    <p>Doesn't crack the inflation-adjusted top 12 by raw dollars — but by <i>percentage of budget recovered</i>, nothing touches it: <b>Desert Warrior</b> (2025), the most expensive film ever made in Saudi Arabia at $150M, clawed back a grand total of <b>$734,000</b> worldwide. Half a percent of budget. Returned.</p>
+    <p class="src">SOURCE: OTTWEEK, "THE BIGGEST HOLLYWOOD FLOPS OF 2026 SO FAR."</p>
+  </div>
+</div>
+
+<!-- ===================== REWATCH-O-METER ===================== -->
+<div class="panel" id="panel-rewatch">
+  <div class="card">
+    <h2>THE REWATCH-O-METER</h2>
+    <p>A question Hollywood accounting never asks: if zero new people had shown up, how many more times would everyone who <i>did</i> see it need to buy another ticket — just to drag the thing to breakeven?</p>
+    <p class="mono" style="font-size:10px; color:#6b6459; font-weight:600;">METHOD: breakeven ≈ 2.2× budget (industry rule of thumb). Shortfall ÷ $10 assumed ticket price = extra tickets needed. Divided by estimated original audience (gross ÷ $10) = the index.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">DOES LOSING MORE MEAN REWATCHING MORE?</h2>
+    <p>All twelve Hall of Shame films, plotted. If dollar-loss and rewatch pain measured the same thing, this would climb left to right.</p>
+    <div style="display:flex; justify-content:center; margin:14px 0;"><div id="scatterChart"></div></div>
+    <p class="mono" style="font-size:10.5px; text-align:center; font-weight:700; color:var(--red);">PEARSON CORRELATION: −0.25 — THEY DON'T EVEN AGREE.</p>
+    <p class="src">Each boom-splat is one film. Nothing here was fitted to make a point — the numbers just landed this way.</p>
+  </div>
+
+  <div class="speech-bubble">John Carter lost more raw cash than almost anything ever — but millions saw it (index: 1.04×). <b>Heaven's Gate</b> scores a cartoonish <b>26.66×</b>: 1980 audiences so thin, everyone who showed up would need 27 more trips each.</div>
+
+  <div id="rewatchCards"></div>
+</div>
+
+<!-- ===================== HOW IT HAPPENS ===================== -->
+<!-- ===================== THE PIZZA PRINCIPLE ===================== -->
+<div class="panel" id="panel-pizza">
+  <div class="card">
+    <h2>MEASURED IN PIZZA</h2>
+    <p>New York has tracked its own economy in pizza for 45+ years. The "Pizza Principle" is a real, documented phenomenon: since the early 1960s, the price of a plain NYC slice has matched the subway fare with uncanny precision — both journalists and a Columbia statistician have tracked it for decades. So here's the same logic, pointed at Hollywood instead of the MTA: convert each flop's loss into slices, priced the year it actually happened.</p>
+    <p class="mono" style="font-size:10px; color:#6b6459; font-weight:600;">METHOD: same nominal shortfall used in the Rewatch-O-Meter, divided by that year's average NYC plain-slice price. 1995/2005/2024 prices are interpolated between documented years; all others are directly sourced.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">RE-RANKED BY THE SLICE</h2>
+    <p>Dollar-loss order and slice-count order are <i>not</i> the same list — because a slice cost 90¢ in 1980 and $3.81 in 2025, the same loss buys wildly different amounts of pizza depending on when it happened.</p>
+    <div id="pizzaRows"></div>
+    <p class="src">SLICE PRICES: BLOOMBERG "PIZZA PRINCIPLE" GRAPHIC (2022); GOTHAMIST SLICE TRACKER (2025); VICE, "WHAT THE PRICE OF A SLICE CAN TELL YOU ABOUT NEW YORK."</p>
+  </div>
+
+  <div class="speech-bubble">🌍 Laid end to end, Cutthroat Island's 157.8 million slices would stretch about <b>22,420 miles</b> — <b>90% of the way around the entire Earth.</b> One 1995 movie, nearly one planet of pizza.</div>
+</div>
+
+<div class="panel" id="panel-autopsy">
+  <div class="card">
+    <h2>HOW A FLOP IS MADE</h2>
+    <p>Industry rule of thumb: a wide release needs <b>2 to 2.5×</b> its budget back just to break even, once marketing and the exhibitor's cut are covered.</p>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">2-2.5×</div><div class="l">budget needed just to break even</div></div>
+      <div class="kpi"><div class="v">~50%</div><div class="l">of ticket revenue the studio keeps</div></div>
+    </div>
+    <p>That's why a $170M film grossing $125M isn't a near-miss — it needed closer to $400M to turn any profit at all.</p>
+    <p class="src">SOURCE: OTTWEEK, "THE BIGGEST HOLLYWOOD FLOPS OF 2026 SO FAR."</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:20px;">THE 3 USUAL SUSPECTS</h2>
+    <p><b>The budget ran wild.</b> John Carter's marketing + production reportedly topped $350M before a ticket sold.</p>
+    <p><b>Nobody wanted it, loudly.</b> Cutthroat Island, Mars Needs Moms, and Digger all paired bad reviews with audience shrugs.</p>
+    <p><b>Wrong week, wrong year.</b> Sinbad and Mortal Engines both opened right before Aquaman and Mary Poppins Returns ate their lunch.</p>
+  </div>
+
+  <footer>BOX OFFICE DISASTERS · @dumbdashboards · OCTOBER 2026</footer>
+</div>
+
+<script>
+const ROLL_CALL = [
+  { name:'John Carter', year:2012, loss:278 },
+  { name:'Battleship', year:2012, loss:243 },
+  { name:'Strange World', year:2022, loss:225 },
+  { name:'The Flash', year:2023, loss:220 },
+  { name:'Cutthroat Island', year:1995, loss:215 },
+  { name:'Joker: Folie à Deux', year:2024, loss:186 },
+  { name:'Mars Needs Moms', year:2011, loss:185 },
+  { name:'Snow White', year:2025, loss:175 },
+  { name:'Sahara', year:2005, loss:173 },
+  { name:'Heaven\'s Gate', year:1980, loss:156 },
+  { name:'Indiana Jones and the Dial of Destiny', year:2023, loss:148 },
+  { name:'Wish', year:2023, loss:144 }
+];
+const maxLoss = Math.max(...ROLL_CALL.map(f=>f.loss));
+document.getElementById('rollCallRows').innerHTML = ROLL_CALL.map((f,i)=>`
+  <div class="rank-row">
+    <div class="num">#${i+1}</div>
+    <div class="info">
+      <div class="title">${f.name} (${f.year})</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(f.loss/maxLoss*100).toFixed(0)}%;"></div></div>
+    </div>
+    <div class="loss">$${f.loss}M</div>
+  </div>`).join('');
+
+const REWATCH_FILMS = [
+  { name:'Digger (2026)', budget:170, gross:20, lossRank:null },
+  { name:'John Carter (2012)', budget:263.7, gross:284.1, lossRank:278 },
+  { name:'Battleship (2012)', budget:209, gross:303, lossRank:243 },
+  { name:'Strange World (2022)', budget:180, gross:73.6, lossRank:225 },
+  { name:'The Flash (2023)', budget:200, gross:271.3, lossRank:220 },
+  { name:'Cutthroat Island (1995)', budget:98, gross:18.3, lossRank:215 },
+  { name:'Joker: Folie à Deux (2024)', budget:200, gross:207.5, lossRank:186 },
+  { name:'Mars Needs Moms (2011)', budget:150, gross:39, lossRank:185 },
+  { name:'Snow White (2025)', budget:270, gross:205.7, lossRank:175 },
+  { name:'Sahara (2005)', budget:160, gross:119, lossRank:173 },
+  { name:'Heaven\'s Gate (1980)', budget:44, gross:3.5, lossRank:156 },
+  { name:'Indiana Jones and the Dial of Destiny (2023)', budget:387, gross:384, lossRank:148 },
+  { name:'Wish (2023)', budget:200, gross:255, lossRank:144 }
+];
+const TICKET_PRICE = 10;
+function computeIndex(f){
+  const breakeven = f.budget * 2.2;
+  const shortfall = Math.max(breakeven - f.gross, 0);
+  const actualViewersM = f.gross / TICKET_PRICE;
+  const extraTicketsM = shortfall / TICKET_PRICE;
+  const index = actualViewersM > 0 ? extraTicketsM / actualViewersM : null;
+  return { breakeven, shortfall, actualViewersM, index };
+}
+
+/* ===== Scatter plot: comic "splat" markers ===== */
+function splatMarker(x,y,size){
+  const pts = [];
+  const spikes = 7;
+  for(let i=0;i<spikes*2;i++){
+    const r = (i%2===0) ? size : size*0.55;
+    const a = (i/(spikes*2))*2*Math.PI;
+    pts.push(`${(x+r*Math.cos(a)).toFixed(1)},${(y+r*Math.sin(a)).toFixed(1)}`);
+  }
+  return `<polygon points="${pts.join(' ')}" fill="#ed1c24" stroke="#f0ece3" stroke-width="1"/>`;
+}
+function renderScatter(){
+  const withLoss = REWATCH_FILMS.filter(f=>f.lossRank!==null).map(f=>({...f, ...computeIndex(f)}));
+  const W=300, H=260, padL=40, padR=16, padT=16, padB=36;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xMin=130, xMax=290, yMin=0, yMax=28;
+  const xFor = v => padL + (v-xMin)/(xMax-xMin)*plotW;
+  const yFor = v => padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:360px; width:100%;">`;
+  [0,7,14,21,28].forEach(v=>{
+    const y=yFor(v);
+    svg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#2d2823" stroke-width="0.6" stroke-dasharray="2,2"/>`;
+    svg += `<text x="${padL-5}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="JetBrains Mono" font-size="7" font-weight="700" fill="#968d84">${v}×</text>`;
+  });
+  [150,200,250].forEach(v=>{
+    const x=xFor(v);
+    svg += `<text x="${x.toFixed(1)}" y="${H-10}" text-anchor="middle" font-family="JetBrains Mono" font-size="7" font-weight="700" fill="#968d84">$${v}M</text>`;
+  });
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#f0ece3" stroke-width="1.5"/>`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#f0ece3" stroke-width="1.5"/>`;
+  withLoss.forEach(f=>{
+    const x=xFor(f.lossRank), y=yFor(Math.min(f.index,28));
+    svg += splatMarker(x,y,7);
+  });
+  svg += `<text x="${W/2}" y="${H-2}" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" font-weight="700" fill="#968d84">INFLATION-ADJUSTED LOSS →</text>`;
+  svg += `</svg>`;
+  document.getElementById('scatterChart').innerHTML = svg;
+}
+renderScatter();
+
+document.getElementById('rewatchCards').innerHTML = REWATCH_FILMS.map(f=>{
+  const r = computeIndex(f);
+  return `<div class="index-card">
+    <div class="film">${f.name}</div>
+    <div class="index-num">${r.index.toFixed(2)}×</div>
+    <div class="index-label">more views needed, per existing viewer</div>
+    <div class="detail">BUDGET $${f.budget}M · WORLDWIDE GROSS $${f.gross}M · EST. BREAKEVEN $${r.breakeven.toFixed(0)}M · EST. ORIGINAL AUDIENCE ${r.actualViewersM.toFixed(1)}M TICKETS</div>
+  </div>`;
+}).join('');
+
+/* ===== The Pizza Principle: re-rank by slice count ===== */
+const PIZZA_PRICE = { 1980:0.90, 1995:1.25, 2005:2.25, 2011:2.50, 2012:2.50, 2022:3.14, 2023:3.25, 2024:3.50, 2025:3.81 };
+const PIZZA_FILMS = [
+  { name:'John Carter', year:2012, budget:263.7, gross:284.1 },
+  { name:'Battleship', year:2012, budget:209, gross:303 },
+  { name:'Strange World', year:2022, budget:180, gross:73.6 },
+  { name:'The Flash', year:2023, budget:200, gross:271.3 },
+  { name:'Cutthroat Island', year:1995, budget:98, gross:18.3 },
+  { name:'Joker: Folie à Deux', year:2024, budget:200, gross:207.5 },
+  { name:'Mars Needs Moms', year:2011, budget:150, gross:39 },
+  { name:'Snow White', year:2025, budget:270, gross:205.7 },
+  { name:'Sahara', year:2005, budget:160, gross:119 },
+  { name:'Heaven\'s Gate', year:1980, budget:44, gross:3.5 },
+  { name:'Indiana Jones and the Dial of Destiny', year:2023, budget:387, gross:384 },
+  { name:'Wish', year:2023, budget:200, gross:255 }
+];
+function slicesFor(f){
+  const breakeven = f.budget * 2.2;
+  const lossM = Math.max(breakeven - f.gross, 0);
+  const loss = lossM * 1_000_000;
+  return loss / PIZZA_PRICE[f.year];
+}
+const pizzaRanked = PIZZA_FILMS.map(f=>({...f, slices:slicesFor(f)})).sort((a,b)=>b.slices-a.slices);
+const maxSlices = pizzaRanked[0].slices;
+document.getElementById('pizzaRows').innerHTML = pizzaRanked.map((f,i)=>`
+  <div class="rank-row">
+    <div class="num">#${i+1}</div>
+    <div class="info">
+      <div class="title">${f.name} (${f.year})</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(f.slices/maxSlices*100).toFixed(0)}%;"></div></div>
+    </div>
+    <div class="loss" style="font-size:12px;">${(f.slices/1e6).toFixed(1)}M SLICES</div>
+  </div>`).join('');
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
