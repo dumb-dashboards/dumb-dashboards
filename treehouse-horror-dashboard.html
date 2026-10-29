@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>36 YEARS OF TREEHOUSE OF HORROR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --yellow:#fed90f; --yellow-dim:#b89e0a;
+    --orange:#ff7518; --orange-dk:#a3410a;
+    --ink:#0c0b0a;
+    --bg:#120a24; --bg2:#1d1033;
+    --cream:#f0ece3;
+    --dim:#9b8fc2;
+    --panel:#1a1030;
+    --line:#352454;
+    --purple:#8a5cf6;
+    --green:#4ecb87;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--cream);
+    font-family:'Archivo',sans-serif;
+    padding-bottom:40px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .black{font-family:'Archivo Black',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .spooky{font-family:'Creepster',cursive;}
+
+  .masthead{ max-width:720px; margin:0 auto; padding:22px 16px 10px; position:relative; }
+  .masthead .pumpkin{ position:absolute; top:10px; right:16px; width:52px; height:52px; filter:drop-shadow(0 0 10px rgba(255,117,24,0.5)); }
+  .masthead .kicker{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+  .masthead h1{ font-family:'Creepster',cursive; font-weight:400; font-size:clamp(34px,10vw,54px); margin:10px 0 2px; color:var(--yellow); line-height:1.05; letter-spacing:1px; text-shadow:0 0 14px rgba(254,217,15,0.45), 3px 3px 0 var(--orange-dk);}
+  .masthead h1 .hl{ color:var(--orange); text-shadow:0 0 14px rgba(255,117,24,0.5), 3px 3px 0 #5c1a00;}
+  .masthead .sub{ font-family:'Archivo',sans-serif; font-weight:500; font-size:14px; color:var(--dim); margin-top:10px; max-width:560px; }
+
+  .nav{ max-width:720px; margin:16px auto; display:flex; gap:7px; padding:0 16px; flex-wrap:wrap;}
+  .tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; letter-spacing:0.3px;
+    background:transparent; color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:8px 15px; cursor:pointer; }
+  .tab-btn.active{ background:var(--yellow); color:#1a0f00; border-color:var(--yellow); }
+  .action-btn{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; letter-spacing:0.3px;
+    background:var(--yellow); color:#1a0f00; border:1px solid var(--yellow); border-radius:20px; padding:10px 20px; cursor:pointer; }
+
+  .panel{ display:none; max-width:720px; margin:0 auto; padding:0 16px; }
+  .panel.active{ display:block; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px 20px 18px; margin-bottom:16px; }
+  .card h2{ font-family:'Archivo Black',sans-serif; font-size:21px; margin:0 0 10px; letter-spacing:0.2px; color:var(--cream);}
+  .card p{ font-size:15px; line-height:1.6; font-weight:400; }
+  .card .src{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-top:10px; }
+
+  .kpi-row{ display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
+  .kpi{ flex:1; min-width:125px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px 12px; }
+  .kpi .v{ font-family:'Archivo Black',sans-serif; font-size:23px; color:var(--yellow); }
+  .kpi .l{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); text-transform:uppercase; margin-top:3px; font-weight:700;}
+
+  .callout{ background:var(--bg); border-left:3px solid var(--orange); border-radius:4px; padding:14px 16px; margin:14px 0; font-weight:500; font-size:14px; color:var(--cream);}
+
+  .ribbon-wrap{ margin:16px 0; }
+  .ribbon-track{ display:flex; height:28px; border-radius:4px; overflow:hidden; border:1px solid var(--line); }
+  .ribbon-cell{ flex:1; background:var(--yellow); }
+  .ribbon-labels{ display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-top:4px;}
+
+  details summary{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--dim); cursor:pointer; font-weight:700;}
+  details p{ font-size:12px; color:var(--dim); line-height:1.6; }
+
+  footer{ max-width:720px; margin:14px auto 0; padding:0 16px; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); text-align:center; font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <svg class="pumpkin" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="46" y="4" width="8" height="14" rx="3" fill="#4ecb87"/>
+    <ellipse cx="50" cy="58" rx="42" ry="34" fill="#ff7518"/>
+    <path d="M 20 58 Q 50 38 80 58 Q 50 50 20 58 Z" fill="#000" opacity="0.18"/>
+    <path d="M 18 58 Q 50 28 82 58" stroke="#a3410a" stroke-width="2" fill="none" opacity="0.5"/>
+    <path d="M 50 24 L 50 92" stroke="#a3410a" stroke-width="2" opacity="0.4"/>
+    <polygon points="32,50 40,50 36,60" fill="#1a0f00"/>
+    <polygon points="60,50 68,50 64,60" fill="#1a0f00"/>
+    <path d="M 30 72 Q 36 66 42 72 Q 48 66 54 72 Q 60 66 66 72 Q 60 80 50 80 Q 40 80 30 72 Z" fill="#1a0f00"/>
+  </svg>
+  <div class="kicker">@dumbdashboards — ep. 23</div>
+  <h1>36 YEARS OF <span class="hl">TREEHOUSE OF HORROR</span></h1>
+  <div class="sub">Every segment since 1990, categorized and counted — what The Simpsons' annual horror anthology actually parodies, how the format has quietly changed, and the one gag that's never once missed a year.</div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="streak">The Unbroken Streak</button>
+  <button class="tab-btn" data-tab="genres">What Gets Parodied</button>
+  <button class="tab-btn" data-tab="repeats">Repeat Offenders</button>
+  <button class="tab-btn" data-tab="format">Format Evolution</button>
+  <button class="tab-btn" data-tab="thisyear">This Year</button>
+  <button class="tab-btn" data-tab="bestof">Best Of, By IMDb</button>
+  <button class="tab-btn" data-tab="facts">Random Fact</button>
+  <button class="tab-btn" data-tab="quiz">The Quiz</button>
+</div>
+
+<!-- ===================== STREAK ===================== -->
+<div class="panel active" id="panel-streak">
+  <div class="card">
+    <h2>THE ONLY THING THAT NEVER MISSES</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">37</div><div class="l">treehouse of horror specials, 1990–2026</div></div>
+      <div class="kpi"><div class="v">100%</div><div class="l">appeared in every single one</div></div>
+    </div>
+    <p>Kang and Kodos, the two tentacled aliens from Rigel 7, have appeared in <b>every Treehouse of Horror episode ever made</b> — the only element of the franchise with a perfect streak. Not Homer, not the wraparound format, not even a fixed segment count. Just two background aliens who showed up in 1990 and simply never left.</p>
+    <div class="ribbon-wrap">
+      <div class="ribbon-track" id="streakRibbon"></div>
+      <div class="ribbon-labels"><span>1990</span><span>2008</span><span>2026</span></div>
+    </div>
+    <p class="src">SOURCE: WIKIPEDIA, "LIST OF THE SIMPSONS TREEHOUSE OF HORROR EPISODES."</p>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">A tradition older than most of its own references</h2>
+    <p>The original "Treehouse of Horror" aired October 25, 1990 — inspired by 1950s EC Comics horror tales. This year's "Treehouse of Horror XXXVII" aired on <b>October 25, 2026</b>: the 36th anniversary, to the day.</p>
+  </div>
+</div>
+
+<!-- ===================== GENRES ===================== -->
+<div class="panel" id="panel-genres">
+  <div class="card">
+    <h2>WHAT GETS PARODIED HAS QUIETLY FLIPPED</h2>
+    <p>Every segment, categorized by source material and grouped into five-year windows. The share of each category tells the real story.</p>
+    <div style="display:flex; justify-content:center; margin:14px 0;"><div id="areaChart"></div></div>
+    <div id="areaLegend" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:10px;"></div>
+    <p class="src">CATEGORIZATION BY THIS OFFICE, FROM WIKIPEDIA'S FULL SEGMENT-BY-SEGMENT PARODY LIST.</p>
+  </div>
+
+  <div class="callout">In 1990–94, classic horror and literary sources made up <b>60%</b> of segments. By 2015–19, modern franchise and pop-culture parody had grown to <b>60%</b> — while literary classics had dropped to <b>zero</b>.</div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">The genre that explains the shift</h2>
+    <p>Early seasons leaned on EC Comics-style horror and literary dread: Poe, the Brothers Grimm, Frankenstein, Dracula. Modern seasons reach for whatever just hit theaters: Parasite, Jurassic Park, Spider-Verse, Pacific Rim. The show didn't get less scary — it started parodying blockbusters instead of books.</p>
+  </div>
+</div>
+
+<!-- ===================== REPEATS ===================== -->
+<div class="panel" id="panel-repeats">
+  <div class="card">
+    <h2>THE REPEAT OFFENDERS</h2>
+    <p>Some source material gets parodied once and retired. A handful of names come back again and again, decades apart.</p>
+    <div style="display:flex; justify-content:center; margin:14px 0;"><div id="dotPlot"></div></div>
+    <p class="src">COUNT OF DISTINCT SEGMENTS CITING EACH SOURCE, 1990–2026.</p>
+  </div>
+
+  <div class="callout">Stephen King has been parodied across <b>9 separate segments</b> spanning 32 years — from "The Shinning" (1994) to a "Pet Sematary" riff in this year's special. No other single author comes close.</div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">The 34-year callback nobody asked for</h2>
+    <p>The very first Treehouse of Horror segment in 1990 was built on Edgar Allan Poe's "The Raven." The show didn't touch Poe again until 2024's "The Fall of the House of Monty" — a riff on "The Fall of the House of Usher," 34 years later.</p>
+  </div>
+</div>
+
+<!-- ===================== FORMAT ===================== -->
+<div class="panel" id="panel-format">
+  <div class="card">
+    <h2>THE FORMAT QUIETLY BROKE ITSELF</h2>
+    <p>Three self-contained segments was the rule for 30 straight years. Then it wasn't.</p>
+    <div style="display:flex; justify-content:center; margin:14px 0;"><div id="lineChart"></div></div>
+    <p class="src">SEGMENT COUNT PER SPECIAL. 2024 COMBINES TWO SEPARATE HALLOWEEN SPECIALS AIRED THE SAME SEASON.</p>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="v">30 yrs</div><div class="l">straight at exactly 3 segments (1990–2019)</div></div>
+    <div class="kpi"><div class="v">5</div><div class="l">segments in XXXII (2021) — a franchise first</div></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px;">Why it changed</h2>
+    <p>Starting with season 34 (2022), Fox began airing <b>two</b> Halloween specials some years instead of one — a sign the franchise had outgrown its own three-segment box. 2024 was the extreme case: two full specials, six segments, the most Treehouse of Horror content ever produced in a single season.</p>
+  </div>
+</div>
+
+<!-- ===================== THIS YEAR ===================== -->
+<div class="panel" id="panel-thisyear">
+  <div class="card">
+    <h2>THIS YEAR'S SPECIAL</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">XXXVII</div><div class="l">36th anniversary edition</div></div>
+      <div class="kpi"><div class="v">OCT 25</div><div class="l">aired exactly 36 years to the day</div></div>
+    </div>
+    <p>"Treehouse of Horror XXXVII" parodies <b>The Nightmare Before Christmas</b> in its prologue, then runs two more segments: "My Husbands" (based on Holly Gramazio's novel) and "Freakish Friday" — a mashup of <b>Freaky Friday</b> and Stephen King's <b>Pet Sematary</b>.</p>
+    <p>A second special, "Treehouse of Horror Presents: The Revengening," aired a week earlier on October 18 — continuing the now-regular pattern of two Halloween outings per season.</p>
+    <p class="src">SOURCE: WIKIPEDIA, "LIST OF THE SIMPSONS TREEHOUSE OF HORROR EPISODES."</p>
+  </div>
+
+  <details>
+    <summary>▶ Methodology note</summary>
+    <p>Genre categorization (Horror/Sci-Fi/King/Literary/Franchise) was performed by this office based on Wikipedia's documented parody sources per segment, which are themselves sourced to show creator commentary and reliable published reviews. Borderline cases (e.g., a segment parodying both a sci-fi film and a TV format) were assigned to their most prominent cited source. This is an editorial classification, not an official one.</p>
+  </details>
+</div>
+
+<!-- ===================== BEST OF, BY IMDB ===================== -->
+<div class="panel" id="panel-bestof">
+  <div class="card">
+    <h2>BEST OF, BY IMDB</h2>
+    <p>Not a personal ranking — real user ratings, pulled straight from IMDb's own episode pages.</p>
+    <div id="imdbRows"></div>
+    <p class="src">SOURCE: IMDB EPISODE RATINGS, CROSS-CHECKED ACROSS MULTIPLE IMDB USER-COMPILED LISTS.</p>
+  </div>
+  <div class="callout">The highest-rated Treehouse of Horror ever is also one of its most quoted: <b>"V" (1994)</b> scores a 9.2 — built around "The Shinning," a shot-for-shot Shining parody with Groundskeeper Willie axed to death in all three segments.</div>
+</div>
+
+<!-- ===================== RANDOM FACT ===================== -->
+<div class="panel" id="panel-facts">
+  <div class="card">
+    <h2>RANDOM FACT GENERATOR</h2>
+    <p>36 years of trivia, one tap at a time.</p>
+    <div id="factCard" class="callout" style="min-height:70px; display:flex; align-items:center;">Tap below to pull a fact.</div>
+    <button id="factBtn" class="action-btn" style="margin-top:12px;">🎲 GIVE ME A FACT</button>
+  </div>
+</div>
+
+<!-- ===================== QUIZ ===================== -->
+<div class="panel" id="panel-quiz">
+  <div class="card" id="quizCard">
+    <h2>THE TREEHOUSE OF HORROR QUIZ</h2>
+    <p>Six questions. Everything you need is somewhere in this dashboard.</p>
+    <div id="quizBody"></div>
+  </div>
+
+  <footer>36 YEARS OF TREEHOUSE OF HORROR · @dumbdashboards · OCTOBER 2026</footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ===== Kang & Kodos streak ribbon ===== */
+const streakYears = 37;
+document.getElementById('streakRibbon').innerHTML = Array.from({length:streakYears}).map(()=>'<div class="ribbon-cell"></div>').join('');
+
+/* ===== Stacked area chart: genre mix by period ===== */
+const PERIODS = [
+  { label:'90-94', HORROR:40.0, SCIFI:26.7, KING:6.7, LIT:20.0, FRANCHISE:6.7 },
+  { label:'95-99', HORROR:46.7, SCIFI:20.0, KING:0.0, LIT:0.0, FRANCHISE:33.3 },
+  { label:'00-04', HORROR:40.0, SCIFI:13.3, KING:13.3, LIT:20.0, FRANCHISE:13.3 },
+  { label:'05-09', HORROR:20.0, SCIFI:26.7, KING:0.0, LIT:26.7, FRANCHISE:26.7 },
+  { label:'10-14', HORROR:46.7, SCIFI:6.7, KING:0.0, LIT:6.7, FRANCHISE:40.0 },
+  { label:'15-19', HORROR:33.3, SCIFI:6.7, KING:0.0, LIT:0.0, FRANCHISE:60.0 },
+  { label:'20-24', HORROR:23.5, SCIFI:5.9, KING:11.8, LIT:11.8, FRANCHISE:47.1 },
+  { label:'25-26', HORROR:33.3, SCIFI:0.0, KING:16.7, LIT:16.7, FRANCHISE:33.3 }
+];
+const CATS = [
+  {key:'HORROR', color:'#ff6a1a', name:'Classic Horror'},
+  {key:'SCIFI', color:'#8a5cf6', name:'Sci-Fi / Twilight Zone'},
+  {key:'KING', color:'#ff3b3b', name:'Stephen King'},
+  {key:'LIT', color:'#4ecb87', name:'Literary Classics'},
+  {key:'FRANCHISE', color:'#f0ece3', name:'Modern Franchise'}
+];
+function renderAreaChart(){
+  const W=320, H=260, padL=30, padR=10, padT=14, padB=28;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const n=PERIODS.length;
+  const xFor = i => padL + i/(n-1)*plotW;
+  const yFor = v => padT + plotH - v/100*plotH;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:380px; width:100%;">`;
+  [0,25,50,75,100].forEach(v=>{
+    const y=yFor(v);
+    svg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#2d2620" stroke-width="0.5" stroke-dasharray="2,2"/>`;
+    svg += `<text x="${padL-4}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="JetBrains Mono" font-size="6.5" fill="#96897c">${v}</text>`;
+  });
+  let cumBottom = PERIODS.map(()=>0);
+  CATS.forEach(cat=>{
+    const topPts = PERIODS.map((p,i)=>{
+      const top = cumBottom[i] + p[cat.key];
+      const pt = [xFor(i), yFor(top)];
+      cumBottom[i] = top;
+      return pt;
+    });
+    const bottomPts = PERIODS.map((p,i)=> [xFor(i), yFor(cumBottom[i]-p[cat.key])]).reverse();
+    const allPts = topPts.concat(bottomPts);
+    const pointsStr = allPts.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ');
+    svg += `<polygon points="${pointsStr}" fill="${cat.color}" fill-opacity="0.85" stroke="${cat.color==='#f0ece3'?'#96897c':cat.color}" stroke-width="0.5"/>`;
+  });
+  PERIODS.forEach((p,i)=>{
+    svg += `<text x="${xFor(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#96897c">${p.label}</text>`;
+  });
+  svg += `</svg>`;
+  document.getElementById('areaChart').innerHTML = svg;
+  document.getElementById('areaLegend').innerHTML = CATS.map(c=>
+    `<span><span style="display:inline-block;width:9px;height:9px;background:${c.color};border-radius:2px;margin-right:4px;"></span>${c.name}</span>`
+  ).join('');
+}
+renderAreaChart();
+
+/* ===== Dot plot: repeat sources ===== */
+const REPEATS = [
+  { name:'Stephen King', count:9 },
+  { name:'Twilight Zone', count:6 },
+  { name:'Ray Bradbury', count:4 },
+  { name:'Edgar Allan Poe', count:2 },
+  { name:'Frankenstein', count:2 },
+  { name:'The Blob', count:2 }
+];
+function renderDotPlot(){
+  const W=320, H=200, padL=120, padR=30;
+  const rowH = 28;
+  const maxCount = Math.max(...REPEATS.map(r=>r.count));
+  const plotW = W-padL-padR;
+  let svg = `<svg viewBox="0 0 ${W} ${REPEATS.length*rowH+20}" xmlns="http://www.w3.org/2000/svg" style="max-width:380px; width:100%;">`;
+  REPEATS.forEach((r,i)=>{
+    const y = i*rowH + 18;
+    const x2 = padL + (r.count/maxCount)*plotW;
+    svg += `<text x="${padL-10}" y="${y+4}" text-anchor="end" font-family="Archivo" font-size="11" font-weight="600" fill="#f0ece3">${r.name}</text>`;
+    svg += `<line x1="${padL}" y1="${y}" x2="${x2.toFixed(1)}" y2="${y}" stroke="#2d2620" stroke-width="2"/>`;
+    svg += `<circle cx="${x2.toFixed(1)}" cy="${y}" r="7" fill="#fed90f"/>`;
+    svg += `<text x="${(x2+14).toFixed(1)}" y="${y+4}" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fed90f">${r.count}×</text>`;
+  });
+  svg += `</svg>`;
+  document.getElementById('dotPlot').innerHTML = svg;
+}
+renderDotPlot();
+
+/* ===== Line chart: segments per episode ===== */
+const SEGCOUNTS = [
+  {y:1990,s:3},{y:1991,s:3},{y:1992,s:3},{y:1993,s:3},{y:1994,s:3},{y:1995,s:3},{y:1996,s:3},{y:1997,s:3},{y:1998,s:3},{y:1999,s:3},
+  {y:2000,s:3},{y:2001,s:3},{y:2002,s:3},{y:2003,s:3},{y:2004,s:3},{y:2005,s:3},{y:2006,s:3},{y:2007,s:3},{y:2008,s:3},{y:2009,s:3},
+  {y:2010,s:3},{y:2011,s:3},{y:2012,s:3},{y:2013,s:3},{y:2014,s:3},{y:2015,s:3},{y:2016,s:3},{y:2017,s:3},{y:2018,s:3},{y:2019,s:3},
+  {y:2020,s:3},{y:2021,s:4},{y:2022,s:4},{y:2023,s:3},{y:2024,s:6},{y:2025,s:3},{y:2026,s:4}
+];
+function renderLineChart(){
+  const W=320, H=200, padL=28, padR=12, padT=14, padB=26;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const n=SEGCOUNTS.length;
+  const xFor = i => padL + i/(n-1)*plotW;
+  const yFor = v => padT + plotH - (v-2)/(7-2)*plotH;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:380px; width:100%;">`;
+  [3,4,5,6].forEach(v=>{
+    const y=yFor(v);
+    svg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#2d2620" stroke-width="0.5" stroke-dasharray="2,2"/>`;
+    svg += `<text x="${padL-5}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="JetBrains Mono" font-size="7" fill="#96897c">${v}</text>`;
+  });
+  const pts = SEGCOUNTS.map((d,i)=> `${xFor(i).toFixed(1)},${yFor(d.s).toFixed(1)}`).join(' ');
+  svg += `<polyline points="${pts}" fill="none" stroke="#fed90f" stroke-width="2"/>`;
+  let labelToggle = false;
+  SEGCOUNTS.forEach((d,i)=>{
+    if(d.s>3 || i%5===0 || i===n-1){
+      const x=xFor(i), y=yFor(d.s);
+      svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${d.s>3?4:2.5}" fill="${d.s>3?'#ff3b3b':'#fed90f'}"/>`;
+      if(d.s>3){
+        const yOff = labelToggle ? 20 : 9;
+        labelToggle = !labelToggle;
+        svg += `<text x="${x.toFixed(1)}" y="${(y-yOff).toFixed(1)}" text-anchor="middle" font-family="JetBrains Mono" font-size="8" font-weight="700" fill="#ff3b3b">${d.y}</text>`;
+      }
+    }
+  });
+  svg += `<text x="${padL}" y="${H-4}" font-family="JetBrains Mono" font-size="7" fill="#96897c">1990</text>`;
+  svg += `<text x="${W-padR}" y="${H-4}" text-anchor="end" font-family="JetBrains Mono" font-size="7" fill="#96897c">2026</text>`;
+  svg += `</svg>`;
+  document.getElementById('lineChart').innerHTML = svg;
+}
+renderLineChart();
+
+/* ===== Best of, by IMDb ===== */
+const IMDB_RATINGS = [
+  { ep:'V', year:1994, rating:9.2, votes:'5.9K', segs:[['"The Shinning"','The Shining'],['"Time and Punishment"','"A Sound of Thunder" (Bradbury)'],['"Nightmare Cafeteria"','Soylent Green']] },
+  { ep:'IV', year:1993, rating:8.8, votes:'5.1K', segs:[['"The Devil and Homer Simpson"','"The Devil and Daniel Webster"'],['"Terror at 5½ Feet"','"Nightmare at 20,000 Feet" (Twilight Zone)'],['"Bart Simpson\'s Dracula"','Dracula']] },
+  { ep:'VI', year:1995, rating:8.7, votes:'4.4K', segs:[['"Attack of the 50-Foot Eyesores"','original story'],['"Nightmare on Evergreen Terrace"','A Nightmare on Elm Street'],['"Homer³"','"Little Girl Lost" (Twilight Zone)']] },
+  { ep:'VII', year:1996, rating:8.5, votes:'4.0K', segs:[['"The Thing and I"','original story'],['"The Genesis Tub"','"The Little People" (Twilight Zone)'],['"Citizen Kang"','1996 U.S. presidential election']] },
+  { ep:'I', year:1990, rating:8.2, votes:'6.2K', segs:[['"Bad Dream House"','Poltergeist / The Amityville Horror'],['"Hungry Are the Damned"','"To Serve Man" (Twilight Zone)'],['"The Raven"','Edgar Allan Poe\'s "The Raven"']] },
+  { ep:'II', year:1991, rating:8.2, votes:'4.8K', segs:[['"The Monkey\'s Paw"','"The Monkey\'s Paw"'],['"The Bart Zone"','"It\'s a Good Life" (Twilight Zone)'],['"If I Only Had a Brain"','Frankenstein']] },
+  { ep:'IX', year:1998, rating:8.0, votes:'3.2K', segs:[['"Hell Toupée"','"Hell Toupee" (Amazing Stories)'],['"The Terror of Tiny Toon"','Stay Tuned'],['"Starship Poopers"','original story']] },
+  { ep:'X', year:1999, rating:7.8, votes:'2.8K', segs:[['"I Know What You Diddily-Iddily-Did"','I Know What You Did Last Summer'],['"Desperately Xeeking Xena"','Fantastic Four'],['"Life\'s a Glitch, Then You Die"','the Year 2000 problem']] },
+  { ep:'XI', year:2000, rating:7.6, votes:'2.7K', segs:[['"G-G-Ghost D-D-Dad"','original story'],['"Scary Tales Can Come True"','Grimms\' Fairy Tales'],['"Night of the Dolphin"','The Day of the Dolphin / The Birds / Jaws']] },
+  { ep:'XII', year:2001, rating:7.6, votes:'2.6K', segs:[['"Hex and the City"','Stephen King\'s "Thinner"'],['"House of Whacks"','2001: A Space Odyssey / Demon Seed'],['"Wiz Kids"','Harry Potter']] },
+  { ep:'XIV', year:2003, rating:7.5, votes:'2.3K', segs:[['"Reaper Madness"','the Grim Reaper'],['"Frinkenstein"','Frankenstein'],['"Stop the World, I Want to Goof Off"','"A Kind of a Stopwatch"']] },
+  { ep:'XV', year:2004, rating:7.4, votes:'2.3K', segs:[['"The Ned Zone"','Stephen King\'s "The Dead Zone"'],['"Four Beheadings and a Funeral"','From Hell / Sherlock Holmes'],['"In the Belly of the Boss"','Fantastic Voyage']] },
+  { ep:'XXV', year:2014, rating:7.4, votes:'1.8K', segs:[['"School is Hell"','original story'],['"A Clockwork Yellow"','A Clockwork Orange'],['"The Others"','The Others']] },
+  { ep:'XVI', year:2005, rating:7.3, votes:'2.1K', segs:[['"B.I. Bartificial Intelligence"','A.I. Artificial Intelligence'],['"Survival of the Fattest"','"The Most Dangerous Game"'],['"I\'ve Grown a Costume on Your Face"','"The Masks" (Twilight Zone)']] },
+  { ep:'XIX', year:2008, rating:7.1, votes:'2.1K', segs:[['"Untitled Robot Parody"','Transformers'],['"How to Get Ahead in Dead-vertising"','Mad Men'],['"It\'s the Grand Pumpkin, Milhouse"','"It\'s the Great Pumpkin, Charlie Brown"']] },
+  { ep:'XXIV', year:2013, rating:6.9, votes:'1.8K', segs:[['"Oh the Places You\'ll D\'oh"','Dr. Seuss works'],['"Dead and Shoulders"','The Thing with Two Heads'],['"Freaks no Geeks"','Freaks']] },
+  { ep:'XVIII', year:2007, rating:6.9, votes:'2.0K', segs:[['"E.T., Go Home"','E.T. the Extra-Terrestrial'],['"Mr. & Mrs. Simpson"','Mr. & Mrs. Smith'],['"Heck House"','original story']] },
+  { ep:'XVII', year:2006, rating:6.8, votes:'2.1K', segs:[['"Married to the Blob"','The Blob'],['"You Gotta Know When to Golem"','The Golem'],['"The Day the Earth Looked Stupid"','The War of the Worlds']] }
+];
+function renderImdbRows(){
+  document.getElementById('imdbRows').innerHTML = IMDB_RATINGS.map((e,i)=>`
+    <div class="imdb-item" style="border-bottom:1px solid var(--line);">
+      <div class="rank-row-imdb" data-idx="${i}" style="display:flex; align-items:center; gap:10px; padding:9px 0; cursor:pointer;">
+        <span style="font-family:'Archivo Black',sans-serif; font-size:16px; color:var(--dim); flex:0 0 26px;">${i+1}</span>
+        <span style="flex:1; font-weight:600; font-size:14px;">Treehouse of Horror ${e.ep} <span style="color:var(--dim); font-weight:400;">(${e.year})</span></span>
+        <span style="font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--yellow); font-size:14px;">${e.rating.toFixed(1)}</span>
+        <span class="imdb-caret mono" style="color:var(--dim); font-size:11px; flex:0 0 14px; text-align:center;">▾</span>
+      </div>
+      <div class="imdb-detail" id="imdb-detail-${i}" style="display:none; padding:0 0 12px 36px;">
+        ${e.segs.map(s=>`<div style="font-size:12.5px; margin-bottom:5px;"><b>${s[0]}</b> <span style="color:var(--dim);">— parody of ${s[1]}</span></div>`).join('')}
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.rank-row-imdb').forEach(row=>{
+    row.addEventListener('click', ()=>{
+      const idx = row.dataset.idx;
+      const detail = document.getElementById('imdb-detail-'+idx);
+      const caret = row.querySelector('.imdb-caret');
+      const isOpen = detail.style.display === 'block';
+      detail.style.display = isOpen ? 'none' : 'block';
+      caret.textContent = isOpen ? '▾' : '▴';
+    });
+  });
+}
+renderImdbRows();
+
+/* ===== Random fact generator ===== */
+const FACTS = [
+  "The very first \"Treehouse of Horror\" (1990) had three different directors — one per segment. No other episode in the franchise has done that since.",
+  "Conan O'Brien wrote the wraparound segments for \"Treehouse of Horror IV\" (1993), years before his late-night career took off.",
+  "In \"Treehouse of Horror V,\" Groundskeeper Willie is killed with an axe in all three segments — the only time a single joke has repeated across an entire episode.",
+  "Only two Treehouse of Horror episodes have actually aired ON Halloween itself: \"II\" (1991) and \"X\" (1999). Every other one aired before or after.",
+  "Nine separate episodes — from \"XI\" (2000) through \"XIX\" (2008), plus \"XXI\" (2010) — were pushed into November because Fox's World Series broadcast contract bumped them off their October slot.",
+  "\"Treehouse of Horror XXXI\" (2020) was delayed two weeks, from October 18 to November 1, because the 2020 NLCS went the full seven games.",
+  "For the franchise's first 13 years, every segment had its own separate writer. Starting with \"XIV\" (2003), one person wrote the whole episode — a rule that held until \"XXXIII\" went back to multiple writers in 2022.",
+  "\"Treehouse of Horror XXXII\" (2021) was the first episode in the franchise's history to run five segments instead of the usual three.",
+  "\"Homer³,\" the 1995 segment that drops Homer into a strange geometric dimension, was the show's first-ever use of 3D computer animation.",
+  "\"Treehouse of Horror XIX\" (2008) was the last Treehouse of Horror broadcast in old-fashioned 4:3 standard definition.",
+  "Showrunner Al Jean has pointed out that \"Treehouse of Horror XXX\" landed on episode number 666 of the series — entirely by scheduling coincidence.",
+  "The 1990 debut's title segment, \"Bad Dream House,\" was directly inspired by 1950s EC Comics horror anthologies — the same comics that inspired the entire American horror-comic tradition.",
+  "Kang and Kodos's 1996 segment \"Citizen Kang\" has them impersonate Bill Clinton and Bob Dole during the real 1996 U.S. presidential election — one of the franchise's few overtly political segments.",
+  "The show finally parodied \"It's the Great Pumpkin, Charlie Brown\" in 2008's \"XIX\" — 19 years after the franchise started, because the writers had long wanted to but struggled to clear it."
+];
+document.getElementById('factBtn').addEventListener('click', ()=>{
+  const pick = FACTS[Math.floor(Math.random()*FACTS.length)];
+  document.getElementById('factCard').textContent = pick;
+});
+
+/* ===== Quiz ===== */
+const QUIZ = [
+  { q:"How many Treehouse of Horror specials have aired as of 2026?", opts:["25","31","37","42"], correct:2 },
+  { q:"Which two aliens have appeared in literally every single episode?", opts:["Kang and Kodos","Kif and Zapp","Mork and Orson","Zorp and Glorbo"], correct:0 },
+  { q:"Which author has been parodied the most — 9 separate segments?", opts:["Edgar Allan Poe","H.P. Lovecraft","Stephen King","Ray Bradbury"], correct:2 },
+  { q:"How many years passed between the show's first and second Poe parody?", opts:["10 years","19 years","25 years","34 years"], correct:3 },
+  { q:"In which 5-year window did \"modern franchise\" parodies first hit 60% of all segments?", opts:["2000–2004","2010–2014","2015–2019","2020–2024"], correct:2 },
+  { q:"How many total segments aired across the two 2024 Halloween specials?", opts:["3","4","6","8"], correct:2 }
+];
+let quizState = { i:0, score:0 };
+function renderQuiz(){
+  const body = document.getElementById('quizBody');
+  if(quizState.i >= QUIZ.length){
+    let profile, desc;
+    if(quizState.score <= 2){ profile="CASUAL TRICK-OR-TREATER"; desc="You know the broad strokes — Homer, Halloween, something about aliens. Totally normal. Go rewatch a few."; }
+    else if(quizState.score <= 4){ profile="TREEHOUSE REGULAR"; desc="You clearly tune in every October. A few specifics slipped past you, but you know this franchise."; }
+    else { profile="KANG & KODOS COMPLETIONIST"; desc="A perfect or near-perfect score — fitting, since you now share something with the only characters who've never missed a single year."; }
+    body.innerHTML = `
+      <div class="callout" style="text-align:center;">
+        <div class="mono" style="font-size:10px; color:var(--dim); margin-bottom:6px;">${quizState.score} / ${QUIZ.length} CORRECT</div>
+        <div class="black" style="font-size:22px; color:var(--yellow); margin-bottom:8px;">${profile}</div>
+        <div style="font-size:14px;">${desc}</div>
+      </div>
+      <button id="quizRestart" class="action-btn" style="margin-top:14px;">↺ RETAKE THE QUIZ</button>`;
+    document.getElementById('quizRestart').addEventListener('click', ()=>{ quizState={i:0,score:0}; renderQuiz(); });
+    return;
+  }
+  const item = QUIZ[quizState.i];
+  body.innerHTML = `
+    <div class="mono" style="font-size:10px; color:var(--dim); margin-bottom:8px;">QUESTION ${quizState.i+1} OF ${QUIZ.length}</div>
+    <div style="font-size:15px; font-weight:600; margin-bottom:12px;">${item.q}</div>
+    <div id="quizOpts"></div>`;
+  const optsDiv = document.getElementById('quizOpts');
+  item.opts.forEach((opt,idx)=>{
+    const b = document.createElement('button');
+    b.textContent = opt;
+    b.style.cssText = "display:block; width:100%; text-align:left; background:var(--bg); color:var(--cream); border:1px solid var(--line); border-radius:6px; padding:10px 14px; margin-bottom:8px; font-family:Archivo; font-size:14px; cursor:pointer;";
+    b.addEventListener('click', ()=>{
+      if(idx===item.correct){ quizState.score++; }
+      quizState.i++;
+      renderQuiz();
+    });
+    optsDiv.appendChild(b);
+  });
+}
+renderQuiz();
+</script>
+</body>
+</html>
