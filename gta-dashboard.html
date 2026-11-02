@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTA, MEASURED IN STUPID THINGS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#0b0220; --bg2:#220a45;
+    --panel:#150836; --panel2:#1d0d48; --line:#3b1f72;
+    --pink:#ff3d9a; --cyan:#27e8ff; --yellow:#ffd23f; --orange:#ff8a3d; --blue:#4aa8ff; --red:#ff5252; --violet:#9a6bff;
+    --text:#fff4fb; --dim:#b7a3df; --ink:#14042e;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  html{ background:#0b0220; }
+  body{
+    min-height:100vh;
+    background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%);
+    color:var(--text); font-family:'Archivo',sans-serif; padding-bottom:48px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .bungee{font-family:'Bungee',sans-serif;}
+
+  .masthead{ max-width:720px; margin:0 auto; padding:22px 16px 8px; }
+  .masthead .kicker{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+  .masthead h1{ font-family:'Bungee',sans-serif; font-weight:400; font-size:clamp(30px,8.6vw,48px); line-height:1.02; margin:10px 0 8px; color:var(--text); text-shadow:3px 3px 0 var(--pink); }
+  .masthead h1 .hl{ color:var(--cyan); text-shadow:3px 3px 0 var(--violet); }
+  .masthead .sub{ font-size:14px; color:var(--dim); font-weight:500; max-width:600px; line-height:1.5; }
+  .stripe{ max-width:720px; margin:14px auto 0; height:4px; border-radius:2px; background:linear-gradient(90deg,var(--pink),var(--orange),var(--yellow),var(--cyan)); }
+
+  .nav{ max-width:720px; margin:14px auto; display:flex; gap:7px; padding:0 16px; flex-wrap:wrap; }
+  .tab-btn{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; background:transparent; color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:8px 14px; cursor:pointer; }
+  .tab-btn.active{ background:var(--pink); color:#fff; border-color:var(--pink); }
+
+  .panel{ display:none; max-width:720px; margin:0 auto; padding:0 16px; }
+  .panel.active{ display:block; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 18px 16px; margin-bottom:14px; }
+  .card h2{ font-family:'Bungee',sans-serif; font-weight:400; font-size:19px; margin:0 0 8px; color:var(--text); line-height:1.15; }
+  .card p{ font-size:14.5px; line-height:1.55; margin:8px 0; }
+  .src{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--dim); margin-top:10px; line-height:1.5; }
+
+  .kpi-row{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+  .kpi{ flex:1; min-width:96px; background:var(--ink); border:1px solid var(--line); border-radius:10px; padding:11px 9px; }
+  .kpi .v{ font-family:'Bungee',sans-serif; font-size:19px; white-space:nowrap; color:var(--cyan); line-height:1.05; }
+  .kpi .l{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); text-transform:uppercase; margin-top:4px; font-weight:700; line-height:1.35; }
+
+  .callout{ background:var(--ink); border-left:3px solid var(--pink); border-radius:4px; padding:12px 14px; margin:12px 0; font-size:14px; font-weight:500; line-height:1.5; }
+  .tag{ display:inline-block; font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:.5px; padding:3px 7px; border-radius:20px; text-transform:uppercase; }
+  .tag.ok{ background:rgba(39,232,255,.15); color:var(--cyan); border:1px solid var(--cyan); }
+  .tag.claim{ background:rgba(255,210,63,.13); color:var(--yellow); border:1px solid var(--yellow); }
+  .tag.unof{ background:rgba(255,61,154,.14); color:var(--pink); border:1px solid var(--pink); }
+
+  .chip{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:transparent; color:var(--dim); border:1px solid var(--line); border-radius:20px; padding:6px 11px; cursor:pointer; }
+  .chip.active{ background:var(--cyan); color:var(--ink); border-color:var(--cyan); }
+  .action-btn{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; background:var(--pink); color:#fff; border:1px solid var(--pink); border-radius:20px; padding:9px 16px; cursor:pointer; }
+  .action-btn.ghost{ background:transparent; color:var(--pink); }
+
+  /* claims table */
+  .claim-row{ display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--line); }
+  .claim-row:last-child{ border-bottom:none; }
+  .claim-row .tg{ flex:0 0 84px; padding-top:1px; }
+  .claim-row .tx{ flex:1; font-size:13.5px; line-height:1.45; }
+  .claim-row .tx b{ color:var(--text); }
+
+  /* delay stepper */
+  .stepper{ display:flex; flex-direction:column; gap:0; margin:10px 0 2px; }
+  .step{ display:flex; gap:12px; align-items:flex-start; position:relative; padding-bottom:14px; }
+  .step:last-child{ padding-bottom:0; }
+  .step .dot{ flex:0 0 14px; height:14px; border-radius:50%; background:var(--cyan); margin-top:3px; position:relative; z-index:1; }
+  .step:not(:last-child)::before{ content:""; position:absolute; left:6px; top:17px; bottom:0; width:2px; background:var(--line); }
+  .step.last .dot{ background:var(--pink); }
+  .step .when{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); font-weight:700; text-transform:uppercase; }
+  .step .what{ font-size:14px; font-weight:600; line-height:1.35; }
+
+  /* ladder */
+  .ladder-row{ padding:10px 0; border-bottom:1px solid var(--line); cursor:pointer; }
+  .ladder-row:last-child{ border-bottom:none; }
+  .ladder-top{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .ladder-name{ font-weight:700; font-size:13.5px; }
+  .ladder-val{ font-family:'Bungee',sans-serif; font-size:18px; color:var(--cyan); }
+  .ladder-track{ position:relative; height:22px; margin-top:6px; }
+  .ladder-track::before{ content:""; position:absolute; left:0; right:0; top:10px; height:2px; background:var(--line); }
+  .ladder-dot{ position:absolute; top:3px; width:16px; height:16px; border-radius:50%; background:var(--cyan); box-shadow:0 0 0 3px rgba(39,232,255,.2); transform:translateX(-8px); }
+  .ladder-row.sel .ladder-dot{ background:var(--pink); box-shadow:0 0 0 3px rgba(255,61,154,.25); }
+  .ladder-row.sel .ladder-val{ color:var(--pink); }
+  .ladder-def{ display:none; font-size:12.5px; color:var(--dim); line-height:1.45; margin-top:6px; }
+  .ladder-row.sel .ladder-def{ display:block; }
+  .ladder-axis{ display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-top:2px; }
+
+  /* waffle */
+  .waffle{ display:grid; grid-template-columns:repeat(55,1fr); gap:1.5px; margin:12px 0 8px; }
+  .waffle .cell{ aspect-ratio:1; background:#2a1457; border-radius:1px; }
+  .scrub-label{ font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; line-height:1.45; min-height:48px; }
+  .scrub-label .n{ color:var(--cyan); }
+  input[type=range]{ width:100%; accent-color:var(--pink); margin:6px 0; }
+
+  /* chips list */
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+  .pill{ font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; padding:6px 10px; border-radius:20px; border:1px solid var(--line); color:var(--text); background:var(--ink); }
+  .pill b{ color:var(--cyan); margin-left:5px; }
+  .pill.rare{ border-color:var(--pink); }
+  .pill.rare b{ color:var(--pink); }
+
+  /* lookalikes */
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .flip{ perspective:800px; height:96px; cursor:pointer; }
+  .flip-inner{ position:relative; width:100%; height:100%; transition:transform .45s; transform-style:preserve-3d; }
+  .flip.is-flipped .flip-inner{ transform:rotateY(180deg); }
+  .face{ position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:10px; padding:10px 11px; display:flex; flex-direction:column; justify-content:center; }
+  .front{ background:var(--ink); border:1px solid var(--line); }
+  .back{ background:linear-gradient(135deg,var(--pink),var(--violet)); transform:rotateY(180deg); }
+  .face .cat{ font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+  .face .fake{ font-family:'Bungee',sans-serif; font-size:15px; line-height:1.1; word-break:break-word; }
+  .face .hint{ font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--dim); margin-top:6px; }
+  .back .cat{ color:rgba(255,255,255,.8); }
+  .back .real{ font-family:'Bungee',sans-serif; font-size:15px; line-height:1.1; color:#fff; word-break:break-word; }
+  .back .dispute{ font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; margin-top:6px; color:var(--yellow); }
+  .filters{ display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 2px; }
+
+  /* keypad */
+  .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:280px; margin:14px auto 8px; }
+  .key{ background:var(--ink); border:1px solid var(--line); border-radius:12px; padding:9px 0 7px; text-align:center; transition:all .15s; }
+  .key .d{ font-family:'Bungee',sans-serif; font-size:22px; line-height:1; }
+  .key .ltr{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--dim); letter-spacing:1px; height:12px; margin-top:3px; }
+  .key.on{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 14px rgba(39,232,255,.55); }
+  .key.on .d, .key.on .ltr{ color:var(--ink); }
+  .pairs{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:8px 0; min-height:44px; }
+  .pair{ text-align:center; background:var(--ink); border:1px solid var(--line); border-radius:8px; padding:5px 8px; min-width:34px; }
+  .pair .l{ font-family:'Bungee',sans-serif; font-size:16px; color:var(--pink); }
+  .pair .dg{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--cyan); font-weight:700; }
+  .numline{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:var(--yellow); margin:6px 0; word-break:break-all; }
+  .textin{ width:100%; background:var(--ink); border:1px solid var(--line); border-radius:10px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:14px; padding:10px 12px; text-transform:uppercase; }
+  .textin:focus{ outline:none; border-color:var(--pink); }
+  .verdict{ font-size:13px; text-align:center; margin:6px 0 0; min-height:20px; color:var(--dim); }
+
+  /* events */
+  .dots{ display:grid; grid-template-columns:repeat(10,1fr); gap:7px; margin:14px 0 10px; }
+  .edot{ aspect-ratio:1; border-radius:50%; border:1px solid var(--line); background:var(--ink); cursor:pointer; padding:0; }
+  .edot.enh{ border-style:dashed; border-color:var(--violet); }
+  .edot.on{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 8px rgba(39,232,255,.5); }
+  .edot.over{ background:var(--panel2); border-color:var(--pink); }
+  .meter{ height:14px; background:var(--ink); border:1px solid var(--line); border-radius:7px; overflow:hidden; position:relative; }
+  .meter .fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--pink),var(--yellow)); transition:width .2s; }
+  .meter-lbl{ display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); margin-top:5px; font-weight:700; }
+
+
+  /* random events v2 */
+  .evgrid{ display:grid; grid-template-columns:repeat(10,1fr); gap:6px; margin:12px 0 10px; }
+  .evcell{ aspect-ratio:1; border-radius:5px; transition:opacity .2s; }
+  .evcell.dim{ opacity:.16; }
+  .evcell.enh{ box-shadow:inset 0 0 0 2px #fff4fb; background-image:repeating-linear-gradient(45deg,rgba(20,4,46,.45) 0 3px,transparent 3px 6px); }
+  .weird{ border-top:1px solid var(--line); padding:12px 0; }
+  .weird:first-child{ border-top:none; }
+  .weird .wt{ font-family:'Bungee',sans-serif; font-size:15px; line-height:1.15; }
+  .weird .wt .badge{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--yellow); border:1px solid var(--yellow); border-radius:20px; padding:2px 6px; margin-left:6px; vertical-align:middle; }
+  .weird .wx{ font-size:13.5px; line-height:1.5; margin-top:5px; }
+  .weird .wr{ font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:700; color:var(--cyan); margin-top:6px; }
+
+  /* quiz */
+  .opt{ display:block; width:100%; text-align:left; background:var(--ink); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px 14px; margin-bottom:8px; font-family:'Archivo',sans-serif; font-size:14px; cursor:pointer; }
+  .opt:hover{ border-color:var(--pink); }
+
+  details summary{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--dim); cursor:pointer; font-weight:700; }
+  details p{ font-size:12px; color:var(--dim); line-height:1.6; }
+  footer{ max-width:720px; margin:14px auto 0; padding:0 16px; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); text-align:center; font-weight:700; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="kicker">@dumbdashboards — ep. 24</div>
+  <h1>GTA, MEASURED IN <span class="hl">STUPID THINGS</span></h1>
+  <div class="sub">Vehicles, fake brands, cheat codes you can type on a phone keypad, and a 13-year wait. Counted from game files and fan wikis, with the disagreements left in.</div>
+</div>
+<div class="stripe"></div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="launch">Launch</button>
+  <button class="tab-btn" data-tab="cars">How many cars?</button>
+  <button class="tab-btn" data-tab="twins">Lookalikes</button>
+  <button class="tab-btn" data-tab="cheats">Cheat numbers</button>
+  <button class="tab-btn" data-tab="events">Random events</button>
+  <button class="tab-btn" data-tab="quiz">Quiz</button>
+</div>
+
+<!-- ============ LAUNCH ============ -->
+<div class="panel active" id="panel-launch">
+  <div class="card">
+    <h2>GTA VI LANDS NOV 19</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v" id="kpiDays">--</div><div class="l" id="kpiDaysL">days to launch</div></div>
+      <div class="kpi"><div class="v">NOV 12</div><div class="l">digital preload opens</div></div>
+      <div class="kpi"><div class="v">$79.99</div><div class="l">standard · Ultimate is $99.99</div></div>
+    </div>
+    <p>PS5 and Xbox Series X|S only, no PC date. The physical Standard Edition is a box with a download code, not a disc.</p>
+    <div class="src">SOURCES: ROCKSTAR/TAKE-TWO AS REPORTED BY GTABOOM, ENGADGET, GAMESPOT, WIKIPEDIA (IT).</div>
+  </div>
+
+  <div class="card">
+    <h2>THE WAIT, IN YEARS</h2>
+    <p>Every mainline GTA, with the gap since the previous one.</p>
+    <div id="gapChart"></div>
+    <div class="callout">13 years since GTA V (Sept 17, 2013). That is <b>2.6×</b> the longest gap before it (5 years, GTA IV to V).</div>
+    <div class="src">GAPS BY RELEASE YEAR: 2, 2, 1, 2, 4, 5, THEN 13.</div>
+  </div>
+
+  <div class="card">
+    <h2>HOW IT SLIPPED</h2>
+    <div class="stepper">
+      <div class="step"><div class="dot"></div><div><div class="when">Dec 5, 2023</div><div class="what">First trailer promises a 2025 release</div></div></div>
+      <div class="step"><div class="dot"></div><div><div class="when">May 2, 2025</div><div class="what">Delayed to May 26, 2026</div></div></div>
+      <div class="step last"><div class="dot"></div><div><div class="when">Nov 6, 2025</div><div class="what">Delayed again, to Nov 19, 2026</div></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>FACT, CLAIM OR GUESS?</h2>
+    <div class="claim-row"><div class="tg"><span class="tag ok">confirmed</span></div><div class="tx"><b>Date, platforms, price.</b> Stated by Rockstar and Take-Two.</div></div>
+    <div class="claim-row"><div class="tg"><span class="tag claim">claimed</span></div><div class="tx"><b>475M trailer views in 24h.</b> Rockstar's figure for Trailer 2, across all platforms. Wikipedia says the record fell in March 2026 to the Spider-Man: Brand New Day trailer.</div></div>
+    <div class="claim-row"><div class="tg"><span class="tag claim">claimed</span></div><div class="tx"><b>93M YouTube views in 24h.</b> Trailer 1 (Dec 2023), a Guinness World Record for a game trailer.</div></div>
+    <div class="claim-row"><div class="tg"><span class="tag claim">reported</span></div><div class="tx"><b>Map ≈ 2× GTA V.</b> Relayed by Edge and Game Informer. Rockstar has never published square miles for any GTA.</div></div>
+    <div class="claim-row"><div class="tg"><span class="tag unof">unofficial</span></div><div class="tx"><b>Budget "$1B to $2B+".</b> Never disclosed. Every figure online is an estimate.</div></div>
+  </div>
+</div>
+
+<!-- ============ CARS ============ -->
+<div class="panel" id="panel-cars">
+  <div class="card">
+    <h2>HOW MANY CARS IN GTA V?</h2>
+    <p>Depends who is counting. Tap a source.</p>
+    <div id="ladder"></div>
+    <div class="ladder-axis"><span>0</span><span>250</span><span>500</span><span>750</span><span>1,000</span></div>
+    <div class="callout">From 280+ to 935: <b>more than 3×</b> difference for the same game. The gap is definitions, not errors.</div>
+    <div class="src">SOURCES: GTA5WIKI.COM, GTA FANDOM WIKI, GTABASE, FIVEFORGE (READ FROM GAME FILES).</div>
+  </div>
+
+  <div class="card">
+    <h2>47 UPDATES LATER</h2>
+    <p>Only <b>298</b> of 935 vehicles shipped with the game. Drag through the updates.</p>
+    <div class="waffle" id="waffle"></div>
+    <div class="scrub-label" id="scrubLabel"></div>
+    <input type="range" id="scrub" min="0" max="47" value="0">
+    <div style="display:flex; gap:8px; margin-top:4px;">
+      <button class="action-btn" id="playBtn">PLAY</button>
+      <button class="action-btn ghost" id="resetBtn">RESET</button>
+    </div>
+    <div class="callout" id="bigDrop" style="margin-top:10px;"></div>
+    <div class="src">PACKS IN THE SOURCE'S ORDER; THE LAST THREE ARE ORDERED BY NAME (2025 UPDATE 1, 2025 UPDATE 2, 2026 UPDATE 1). SOURCE: FIVEFORGE.</div>
+  </div>
+
+  <div class="card">
+    <h2>WHAT THEY ARE</h2>
+    <p>935 entries by class. Tap a bubble.</p>
+    <div id="bubbles"></div>
+    <div class="scrub-label" id="bubbleLabel" style="min-height:22px;">Tap a bubble.</div>
+    <div class="src">SOURCE: FIVEFORGE.</div>
+  </div>
+
+  <div class="card">
+    <h2>THE WEIRD BOTTOM OF THE LIST</h2>
+    <p>By vehicle type. 709 are cars. Then there is this.</p>
+    <div class="chips" id="typeChips"></div>
+    <div class="src">SOURCE: FIVEFORGE, TYPE FIELD.</div>
+  </div>
+</div>
+
+<!-- ============ TWINS ============ -->
+<div class="panel" id="panel-twins">
+  <div class="card">
+    <h2>THE LOOKALIKES</h2>
+    <p>GTA's fake brands and websites, and who they are making fun of. Tap a card to reveal the real one.</p>
+    <div class="filters" id="twinFilters"></div>
+    <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+      <button class="action-btn ghost" id="revealAll">REVEAL ALL</button>
+      <span class="mono" style="font-size:11px; color:var(--dim);" id="revealCount"></span>
+    </div>
+    <div class="grid2" id="twinGrid"></div>
+    <div class="callout">These matches are <b>fan interpretations</b>, not Rockstar statements. The wikis even disagree: one says eyefind.info is Yahoo!, another says Google.</div>
+    <div class="src">SOURCES: GRAND THEFT WIKI (VEHICLE BRANDS, GTA IV WEBSITES), GTA FANDOM, WIKIGTA, SPORTSKEEDA.</div>
+  </div>
+
+  <div class="card">
+    <h2>RADIO ADS WITH NO TWIN</h2>
+    <p>Some fake brands are just fake. A partial list of radio commercials across the series.</p>
+    <div class="chips" id="adChips"></div>
+    <div class="src">SOURCE: GTA FANDOM, CATEGORY: COMMERCIALS (PARTIAL).</div>
+  </div>
+</div>
+
+<!-- ============ CHEATS ============ -->
+<div class="panel" id="panel-cheats">
+  <div class="card">
+    <h2>CHEATS ARE PHONE NUMBERS</h2>
+    <p>In GTA V you dial the cheat on the in-game phone. The numbers spell words on a keypad. Pick a vehicle.</p>
+    <div class="filters" id="cheatChips"></div>
+    <div class="numline" id="cheatNum">1-999-</div>
+    <div class="keypad" id="keypad"></div>
+    <div class="pairs" id="pairs"></div>
+    <div class="src">NUMBERS FROM RED BULL'S CHEAT LIST. THE WORDS ARE DECODED ON A STANDARD KEYPAD, DIGIT BY DIGIT, AND MATCH THE KNOWN CHEAT NAMES.</div>
+  </div>
+
+  <div class="card">
+    <h2>TRY YOUR OWN</h2>
+    <p>Type a word and see the number it dials.</p>
+    <input class="textin" id="wordIn" maxlength="14" placeholder="TYPE A WORD" autocomplete="off">
+    <div class="numline" id="wordNum">1-999-</div>
+    <div class="verdict" id="wordVerdict">Type RAPIDGT to see a real one.</div>
+  </div>
+</div>
+
+<!-- ============ EVENTS ============ -->
+<div class="panel" id="panel-events">
+  <div class="card">
+    <h2>WHAT IS A RANDOM EVENT?</h2>
+    <p>While you drive around San Andreas, short street scenes pop up on the map. A <b style="color:var(--cyan)">blue dot</b> means someone needs help, a <b style="color:var(--red)">red dot</b> means someone needs stopping. You can help, ignore it, or make it worse.</p>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">60</div><div class="l">random events in total</div></div>
+      <div class="kpi"><div class="v">14</div><div class="l">needed for 100% completion</div></div>
+      <div class="kpi"><div class="v">10</div><div class="l">are the same security van</div></div>
+    </div>
+    <div class="src">3 OF THE 60 EXIST ONLY IN THE ENHANCED EDITION. SOURCE: GTABASE, RANDOM EVENTS GUIDE.</div>
+  </div>
+
+  <div class="card">
+    <h2>THE 60, BY TYPE</h2>
+    <p>One square per event. Tap a type.</p>
+    <div class="evgrid" id="evGrid"></div>
+    <div class="filters" id="evLegend"></div>
+    <div class="callout" id="evInfo">Tap a type to see what happens. Dashed squares are the 3 Enhanced-only events.</div>
+  </div>
+
+  <div class="card">
+    <h2>THE WEIRDEST ONES</h2>
+    <div id="evWeird"></div>
+    <div class="src">SOURCE: GTABASE, RANDOM EVENTS GUIDE.</div>
+  </div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div class="panel" id="panel-quiz">
+  <div class="card">
+    <h2>THE GTA QUIZ</h2>
+    <p>Six questions. Everything is in this dashboard.</p>
+    <div id="quizBody"></div>
+  </div>
+  <details style="margin-bottom:14px;">
+    <summary>Methodology and sources</summary>
+    <p>Vehicle counts, classes, types and update packs come from FiveForge (read from game files); other counts are quoted from each source's own definition. Map sizes are deliberately absent: Rockstar has never published them and every figure online is a fan measurement. Brand and website lookalikes are fan-assigned. Trailer view records are company claims. Nothing here uses leaked or hacked data.</p>
+  </details>
+  <footer>GTA, MEASURED IN STUPID THINGS · @dumbdashboards · NOVEMBER 2026</footer>
+</div>
+
+<script>
+/* ============ TABS ============ */
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============ COUNTDOWN ============ */
+(function(){
+  var target = new Date(2026, 10, 19, 0, 0, 0);
+  var ms = target - new Date();
+  var el = document.getElementById('kpiDays');
+  var lb = document.getElementById('kpiDaysL');
+  if (ms <= 0) { el.textContent = "LIVE"; lb.textContent = "it is out"; }
+  else { el.textContent = String(Math.ceil(ms / 86400000)); }
+})();
+
+/* ============ GAP TIMELINE ============ */
+(function(){
+  var rel = [
+    {y:1997,n:"GTA",up:true},{y:1999,n:"GTA 2",up:false},{y:2001,n:"III",up:true},{y:2002,n:"VC",up:false},
+    {y:2004,n:"SA",up:true},{y:2008,n:"IV",up:false},{y:2013,n:"V",up:true},{y:2026,n:"VI",up:true}
+  ];
+  var X0 = 24, X1 = 336;
+  function x(y){ return X0 + (y - 1997) * (X1 - X0) / 29; }
+  var svg = '<svg viewBox="0 20 360 106" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:420px;display:block;margin:6px auto;">';
+  for (var i = 0; i < rel.length - 1; i++) {
+    var a = rel[i], b = rel[i+1], gap = b.y - a.y;
+    var big = gap === 13;
+    var fill = big ? '#ff3d9a' : '#27e8ff';
+    var op = big ? 1 : (0.35 + gap * 0.1);
+    svg += '<rect x="' + x(a.y) + '" y="67" width="' + (x(b.y) - x(a.y)) + '" height="16" rx="3" fill="' + fill + '" fill-opacity="' + op + '"/>';
+    if (gap >= 4) {
+      svg += '<text x="' + ((x(a.y) + x(b.y)) / 2) + '" y="79" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="' + (big ? '#fff' : '#14042e') + '">' + gap + 'y</text>';
+    }
+  }
+  rel.forEach(function(r){
+    var cx = x(r.y);
+    svg += '<circle cx="' + cx + '" cy="75" r="5.5" fill="#fff4fb" stroke="#14042e" stroke-width="2"/>';
+    if (r.up) {
+      svg += '<text x="' + cx + '" y="46" text-anchor="middle" font-family="Bungee" font-size="11" fill="#fff4fb">' + r.n + '</text>';
+      svg += '<text x="' + cx + '" y="58" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="#b7a3df">' + r.y + '</text>';
+    } else {
+      svg += '<text x="' + cx + '" y="97" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="#b7a3df">' + r.y + '</text>';
+      svg += '<text x="' + cx + '" y="110" text-anchor="middle" font-family="Bungee" font-size="11" fill="#fff4fb">' + r.n + '</text>';
+    }
+  });
+  svg += '</svg>';
+  document.getElementById('gapChart').innerHTML = svg;
+})();
+
+/* ============ LADDER ============ */
+(function(){
+  var rows = [
+    {name:"GTA 5 Wiki (fan wiki)", v:280, label:"280+", def:"A fan-built wiki that summarizes 280+ vehicles. The oldest and lowest count."},
+    {name:"GTA Wiki (Fandom)", v:347, label:"347", def:"Counts 347 separate controllable vehicles in GTA V, listing trains and trailers apart."},
+    {name:"gtabase", v:803, label:"803", def:"Counts 803 vehicles across GTA 5 and GTA Online: cars, bikes, planes, boats and special vehicles."},
+    {name:"FiveForge", v:935, label:"935", def:"Reads 935 entries straight from the game files: base game plus 47 update packs, counting cars, bikes, aircraft, boats, trains and trailers."}
+  ];
+  var host = document.getElementById('ladder');
+  rows.forEach(function(r, i){
+    var d = document.createElement('div');
+    d.className = 'ladder-row' + (i === 3 ? ' sel' : '');
+    d.innerHTML =
+      '<div class="ladder-top"><span class="ladder-name">' + r.name + '</span><span class="ladder-val">' + r.label + '</span></div>' +
+      '<div class="ladder-track"><div class="ladder-dot" style="left:' + (r.v / 10) + '%"></div></div>' +
+      '<div class="ladder-def">' + r.def + '</div>';
+    d.addEventListener('click', function(){
+      host.querySelectorAll('.ladder-row').forEach(function(x){ x.classList.remove('sel'); });
+      d.classList.add('sel');
+    });
+    host.appendChild(d);
+  });
+})();
+
+/* ============ WAFFLE SCRUBBER ============ */
+(function(){
+  var PACKS = [
+    ["Base game",298],["Story mode upgrade",13],["Beach Bum",4],["Business Update",4],["High Life",4],["I'm Not a Hipster",7],
+    ["Independence Day Special",2],["San Andreas Flight School",4],["Last Team Standing",3],["Festive Surprise 2014",4],["Heists",21],
+    ["Ill-Gotten Gains Part 1",6],["Ill-Gotten Gains Part 2",6],["Lowriders",8],["Halloween Surprise",2],["Executives and Other Criminals",25],
+    ["Festive Surprise 2015",1],["January 2016 Update",2],["Valentine's Day Massacre",1],["Be My Valentine",1],["Lowriders: Custom Classics",7],
+    ["Further Adventures in Finance and Felony",14],["Cunning Stunts",15],["Bikers",21],["Import/Export",24],
+    ["Cunning Stunts: Special Vehicle Circuit",4],["Gunrunning",19],["Smuggler's Run",19],["The Doomsday Heist",30],
+    ["Southern San Andreas Super Sport Series",16],["After Hours",14],["Arena War",46],["The Diamond Casino & Resort",22],
+    ["The Diamond Casino Heist",20],["Los Santos Summer Special",15],["The Cayo Perico Heist",21],["Los Santos Tuners",18],
+    ["The Contract",17],["Expanded & Enhanced",5],["The Criminal Enterprises",18],["Los Santos Drug Wars",17],["San Andreas Mercenaries",17],
+    ["The Chop Shop",33],["Bottom Dollar Bounties",21],["Agents of Sabotage",18],["2025 update 1",19],["2025 update 2",15],["2026 update 1",14]
+  ];
+  var TOTAL = PACKS.reduce(function(s, p){ return s + p[1]; }, 0);
+  var cum = [], run = 0;
+  PACKS.forEach(function(p){ run += p[1]; cum.push(run); });
+  var biggest = PACKS.slice(1).reduce(function(m, p){ return p[1] > m[1] ? p : m; });
+
+  var host = document.getElementById('waffle');
+  var packOf = [];
+  for (var i = 0; i < TOTAL; i++) {
+    var k = 0; while (cum[k] <= i) k++;
+    packOf.push(k);
+  }
+  function lerp(a, b, t){ return Math.round(a + (b - a) * t); }
+  function colorFor(k){
+    if (k === 0) return '#27e8ff';
+    var t = (k - 1) / (PACKS.length - 2);
+    return 'rgb(' + lerp(255, 255, t) + ',' + lerp(61, 210, t) + ',' + lerp(154, 63, t) + ')';
+  }
+  var cells = [];
+  for (var j = 0; j < TOTAL; j++) {
+    var c = document.createElement('div');
+    c.className = 'cell';
+    host.appendChild(c);
+    cells.push(c);
+  }
+  var slider = document.getElementById('scrub');
+  var label = document.getElementById('scrubLabel');
+  slider.max = String(PACKS.length - 1);
+
+  function render(step){
+    var shown = cum[step];
+    for (var n = 0; n < TOTAL; n++) {
+      if (n < shown) {
+        cells[n].style.background = (packOf[n] === step && step > 0) ? '#ffffff' : colorFor(packOf[n]);
+      } else {
+        cells[n].style.background = '';
+      }
+    }
+    var p = PACKS[step];
+    var dlc = shown - PACKS[0][1];
+    label.innerHTML = '<span class="n">' + shown + '</span> of ' + TOTAL + ' vehicles' +
+      (step === 0 ? ' · the base game' : ' · +' + p[1] + ' from <span style="color:#ffd23f">' + p[0] + '</span>') +
+      '<br>' + (step === 0 ? 'Everything else arrives through updates.' : dlc + ' came after launch (' + Math.round(dlc / shown * 100) + '% of what is on screen)');
+  }
+  slider.addEventListener('input', function(){ render(parseInt(slider.value, 10)); });
+
+  var timer = null;
+  var playBtn = document.getElementById('playBtn');
+  function stop(){ if (timer) { clearInterval(timer); timer = null; } playBtn.textContent = 'PLAY'; }
+  playBtn.addEventListener('click', function(){
+    if (timer) { stop(); return; }
+    if (parseInt(slider.value, 10) >= PACKS.length - 1) { slider.value = '0'; render(0); }
+    playBtn.textContent = 'PAUSE';
+    timer = setInterval(function(){
+      var v = parseInt(slider.value, 10) + 1;
+      slider.value = String(v); render(v);
+      if (v >= PACKS.length - 1) stop();
+    }, 230);
+  });
+  document.getElementById('resetBtn').addEventListener('click', function(){ stop(); slider.value = '0'; render(0); });
+  render(0);
+  document.getElementById('bigDrop').innerHTML = 'Biggest single drop: <b>' + biggest[0] + '</b>, +' + biggest[1] + ' vehicles in one update (' + Math.round(biggest[1] / PACKS[0][1] * 100) + '% of the entire base game).';
+})();
+
+/* ============ BUBBLES ============ */
+(function(){
+  var CLASSES = [["Sports",126],["Muscle",97],["Off-Road",71],["Super",66],["Motorcycles",59],["Sports Classics",54],["Utility",53],["SUVs",51],["Sedans",48],["Planes",46],["Vans",42],["Emergency",35],["Helicopters",31],["Boats",26],["Commercial",24],["Coupes",21],["Compacts",18],["Military",17],["Service",14],["Industrial",12],["Trains",11],["Cycles",9],["Open Wheel",4]];
+  var GROUP = {
+    "Sports":"#ff3d9a","Muscle":"#ff3d9a","Off-Road":"#ff3d9a","Super":"#ff3d9a","Sports Classics":"#ff3d9a","SUVs":"#ff3d9a","Sedans":"#ff3d9a","Coupes":"#ff3d9a","Compacts":"#ff3d9a","Open Wheel":"#ff3d9a",
+    "Motorcycles":"#27e8ff","Cycles":"#27e8ff",
+    "Planes":"#ffd23f","Helicopters":"#ffd23f",
+    "Boats":"#4aa8ff",
+    "Utility":"#ff8a3d","Vans":"#ff8a3d","Commercial":"#ff8a3d","Service":"#ff8a3d","Industrial":"#ff8a3d",
+    "Emergency":"#ff5252","Military":"#ff5252",
+    "Trains":"#9a6bff"
+  };
+  var TOTAL = 935, W = 360, k = 5.0, gap = 4, padX = 6;
+  var rows = [], row = [], rowW = 0;
+  CLASSES.forEach(function(d){
+    var r = k * Math.sqrt(d[1]);
+    var w = 2 * r + gap;
+    if (rowW + w > W - 2 * padX && row.length) { rows.push(row); row = []; rowW = 0; }
+    row.push({n:d[0], c:d[1], r:r}); rowW += w;
+  });
+  if (row.length) rows.push(row);
+  var y = padX, circles = [];
+  rows.forEach(function(rw){
+    var maxR = Math.max.apply(null, rw.map(function(o){ return o.r; }));
+    var total = rw.reduce(function(s, o){ return s + 2 * o.r + gap; }, 0) - gap;
+    var x = (W - total) / 2;
+    rw.forEach(function(o){ circles.push({n:o.n, c:o.c, r:o.r, cx:x + o.r, cy:y + maxR}); x += 2 * o.r + gap; });
+    y += 2 * maxR + gap;
+  });
+  var H = Math.ceil(y + padX);
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">';
+  circles.forEach(function(o, i){
+    var col = GROUP[o.n] || '#fff';
+    svg += '<g class="bub" data-i="' + i + '" style="cursor:pointer">';
+    svg += '<circle cx="' + o.cx.toFixed(1) + '" cy="' + o.cy.toFixed(1) + '" r="' + o.r.toFixed(1) + '" fill="' + col + '" fill-opacity="0.88" stroke="#14042e" stroke-width="2"/>';
+    var fs = Math.max(9, Math.min(20, o.r * 0.5));
+    if (o.r >= 17) svg += '<text x="' + o.cx.toFixed(1) + '" y="' + (o.cy + (o.r >= 32 ? -1 : 4)).toFixed(1) + '" text-anchor="middle" font-family="Bungee" font-size="' + fs.toFixed(0) + '" fill="#14042e">' + o.c + '</text>';
+    if (o.r >= 32 && o.n.length * 5.4 <= 2 * o.r - 12) svg += '<text x="' + o.cx.toFixed(1) + '" y="' + (o.cy + 13).toFixed(1) + '" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" font-weight="700" fill="#14042e">' + o.n.toUpperCase() + '</text>';
+    svg += '</g>';
+  });
+  svg += '</svg>';
+  var host = document.getElementById('bubbles');
+  host.innerHTML = svg;
+  var lbl = document.getElementById('bubbleLabel');
+  host.querySelectorAll('.bub').forEach(function(g){
+    g.addEventListener('click', function(){
+      var o = circles[parseInt(g.dataset.i, 10)];
+      lbl.innerHTML = '<span class="n">' + o.n + '</span>: ' + o.c + ' vehicles, ' + (o.c / TOTAL * 100).toFixed(1) + '% of all';
+    });
+  });
+  host.insertAdjacentHTML('afterend',
+    '<div class="mono" style="font-size:9.5px;color:#b7a3df;margin:6px 0 2px;">' +
+    '<span style="color:#ff3d9a">●</span> cars &nbsp;<span style="color:#27e8ff">●</span> bikes &nbsp;<span style="color:#ffd23f">●</span> air &nbsp;<span style="color:#4aa8ff">●</span> sea &nbsp;<span style="color:#ff8a3d">●</span> work &nbsp;<span style="color:#ff5252">●</span> emergency/military &nbsp;<span style="color:#9a6bff">●</span> trains</div>');
+})();
+
+/* ============ TYPE CHIPS ============ */
+(function(){
+  var TYPES = [["Car",709],["Bike",58],["Plane",43],["Heli",32],["Trailer",30],["Boat",22],["Train",11],["Bicycle",9],["Quadbike",8],["Submarine",4],["Amphibious Automobile",3],["Blimp",3],["Submarinecar",2],["Amphibious Quadbike",1]];
+  var host = document.getElementById('typeChips');
+  TYPES.forEach(function(t){
+    var s = document.createElement('span');
+    s.className = 'pill' + (t[1] <= 4 ? ' rare' : '');
+    s.innerHTML = t[0] + '<b>' + t[1] + '</b>';
+    host.appendChild(s);
+  });
+})();
+
+/* ============ LOOKALIKES ============ */
+(function(){
+  var TWINS = [
+    {f:"Bravado", r:"Dodge", c:"Cars"}, {f:"Brute", r:"GMC", c:"Cars"}, {f:"Buckingham", r:"Gulfstream", c:"Cars"},
+    {f:"Declasse", r:"Chevrolet", c:"Cars"}, {f:"Dewbauchee", r:"Aston Martin", c:"Cars"}, {f:"Karin", r:"Toyota", c:"Cars"},
+    {f:"Lampadati", r:"Maserati", c:"Cars"}, {f:"Vapid", r:"Ford", c:"Cars"}, {f:"Vulcar", r:"Volvo", c:"Cars"},
+    {f:"Pfister", r:"Porsche", c:"Cars"}, {f:"Benefactor", r:"Mercedes-Benz", c:"Cars"},
+    {f:"Fruit Computers", r:"Apple", c:"Tech & web"}, {f:"Grype", r:"Skype", c:"Tech & web"}, {f:"Electric Tit", r:"YouTube", c:"Tech & web"},
+    {f:"Eunux", r:"Linux", c:"Tech & web"}, {f:"Loot & Wank", r:"World of Warcraft", c:"Tech & web"}, {f:"My Online Me", r:"Second Life", c:"Tech & web"},
+    {f:"craplist.net", r:"Craigslist", c:"Tech & web"}, {f:"Online Radio Revolution", r:"Last.fm", c:"Tech & web"},
+    {f:"eyefind.info", r:"Yahoo! (or Google)", c:"Tech & web", d:"DISPUTED BY THE WIKIS"},
+    {f:"Biglogs", r:"Kellogg's", c:"Food & vice"}, {f:"Pisswasser", r:"Budweiser", c:"Food & vice"}, {f:"Redwood Cigarettes", r:"Marlboro", c:"Food & vice"},
+    {f:"Liberty Tree", r:"The New York Times", c:"Media"}, {f:"Our Own Reality", r:"TMZ", c:"Media"}, {f:"Public Liberty Online", r:"NPR", c:"Media"},
+    {f:"freejames.org", r:"Freekevin.com", c:"Media"},
+    {f:"High Men Space Tours", r:"Virgin Galactic", c:"Other"}, {f:"Liberty City Police site", r:"NYPD", c:"Other"}
+  ];
+  var CATS = ["All","Cars","Tech & web","Food & vice","Media","Other"];
+  var active = "All";
+  var revealed = {};
+  var fHost = document.getElementById('twinFilters');
+  var grid = document.getElementById('twinGrid');
+  var cnt = document.getElementById('revealCount');
+
+  function visible(){ return TWINS.map(function(t, i){ return {t:t, i:i}; }).filter(function(o){ return active === "All" || o.t.c === active; }); }
+  function updateCount(){
+    var v = visible();
+    var n = v.filter(function(o){ return revealed[o.i]; }).length;
+    cnt.textContent = n + " / " + v.length + " revealed";
+  }
+  function draw(){
+    grid.innerHTML = "";
+    visible().forEach(function(o){
+      var d = document.createElement('div');
+      d.className = 'flip' + (revealed[o.i] ? ' is-flipped' : '');
+      d.innerHTML =
+        '<div class="flip-inner">' +
+          '<div class="face front"><div class="cat">' + o.t.c + '</div><div class="fake">' + o.t.f + '</div><div class="hint">tap to reveal</div></div>' +
+          '<div class="face back"><div class="cat">' + o.t.f + ' is really</div><div class="real">' + o.t.r + '</div>' + (o.t.d ? '<div class="dispute">' + o.t.d + '</div>' : '') + '</div>' +
+        '</div>';
+      d.addEventListener('click', function(){
+        revealed[o.i] = !revealed[o.i];
+        d.classList.toggle('is-flipped');
+        updateCount();
+      });
+      grid.appendChild(d);
+    });
+    updateCount();
+  }
+  CATS.forEach(function(c){
+    var b = document.createElement('button');
+    b.className = 'chip' + (c === active ? ' active' : '');
+    b.textContent = c;
+    b.addEventListener('click', function(){
+      active = c;
+      fHost.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      draw();
+    });
+    fHost.appendChild(b);
+  });
+  document.getElementById('revealAll').addEventListener('click', function(){
+    visible().forEach(function(o){ revealed[o.i] = true; });
+    draw();
+  });
+  draw();
+
+  var ADS = ["Toe Shoes","Hampshire Nannies","Giggle Cream","Tropicarcinoma","Bouncing Bananas","The Cavern of Sorrow","Ultimate Disc in the Dark","Discount Adventure Cruises","Vipluxuryringtones.com","Bouche Cologne","Babies Overnight","Delio and Furax"];
+  var ah = document.getElementById('adChips');
+  ADS.forEach(function(a){
+    var s = document.createElement('span'); s.className = 'pill'; s.textContent = a; ah.appendChild(s);
+  });
+})();
+
+/* ============ CHEATS ============ */
+(function(){
+  var CHEATS = [
+    ["BMX bike","1-999-226-348","BANDIT"],["Aerobatic plane","1-999-227-678-676","BARNSTORM"],["Buzzard helicopter","1-999-289-9633","BUZZOFF"],
+    ["Sports car (Comet)","1-999-266-38","COMET"],["Duster plane","1-999-359-77729","FLYSPRAY"],["Golf cart","1-999-4653-461","HOLEIN1"],
+    ["Sanchez motorbike","1-999-633-7623","OFFROAD"],["Rapid GT","1-999-727-4348","RAPIDGT"],["PCJ-600 motorbike","1-999-762-538","ROCKET"],
+    ["Garbage truck","1-999-872-7433","TRASHED"],["Limousine","1-999-846-39663","VINEWOOD"],["Duke O'Death","1-999-332-84227","DEATHCAR"]
+  ];
+  var KEYS = {"1":"","2":"ABC","3":"DEF","4":"GHI","5":"JKL","6":"MNO","7":"PQRS","8":"TUV","9":"WXYZ","*":"","0":"","#":""};
+  var L2D = {};
+  Object.keys(KEYS).forEach(function(d){ KEYS[d].split("").forEach(function(ch){ L2D[ch] = d; }); });
+  function toDigits(w){ return w.toUpperCase().split("").map(function(ch){ return L2D[ch] !== undefined ? L2D[ch] : (/[0-9]/.test(ch) ? ch : ""); }).join(""); }
+
+  var kp = document.getElementById('keypad');
+  var keyEls = {};
+  ["1","2","3","4","5","6","7","8","9","*","0","#"].forEach(function(d){
+    var k = document.createElement('div');
+    k.className = 'key';
+    k.innerHTML = '<div class="d">' + d + '</div><div class="ltr">' + KEYS[d] + '</div>';
+    kp.appendChild(k); keyEls[d] = k;
+  });
+  function clearKeys(){ Object.keys(keyEls).forEach(function(d){ keyEls[d].classList.remove('on'); }); }
+
+  var seqTimers = [];
+  function playWord(word){
+    seqTimers.forEach(clearTimeout); seqTimers = [];
+    clearKeys();
+    var pairs = document.getElementById('pairs');
+    pairs.innerHTML = "";
+    word.split("").forEach(function(ch, i){
+      var dg = toDigits(ch);
+      var p = document.createElement('div');
+      p.className = 'pair'; p.style.opacity = '0.25';
+      p.innerHTML = '<div class="l">' + ch + '</div><div class="dg">' + dg + '</div>';
+      pairs.appendChild(p);
+      seqTimers.push(setTimeout(function(){
+        clearKeys();
+        if (keyEls[dg]) keyEls[dg].classList.add('on');
+        p.style.opacity = '1';
+      }, 260 * (i + 1)));
+    });
+    seqTimers.push(setTimeout(clearKeys, 260 * (word.length + 2)));
+  }
+
+  var chipHost = document.getElementById('cheatChips');
+  CHEATS.forEach(function(c, i){
+    var b = document.createElement('button');
+    b.className = 'chip' + (i === 7 ? ' active' : '');
+    b.textContent = c[0];
+    b.addEventListener('click', function(){
+      chipHost.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      document.getElementById('cheatNum').textContent = c[1];
+      playWord(c[2]);
+    });
+    chipHost.appendChild(b);
+  });
+  document.getElementById('cheatNum').textContent = CHEATS[7][1];
+  playWord(CHEATS[7][2]);
+
+  var wi = document.getElementById('wordIn');
+  var wn = document.getElementById('wordNum');
+  var wv = document.getElementById('wordVerdict');
+  wi.addEventListener('input', function(){
+    var raw = wi.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    var dg = toDigits(raw);
+    wn.textContent = "1-999-" + dg;
+    if (!raw) { wv.textContent = "Type RAPIDGT to see a real one."; return; }
+    var hit = CHEATS.filter(function(c){ return c[2] === raw; })[0];
+    wv.textContent = hit ? ("That is a real cheat: " + hit[0] + ".") : "Not one of the 12 vehicle cheats listed here.";
+  });
+})();
+
+/* ============ EVENTS ============ */
+(function(){
+  var TYPES = [
+    {n:"Security Van", c:10, col:"#ff3d9a", d:"Armored vans carrying a briefcase of cash. Four are parked while the guard loads it; six are driving, and you blow the rear doors open with a sticky bomb or shoot them.", r:"$3,000 to $8,000 each"},
+    {n:"Hitch Lift", c:4, col:"#27e8ff", d:"A stranger asks for a ride. Some come with a twist: a bride running away from her wedding, a girl with an abusive boyfriend.", r:"+5 Driving Skill each"},
+    {n:"Chase Thieves", c:4, col:"#ffd23f", d:"Lost MC members steal a pedestrian's wallet or rob a store. Kill them, then return the cash or keep it.", r:"Keep $120 to $2,000, or return it for $12 to $200 and a full special meter"},
+    {n:"Border Patrol", c:3, col:"#ff8a3d", d:"Rednecks on motorcycles ambush you, mistaking you for a foreigner. Kill them all.", r:"Up to $700 in drops"},
+    {n:"Mugging", c:3, col:"#9a6bff", d:"A thief steals a pedestrian's wallet, or a mugger attacks a woman in an alley. Stop him.", r:"Up to $2,000 if you keep the cash"},
+    {n:"Pairs", c:14, col:"#4aa8ff", d:"Seven types come in two versions each: Abandoned Vehicle, Arrests, Bike Thief, Car Theft, Drunk Driver, Prisoner Lift and Shop Robbery.", r:"Varies"},
+    {n:"One-offs", c:22, col:"#7ee8a3", d:"22 events that appear only once, from a man tied to a pole to a seaplane hidden in a cave.", r:"Varies"}
+  ];
+  var TOTAL = 60;
+  var grid = document.getElementById('evGrid');
+  var cells = [];
+  TYPES.forEach(function(t, ti){
+    for (var i = 0; i < t.c; i++) {
+      var d = document.createElement('div');
+      d.className = 'evcell';
+      d.style.background = t.col;
+      d.dataset.t = String(ti);
+      grid.appendChild(d); cells.push(d);
+    }
+  });
+  var last = cells.length;
+  for (var k = last - 3; k < last; k++) cells[k].classList.add('enh');
+
+  var legend = document.getElementById('evLegend');
+  var info = document.getElementById('evInfo');
+  var sel = -1;
+  function apply(){
+    cells.forEach(function(c){ c.classList.toggle('dim', sel >= 0 && parseInt(c.dataset.t, 10) !== sel); });
+    legend.querySelectorAll('.chip').forEach(function(ch, i){ ch.classList.toggle('active', i === sel); });
+    if (sel < 0) { info.textContent = "Tap a type to see what happens. Dashed squares are the 3 Enhanced-only events."; return; }
+    var t = TYPES[sel];
+    info.innerHTML = '<b>' + t.n + '</b>: ' + t.c + ' events (' + Math.round(t.c / TOTAL * 100) + '% of 60). ' + t.d + (t.r !== "Varies" ? '<br><span class="mono" style="font-size:11px;color:#27e8ff;font-weight:700;">REWARD: ' + t.r + '</span>' : '');
+  }
+  TYPES.forEach(function(t, i){
+    var b = document.createElement('button');
+    b.className = 'chip';
+    b.innerHTML = '<span style="color:' + t.col + '">●</span> ' + t.n + ' ' + t.c;
+    b.addEventListener('click', function(){ sel = (sel === i) ? -1 : i; apply(); });
+    legend.appendChild(b);
+  });
+
+  var WEIRD = [
+    {t:"Stag Do Running Man", x:"A man is tied to a pole by the roadside. Free him, take him home, then to the bar, then to his own wedding in Paleto Bay, all within 5 in-game hours.", r:"REWARD: a white Super Diamond"},
+    {t:"Escape Paparazzi", x:"Lacey Jonas is surrounded by photographers. Lose them without hurting anyone, then take her home. Drive a Vader or a Cavalcade near them and they mistake you for a celebrity.", r:"REWARD: $750"},
+    {t:"Monkey Mosaic", b:"ENHANCED ONLY", x:"A street artist in a monkey mask is painting another mosaic. Photograph him as he runs away. It only appears after you photographed all 50 monkey mosaics.", r:"REWARD: the Go Go Monkey Blista"},
+    {t:"Hitch Lift 4", x:"A bride is running away from her wedding and asks for a lift home. Halfway there, the groom shows up and attacks you.", r:"REWARD: +5 Driving Skill"},
+    {t:"Construction Accident", x:"A laborer is trapped in a utility truck under fallen pipes. Push the pipes away with a Dozer before the truck explodes.", r:"REWARD: +2 Driving"},
+    {t:"Bike Thief City 1", x:"Chase the thief and return the bike. It pays off later: an email says $100,000 of Animal Ark stocks are now in your name.", r:"REWARD: +3 Stamina and $100,000 in stocks"},
+    {t:"Drug Shootout", b:"TREVOR ONLY", x:"Bandits guard their farm on Mount Chiliad. Kill them and grab the briefcase from the shed.", r:"REWARD: up to $70,000"},
+    {t:"Domestic", x:"A man is thrown out of his house by his wife. Drive him to the golf club.", r:"REWARD: $80 and a new golf opponent, Castro Lagano"}
+  ];
+  var wh = document.getElementById('evWeird');
+  WEIRD.forEach(function(w){
+    var d = document.createElement('div');
+    d.className = 'weird';
+    d.innerHTML = '<div class="wt">' + w.t + (w.b ? '<span class="badge">' + w.b + '</span>' : '') + '</div><div class="wx">' + w.x + '</div><div class="wr">' + w.r + '</div>';
+    wh.appendChild(d);
+  });
+})();
+
+/* ============ QUIZ ============ */
+(function(){
+  var QUIZ = [
+    {q:"How many years passed between GTA V (2013) and GTA VI (2026)?", o:["8","10","13","16"], a:2},
+    {q:"Which word does 1-999-727-4348 spell on a phone keypad?", o:["RAPIDGT","FASTCAR","SPEEDER","COMET"], a:0},
+    {q:"In GTA IV's internet, which real site does Grype make fun of?", o:["Zoom","Skype","Discord","WhatsApp"], a:1},
+    {q:"How many random events do you need for 100% completion in GTA V?", o:["14","30","57","60"], a:0},
+    {q:"How many vehicles does FiveForge count from the game files?", o:["347","803","935","1,200"], a:2},
+    {q:"About what share of those vehicles shipped with the base game?", o:["A third","Half","Three quarters","Nearly all"], a:0}
+  ];
+  var st = {i:0, s:0};
+  var body = document.getElementById('quizBody');
+  function render(){
+    if (st.i >= QUIZ.length) {
+      var name, desc;
+      if (st.s <= 2) { name = "PEDESTRIAN OF LOS SANTOS"; desc = "You know the city exists. Spend some time with the cars and the cheat phone."; }
+      else if (st.s <= 4) { name = "PART-TIME GETAWAY DRIVER"; desc = "You know your way around. A couple of details slipped through the cracks."; }
+      else { name = "VICE CITY KINGPIN"; desc = "Near-perfect. You can probably dial RAPIDGT from memory."; }
+      body.innerHTML =
+        '<div class="callout" style="text-align:center;">' +
+        '<div class="mono" style="font-size:10px;color:#b7a3df;margin-bottom:6px;">' + st.s + ' / ' + QUIZ.length + ' CORRECT</div>' +
+        '<div class="bungee" style="font-size:20px;color:#27e8ff;margin-bottom:8px;line-height:1.15;">' + name + '</div>' +
+        '<div style="font-size:14px;">' + desc + '</div></div>' +
+        '<button id="quizRestart" class="action-btn" style="margin-top:8px;">RETAKE</button>';
+      document.getElementById('quizRestart').addEventListener('click', function(){ st = {i:0, s:0}; render(); });
+      return;
+    }
+    var it = QUIZ[st.i];
+    body.innerHTML = '<div class="mono" style="font-size:10px;color:#b7a3df;margin-bottom:8px;">QUESTION ' + (st.i + 1) + ' OF ' + QUIZ.length + '</div>' +
+      '<div style="font-size:15px;font-weight:600;margin-bottom:12px;">' + it.q + '</div><div id="quizOpts"></div>';
+    var oh = document.getElementById('quizOpts');
+    it.o.forEach(function(opt, idx){
+      var b = document.createElement('button');
+      b.className = 'opt'; b.textContent = opt;
+      b.addEventListener('click', function(){ if (idx === it.a) st.s++; st.i++; render(); });
+      oh.appendChild(b);
+    });
+  }
+  render();
+})();
+</script>
+</body>
+</html>
