@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE WAFFLE HOUSE INDEX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff7ec; --panel:#ffffff; --panel2:#fff3e4; --line:#f1dcc4; --shadow:#f1dcc4;
+    --butter:#f0679a; --syrup:#e8a04c; --cream:#5b3a29; --dim:#a0806b; --ink:#5b3a29;
+    --blue:#7cc4f2; --green:#4cc38a; --yellow:#f5b73b; --red:#ff6b6b;
+  }
+  *{box-sizing:border-box;}
+  html{ background:var(--bg); }
+  html,body{ margin:0; padding:0; }
+  body{
+    min-height:100vh; color:var(--cream); font-family:'Nunito',sans-serif; padding-bottom:48px;
+    background-color:var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(232,160,76,.10) 0 2px, transparent 2px 28px),
+      repeating-linear-gradient(90deg, rgba(232,160,76,.10) 0 2px, transparent 2px 28px);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{ font-family:'Nunito',sans-serif; font-weight:800; letter-spacing:.4px; }
+
+  .masthead{ max-width:720px; margin:0 auto; padding:22px 16px 6px; display:flex; gap:10px; align-items:flex-start; }
+  .masthead .mt{ flex:1; min-width:0; }
+  .mascot{ flex:0 0 104px; width:104px; margin-top:6px; animation:bob 2.6s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform:translateY(0) rotate(-3deg); } 50%{ transform:translateY(-6px) rotate(3deg); } }
+  .kicker{ font-weight:900; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+  .masthead h1{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(30px,8.4vw,48px); line-height:1.02; margin:8px 0 8px; color:var(--cream); }
+  .masthead h1 .hl{ color:var(--butter); }
+  .lights{ display:flex; gap:8px; margin:4px 0 10px; }
+  .lights span{ width:16px; height:16px; border-radius:50%; display:inline-block; box-shadow:0 3px 0 rgba(0,0,0,.08); }
+  .masthead .sub{ font-size:14.5px; color:var(--dim); line-height:1.5; font-weight:600; }
+
+  .nav{ max-width:720px; margin:14px auto; display:flex; gap:7px; padding:0 16px; flex-wrap:wrap; }
+  .tab-btn{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:13.5px; background:var(--panel); color:var(--cream); border:2px solid var(--line); border-radius:20px; padding:7px 14px; cursor:pointer; box-shadow:0 3px 0 var(--shadow); }
+  .tab-btn.active{ background:var(--butter); color:#fff; border-color:var(--butter); box-shadow:0 3px 0 #c94b7b; }
+
+  .panel{ display:none; max-width:720px; margin:0 auto; padding:0 16px; }
+  .panel.active{ display:block; }
+  .card{ background:var(--panel); border:2px solid var(--line); border-radius:22px; padding:18px; margin-bottom:16px; box-shadow:0 6px 0 var(--shadow); }
+  .card h2{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:22px; margin:0 0 8px; line-height:1.15; color:var(--cream); }
+  .card p{ font-size:14.5px; line-height:1.55; margin:8px 0; }
+  .src{ font-weight:700; font-size:10px; color:var(--dim); margin-top:10px; line-height:1.5; text-transform:uppercase; letter-spacing:.3px; }
+  .callout{ background:var(--panel2); border:2px dashed var(--syrup); border-radius:16px; padding:12px 14px; margin:12px 0; font-size:14px; line-height:1.5; }
+  .kpi-row{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+  .kpi{ flex:1; min-width:96px; background:var(--panel2); border:2px solid var(--line); border-radius:16px; padding:11px 10px; }
+  .kpi .v{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:25px; color:var(--butter); line-height:1.05; white-space:nowrap; }
+  .kpi .l{ font-size:9.5px; color:var(--dim); text-transform:uppercase; margin-top:4px; font-weight:800; line-height:1.35; letter-spacing:.3px; }
+  .chip{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:12.5px; background:var(--panel); color:var(--cream); border:2px solid var(--line); border-radius:20px; padding:5px 12px; cursor:pointer; }
+  .chip.active{ background:var(--blue); color:#fff; border-color:var(--blue); }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 4px; }
+  .action-btn{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:14px; background:var(--butter); color:#fff; border:none; border-radius:20px; padding:9px 18px; cursor:pointer; box-shadow:0 4px 0 #c94b7b; }
+  .pill{ font-weight:800; font-size:11.5px; padding:5px 11px; border-radius:20px; border:2px solid var(--line); background:var(--panel2); }
+  .pill b{ color:var(--butter); margin-left:5px; }
+
+  .light-row{ display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:2px dotted var(--line); }
+  .light-row:last-child{ border-bottom:none; }
+  .bulb{ flex:0 0 46px; height:46px; border-radius:50%; box-shadow:inset 0 -5px 0 rgba(0,0,0,.10); }
+  .light-row .t{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:18px; }
+  .light-row .m{ font-size:10.5px; font-weight:900; color:var(--dim); text-transform:uppercase; margin-top:1px; letter-spacing:.4px; }
+  .light-row .x{ font-size:13.5px; line-height:1.5; margin-top:5px; }
+
+  .step{ display:flex; gap:12px; position:relative; padding-bottom:14px; }
+  .step:last-child{ padding-bottom:0; }
+  .step .dot{ flex:0 0 14px; height:14px; border-radius:50%; background:var(--butter); margin-top:3px; z-index:1; }
+  .step:not(:last-child)::before{ content:""; position:absolute; left:6px; top:17px; bottom:0; width:2px; background:var(--line); }
+  .step .when{ font-size:10.5px; color:var(--dim); font-weight:900; text-transform:uppercase; letter-spacing:.4px; }
+  .step .what{ font-size:14px; font-weight:700; line-height:1.4; }
+
+  .storm{ padding:10px 0; border-bottom:2px dotted var(--line); cursor:pointer; }
+  .storm:last-child{ border-bottom:none; }
+  .storm-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .storm-name{ font-weight:800; font-size:14.5px; }
+  .storm-name .yr{ font-size:10.5px; color:var(--dim); font-weight:900; margin-right:6px; }
+  .storm-val{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:17px; white-space:nowrap; }
+  .storm svg{ display:block; width:100%; height:26px; margin-top:4px; }
+  .storm-d{ display:none; font-size:13px; line-height:1.5; margin-top:6px; }
+  .storm.open .storm-d{ display:block; }
+
+  .tilemap{ display:grid; grid-template-columns:repeat(12,1fr); gap:3px; margin:12px 0 8px; }
+  .tile{ aspect-ratio:1; border-radius:7px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid transparent; }
+  .tile .ab{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:10px; line-height:1; }
+  .tile.none .ab{ color:#c9b5a0; font-weight:500; }
+  .tile.sel{ border-color:var(--butter); box-shadow:0 0 0 2px var(--butter); }
+  .legend{ display:flex; gap:4px; align-items:center; flex-wrap:wrap; font-size:10px; font-weight:800; color:var(--dim); margin:6px 0; }
+  .legend i{ display:inline-block; width:18px; height:12px; border-radius:4px; }
+  .profile{ background:var(--panel2); border:2px solid var(--line); border-radius:18px; padding:14px; margin-top:10px; }
+  .profile .pn{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:24px; }
+  .profile .pr{ font-size:10.5px; color:var(--dim); font-weight:900; text-transform:uppercase; letter-spacing:.3px; }
+  .pgrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  .pgrid div .v{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:23px; color:var(--butter); }
+  .pgrid div .l{ font-size:9.5px; color:var(--dim); text-transform:uppercase; font-weight:900; letter-spacing:.3px; }
+
+  .counter-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:2px dotted var(--line); gap:10px; }
+  .counter-row:last-child{ border-bottom:none; }
+  .counter-row .nm{ font-weight:800; font-size:14.5px; }
+  .counter-row .nm small{ display:block; font-size:10px; color:var(--dim); font-weight:900; text-transform:uppercase; margin-top:2px; letter-spacing:.3px; }
+  .counter-row .num{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:27px; color:var(--butter); font-variant-numeric:tabular-nums; }
+
+  .toppings{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
+  .top-btn{ text-align:left; background:var(--panel2); border:2px solid var(--line); border-radius:16px; padding:9px 11px; cursor:pointer; color:var(--cream); font-family:'Nunito',sans-serif; box-shadow:0 3px 0 var(--shadow); }
+  .top-btn .tn{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:15px; }
+  .top-btn .td{ font-size:11.5px; color:var(--dim); margin-top:1px; font-weight:700; }
+  .top-btn.on{ background:#ffd9e6; border-color:var(--butter); }
+  .order{ background:#fffaf2; border:3px dashed var(--syrup); border-radius:18px; padding:14px; text-align:center; margin:12px 0 10px; }
+  .order .o1{ font-size:10.5px; color:var(--dim); font-weight:900; text-transform:uppercase; letter-spacing:.4px; }
+  .order .o2{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:21px; line-height:1.2; margin-top:6px; }
+
+  .opt{ display:block; width:100%; text-align:left; background:var(--panel2); color:var(--cream); border:2px solid var(--line); border-radius:14px; padding:10px 14px; margin-bottom:8px; font-family:'Nunito',sans-serif; font-weight:700; font-size:14px; cursor:pointer; }
+  details summary{ font-size:11px; color:var(--dim); cursor:pointer; font-weight:900; }
+  details p{ font-size:12px; color:var(--dim); line-height:1.6; }
+  footer{ max-width:720px; margin:14px auto 0; padding:0 16px; font-size:9.5px; color:var(--dim); text-align:center; font-weight:900; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="mt">
+    <div class="kicker">@dumbdashboards — ep. 25</div>
+    <h1>The Waffle House <span class="hl">Index</span></h1>
+    <div class="lights"><span style="background:var(--green)"></span><span style="background:var(--yellow)"></span><span style="background:var(--red)"></span></div>
+    <div class="sub">How America measures disasters in hash browns. Storms, closures, a map of every state, and the math behind 1.5 million potato combinations.</div>
+  </div>
+  <div class="mascot" id="mascotTop"></div>
+</div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="index">The Index</button>
+  <button class="tab-btn" data-tab="storms">Storm Log</button>
+  <button class="tab-btn" data-tab="map">Waffle Map</button>
+  <button class="tab-btn" data-tab="minute">Per Minute</button>
+  <button class="tab-btn" data-tab="hash">Hash Brown Lab</button>
+  <button class="tab-btn" data-tab="quiz">Quiz</button>
+</div>
+
+<!-- ============ INDEX ============ -->
+<div class="panel active" id="panel-index">
+  <div class="card">
+    <h2>A DISASTER SCALE MADE OF BREAKFAST</h2>
+    <p>Waffle House is open 24 hours a day, 365 days a year, and is famous for staying open through storms. So emergency managers started checking one thing after a disaster: what is the local Waffle House serving?</p>
+    <div class="light-row"><div class="bulb" style="background:var(--green);box-shadow:0 0 18px rgba(46,204,113,.5)"></div><div><div class="t">GREEN</div><div class="m">Full menu</div><div class="x">Power is on, supplies are getting through. Damage is minimal.</div></div></div>
+    <div class="light-row"><div class="bulb" style="background:var(--yellow);box-shadow:0 0 18px rgba(255,198,26,.5)"></div><div><div class="t">YELLOW</div><div class="m">Limited menu</div><div class="x">Running on a generator or low on food. No power or water, but gas for the stove: bacon, eggs and coffee.</div></div></div>
+    <div class="light-row"><div class="bulb" style="background:var(--red);box-shadow:0 0 18px rgba(255,77,77,.5)"></div><div><div class="t">RED</div><div class="m">Closed</div><div class="x">Rare. Roads blocked, infrastructure damaged, recovery delayed. This is where help goes first.</div></div></div>
+    <div class="callout">"If you get there and the Waffle House is closed? That's really bad." <span class="mono" style="font-size:10px;color:var(--dim)">— CRAIG FUGATE, FORMER FEMA ADMINISTRATOR</span></div>
+    <div class="src">Definitions: FEMA blog (2017) and Craig Fugate, as reported by AP and Wikipedia.</div>
+  </div>
+
+  <div class="card">
+    <h2>HOW IT STARTED</h2>
+    <div class="step"><div class="dot"></div><div><div class="when">Aug 2004</div><div class="what">Hurricane Charley. Fugate, then Florida's emergency chief, can only find a Waffle House on a limited menu. The idea is born.</div></div></div>
+    <div class="step"><div class="dot"></div><div><div class="when">2005</div><div class="what">Katrina destroys 7 restaurants and shuts 100. The ones that reopen fast boom, so the company builds its whole strategy around staying open.</div></div></div>
+    <div class="step"><div class="dot"></div><div><div class="when">May 2011</div><div class="what">Joplin tornado. Both local Waffle Houses stay open, and Fugate, now running FEMA, uses the term in public.</div></div></div>
+    <div class="step"><div class="dot" style="background:var(--red)"></div><div><div class="when">2017</div><div class="what">A FOIA request turns up emails calling it Fugate's personal project, not an official FEMA system.</div></div></div>
+    <div class="src">Sources: Wikipedia (Waffle House Index), AP / PBS NewsHour.</div>
+  </div>
+
+  <div class="card">
+    <h2>HOW RARE IS RED?</h2>
+    <p>In 2018 the company had about 1,950 restaurants. Even in bad hurricane seasons, almost all of them stayed open.</p>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">4.6%</div><div class="l">closed for Irma (90)</div></div>
+      <div class="kpi"><div class="v">1.5%</div><div class="l">closed for Michael (30)</div></div>
+      <div class="kpi"><div class="v">1.0%</div><div class="l">closed for Florence (20)</div></div>
+    </div>
+    <div class="src">Shares use the 1,950-restaurant figure the company gave in 2018. Closure counts: Business Insider, USA Today via Fox News.</div>
+  </div>
+</div>
+
+<!-- ============ STORMS ============ -->
+<div class="panel" id="panel-storms">
+  <div class="card">
+    <h2>THE STORM LOG</h2>
+    <p>Waffle Houses closed, storm by storm. Tap a storm for the story.</p>
+    <div id="stormList"></div>
+    <div id="stormAxis"></div>
+    <div class="callout">Counts are reported at different moments: before landfall, the night of, or a week later. Where sources disagree, the chart shows the range.</div>
+    <div class="src">Sources: AP, CBS, NBC, USA Today, Business Insider, Nation's Restaurant News, Washington Examiner, weather.com, Wikipedia.</div>
+  </div>
+</div>
+
+<!-- ============ MAP ============ -->
+<div class="panel" id="panel-map">
+  <div class="card">
+    <h2>THE WAFFLE MAP</h2>
+    <p>About 2,100 Waffle Houses in 25 states. Tap a state for its profile.</p>
+    <div class="chips" id="mapMode"></div>
+    <div class="tilemap" id="tilemap"></div>
+    <div class="legend" id="mapLegend"></div>
+    <div class="profile" id="profile"></div>
+    <div class="src">Data: Guess the Chain, from All the Places store locators (October 2026). Population: Census Bureau 2024 estimates.</div>
+  </div>
+
+  <div class="card">
+    <h2>26 PLACES WITH ZERO</h2>
+    <p>No Waffle House at all, including California, New York and the nation's capital.</p>
+    <div class="chips" id="noneChips"></div>
+  </div>
+
+  <div class="card">
+    <h2>ITS FOOTPRINT TWINS</h2>
+    <p>Chains whose map overlaps Waffle House the most.</p>
+    <div class="chips" id="twinChips"></div>
+    <div class="src">Overlap scores: Guess the Chain.</div>
+  </div>
+</div>
+
+<!-- ============ PER MINUTE ============ -->
+<div class="panel" id="panel-minute">
+  <div class="card">
+    <h2>SINCE YOU OPENED THIS PAGE</h2>
+    <p>Waffle House has served roughly this much. Running live on the company's own yearly numbers.</p>
+    <div id="counters"></div>
+    <div class="src">Yearly totals: wafflehouse.com, "Beyond the Menu". Live counts assume an even pace, 24/7.</div>
+  </div>
+
+  <div class="card">
+    <h2>PER MINUTE, NOT PER DAY</h2>
+    <div id="perMin"></div>
+    <div class="callout">The figure that goes viral is "145 waffles a minute", an older company number. Today's official 124 million waffles a year works out to about <b>236 a minute</b>.</div>
+  </div>
+
+  <div class="card">
+    <h2>THE EGG SURCHARGE</h2>
+    <p>From February to July 2025, bird flu pushed Waffle House to add 50 cents to every egg. It lasted about five months.</p>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">$0.50</div><div class="l">extra per egg</div></div>
+      <div class="kpi"><div class="v">~5 mo</div><div class="l">Feb to Jul 2025</div></div>
+      <div class="kpi"><div class="v">~$57M</div><div class="l">if every egg paid it</div></div>
+    </div>
+    <div class="src">Our back-of-the-napkin math: 272M eggs a year × 5/12 × $0.50. Not a reported figure. Surcharge dates: AP, Fortune.</div>
+  </div>
+</div>
+
+<!-- ============ HASH BROWN LAB ============ -->
+<div class="panel" id="panel-hash">
+  <div class="card">
+    <h2>BUILD YOUR HASH BROWNS</h2>
+    <p>Pick a size and toppings. We translate it into Waffle House lingo.</p>
+    <div class="chips" id="sizeChips"></div>
+    <div class="toppings" id="toppings"></div>
+    <button class="action-btn" id="allWay">ALL THE WAY</button>
+    <div class="order"><div class="o1">Your order</div><div class="o2" id="orderName">Regular hash browns, scattered</div></div>
+    <div class="src">Toppings officially joined the menu in 1984. Source: AJC, Mental Floss.</div>
+  </div>
+
+  <div class="card">
+    <h2>THE 1.5 MILLION CLAIM</h2>
+    <p>Waffle House says there are <b>1,572,864</b> possible hash brown combinations. We did the math.</p>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">256</div><div class="l">topping combos (2⁸)</div></div>
+      <div class="kpi"><div class="v">× 3</div><div class="l">sizes</div></div>
+      <div class="kpi"><div class="v">768</div><div class="l">total, our count</div></div>
+    </div>
+    <div class="callout">Their number is exactly <b>2,048×</b> ours, which is 2¹¹. To get there you would need 11 more yes-or-no choices on top of the 8 toppings.</div>
+    <div class="src">Claim reported by the AJC. Our count treats each topping as on or off.</div>
+  </div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div class="panel" id="panel-quiz">
+  <div class="card">
+    <h2>WHAT IS YOUR INDEX?</h2>
+    <p>Six questions. Everything is in this dashboard.</p>
+    <div id="quizBody"></div>
+  </div>
+  <details style="margin-bottom:14px;">
+    <summary>Methodology and sources</summary>
+    <p>The Waffle House Index is informal: FOIA emails describe it as Craig Fugate's personal project. Storm closure counts come from news reports quoting the company and are taken at different times, so they are not strictly comparable. State counts come from public store locators via Guess the Chain (October 2026); other trackers give slightly different totals. Yearly food volumes are the company's own. Per-minute rates, the egg-surcharge estimate and the hash brown combinatorics are our own calculations, labelled as such.</p>
+  </details>
+  <footer>THE WAFFLE HOUSE INDEX · @dumbdashboards · NOVEMBER 2026 · NOT AFFILIATED WITH WAFFLE HOUSE</footer>
+</div>
+
+<script>
+/* ============ TABS ============ */
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+var COL = {green:"#4cc38a", yellow:"#e9a92a", red:"#ff6b6b"};
+
+/* ============ MASCOT (original chibi waffle) ============ */
+function mascot(mood){
+  var eyes, mouth, brows = "";
+  if (mood === "red") {
+    eyes = '<path d="M35 55 l12 12 M47 55 l-12 12 M73 55 l12 12 M85 55 l-12 12" stroke="#5b3a29" stroke-width="4" stroke-linecap="round"/>';
+    mouth = '<ellipse cx="60" cy="84" rx="7" ry="8" fill="#5b3a29"/>';
+  } else if (mood === "yellow") {
+    eyes = '<circle cx="41" cy="62" r="6.5" fill="#5b3a29"/><circle cx="79" cy="62" r="6.5" fill="#5b3a29"/><circle cx="43" cy="60" r="2.2" fill="#fff"/><circle cx="81" cy="60" r="2.2" fill="#fff"/>';
+    brows = '<path d="M33 50 q8 -6 16 0 M71 50 q8 -6 16 0" stroke="#5b3a29" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    mouth = '<path d="M50 84 q5 -5 10 0 q5 5 10 0" stroke="#5b3a29" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+  } else {
+    eyes = '<path d="M34 64 q7 -9 14 0 M72 64 q7 -9 14 0" stroke="#5b3a29" stroke-width="4.5" fill="none" stroke-linecap="round"/>';
+    mouth = '<path d="M52 80 q4 5 8 0 q4 5 8 0" stroke="#5b3a29" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+  }
+  return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">' +
+    '<ellipse cx="60" cy="113" rx="38" ry="5" fill="#e8c9a6" opacity=".7"/>' +
+    '<rect x="12" y="22" width="96" height="86" rx="24" fill="#f7c977" stroke="#d9973e" stroke-width="4"/>' +
+    '<path d="M44 28 V102 M76 28 V102 M18 52 H102 M18 80 H102" stroke="#e9ad57" stroke-width="5" stroke-linecap="round" opacity=".75"/>' +
+    '<rect x="42" y="10" width="36" height="20" rx="7" fill="#fff4b0" stroke="#e6c25a" stroke-width="3"/>' +
+    '<path d="M86 24 q8 0 8 10 v14 q0 7 -5 7 q-5 0 -5 -7 v-8 q0 -6 -6 -10 z" fill="#c9772e" opacity=".9"/>' +
+    brows + eyes +
+    '<ellipse cx="30" cy="76" rx="9" ry="5.5" fill="#ff9fbf" opacity=".85"/><ellipse cx="90" cy="76" rx="9" ry="5.5" fill="#ff9fbf" opacity=".85"/>' +
+    mouth + '</svg>';
+}
+document.getElementById('mascotTop').innerHTML = mascot("green");
+
+/* ============ STORM LOG ============ */
+(function(){
+  var STORMS = [
+    {y:"2004", n:"Hurricane Charley", lvl:"yellow", lo:null, hi:null, lab:"limited menu", d:"Craig Fugate, then Florida's emergency chief, could only find a Waffle House serving a limited menu. The index starts here."},
+    {y:"2005", n:"Hurricane Katrina", lvl:"red", lo:107, hi:107, destroyed:7, lab:"107", d:"7 restaurants destroyed and 100 more shut down. The ones that reopened fast saw business skyrocket, and the company built its disaster strategy around staying open."},
+    {y:"2011", n:"Joplin tornado", lvl:"green", lo:0, hi:0, lab:"0", d:"Both Waffle Houses in Joplin, Missouri stayed open. Fugate, now running FEMA, used the term in public."},
+    {y:"2016", n:"Hurricane Matthew", lvl:"red", lo:40, hi:40, plus:true, lab:"40+", d:"More than 40 restaurants closed."},
+    {y:"2017", n:"Hurricane Irma", lvl:"red", lo:90, hi:90, lab:"90", d:"90 restaurants closed, under 5% of the chain."},
+    {y:"2018", n:"Hurricane Florence", lvl:"red", lo:20, hi:20, lab:"20", d:"20 closed. 239 restaurants and about 6,000 employees were in the storm's path."},
+    {y:"2018", n:"Hurricane Michael", lvl:"red", lo:18, hi:30, lab:"18 → 30", d:"The count climbed on landfall day: 18 in the morning, 21, then 30 by night (22 in Florida, 8 in Georgia). 29 were still closed 24 hours later, while a 315-person jump team waited to reopen them."},
+    {y:"2022", n:"Hurricane Ian", lvl:"red", lo:21, hi:35, lab:"21 → 35", d:"The company reported 21 closures from Bradenton to Naples; Wikipedia counts 35 before landfall."},
+    {y:"2024", n:"Hurricane Helene", lvl:"red", lo:24, hi:24, lab:"24", d:"24 still closed a week after landfall, from Asheville to Valdosta. One in Crawfordville, Florida shut before it hit."},
+    {y:"2024", n:"Hurricane Milton", lvl:"red", lo:33, hi:100, approx:true, lab:"33 → ~100", d:"Waffle House announced 25 closures in Tampa Bay and 8 in Fort Myers; the AP later reported nearly 100 Florida closures."}
+  ];
+  var host = document.getElementById('stormList');
+  var MAX = 110, W = 340;
+  function x(v){ return 6 + v / MAX * (W - 12); }
+  STORMS.forEach(function(s){
+    var c = COL[s.lvl];
+    var svg = '<svg viewBox="0 0 ' + W + ' 26" preserveAspectRatio="none"><line x1="6" y1="13" x2="' + (W-6) + '" y2="13" stroke="#f1dcc4" stroke-width="3"/>';
+    if (s.lo === null) {
+      svg += '<circle cx="' + x(0) + '" cy="13" r="7" fill="' + c + '"/>';
+    } else if (s.destroyed) {
+      svg += '<rect x="' + x(0) + '" y="8" width="' + (x(s.destroyed) - x(0)) + '" height="10" rx="2" fill="#b23b3b"/>';
+      svg += '<line x1="' + x(s.destroyed) + '" y1="13" x2="' + x(s.hi) + '" y2="13" stroke="' + c + '" stroke-width="4" stroke-opacity=".35"/>';
+      svg += '<circle cx="' + x(s.hi) + '" cy="13" r="7" fill="' + c + '"/>';
+    } else if (s.lo !== s.hi) {
+      svg += '<line x1="' + x(s.lo) + '" y1="13" x2="' + x(s.hi) + '" y2="13" stroke="' + c + '" stroke-width="5" ' + (s.approx ? 'stroke-dasharray="6 4"' : '') + '/>';
+      svg += '<circle cx="' + x(s.lo) + '" cy="13" r="6" fill="#ffffff" stroke="' + c + '" stroke-width="3"/>';
+      svg += '<circle cx="' + x(s.hi) + '" cy="13" r="7" fill="' + c + '"/>';
+    } else {
+      if (s.plus) svg += '<line x1="' + x(s.lo) + '" y1="13" x2="' + x(s.lo + 10) + '" y2="13" stroke="' + c + '" stroke-width="3" stroke-dasharray="3 3"/>';
+      svg += '<circle cx="' + x(s.lo) + '" cy="13" r="7" fill="' + c + '"/>';
+    }
+    svg += '</svg>';
+    var row = document.createElement('div');
+    row.className = 'storm';
+    row.innerHTML = '<div class="storm-top"><span class="storm-name"><span class="yr">' + s.y + '</span>' + s.n + '</span><span class="storm-val" style="color:' + c + '">' + s.lab + '</span></div>' + svg + '<div class="storm-d">' + s.d + '</div>';
+    row.addEventListener('click', function(){ row.classList.toggle('open'); });
+    host.appendChild(row);
+  });
+  var ax = '<svg viewBox="0 0 ' + W + ' 16" preserveAspectRatio="none" style="display:block;width:100%;height:16px;margin-top:4px;">';
+  [0,25,50,75,100].forEach(function(v){
+    ax += '<line x1="' + x(v) + '" y1="0" x2="' + x(v) + '" y2="4" stroke="#a0806b" stroke-width="1"/>';
+    ax += '<text x="' + x(v) + '" y="14" text-anchor="' + (v === 0 ? 'start' : 'middle') + '" font-family="Nunito" font-weight="800" font-size="9" fill="#a0806b">' + v + '</text>';
+  });
+  ax += '</svg>';
+  document.getElementById('stormAxis').innerHTML = ax;
+})();
+
+/* ============ MAP ============ */
+(function(){
+  var DATA = {
+    GA:["Georgia",457,4.1], FL:["Florida",200,0.9], NC:["North Carolina",193,1.7], SC:["South Carolina",181,3.3],
+    AL:["Alabama",167,3.2], TN:["Tennessee",158,2.2], TX:["Texas",138,0.4], LA:["Louisiana",105,2.3],
+    MS:["Mississippi",92,3.1], OH:["Ohio",89,0.7], VA:["Virginia",70,0.8], KY:["Kentucky",61,1.3],
+    AR:["Arkansas",49,1.6], MO:["Missouri",38,0.6], IN:["Indiana",24,0.3], OK:["Oklahoma",19,0.5],
+    AZ:["Arizona",15,0.2], MD:["Maryland",12,0.2], CO:["Colorado",10,0.2], PA:["Pennsylvania",10,0.08],
+    WV:["West Virginia",5,0.3], DE:["Delaware",4,0.4], KS:["Kansas",4,0.1], IL:["Illinois",2,0.02], NM:["New Mexico",1,0.05]
+  };
+  var NAMES = {AK:"Alaska",ME:"Maine",WI:"Wisconsin",VT:"Vermont",NH:"New Hampshire",WA:"Washington",ID:"Idaho",MT:"Montana",ND:"North Dakota",MN:"Minnesota",MI:"Michigan",NY:"New York",MA:"Massachusetts",OR:"Oregon",NV:"Nevada",WY:"Wyoming",SD:"South Dakota",IA:"Iowa",NJ:"New Jersey",CT:"Connecticut",RI:"Rhode Island",CA:"California",UT:"Utah",NE:"Nebraska",DC:"District of Columbia",HI:"Hawaii"};
+  var GRID = {
+    AK:[0,0], ME:[11,0],
+    WI:[6,1], VT:[10,1], NH:[11,1],
+    WA:[1,2], ID:[2,2], MT:[3,2], ND:[4,2], MN:[5,2], IL:[6,2], MI:[7,2], NY:[9,2], MA:[10,2],
+    OR:[1,3], NV:[2,3], WY:[3,3], SD:[4,3], IA:[5,3], IN:[6,3], OH:[7,3], PA:[8,3], NJ:[9,3], CT:[10,3], RI:[11,3],
+    CA:[1,4], UT:[2,4], CO:[3,4], NE:[4,4], MO:[5,4], KY:[6,4], WV:[7,4], VA:[8,4], MD:[9,4], DE:[10,4],
+    AZ:[2,5], NM:[3,5], KS:[4,5], AR:[5,5], TN:[6,5], NC:[7,5], SC:[8,5], DC:[9,5],
+    OK:[4,6], LA:[5,6], MS:[6,6], AL:[7,6], GA:[8,6],
+    HI:[0,7], TX:[4,7], FL:[9,7]
+  };
+  var US_AVG = 0.62;
+  var TOTAL = 2104;
+  var ranked = Object.keys(DATA).sort(function(a,b){ return DATA[b][1] - DATA[a][1]; });
+  var rankPC = Object.keys(DATA).sort(function(a,b){ return DATA[b][2] - DATA[a][2]; });
+
+  var PAL = ["#f3e8da","#fde9c9","#fbd59a","#f6bd6a","#eda043","#e0842a","#c9661c"];
+  var MODES = {
+    pc: {label:"Per 100k people", cuts:[0.3,0.7,1.5,2.5,3.5], names:["none","< 0.3","0.3–0.7","0.7–1.5","1.5–2.5","2.5–3.5","3.5+"], val:function(d){ return d[2]; }},
+    count: {label:"Total locations", cuts:[10,50,100,150,200], names:["none","1–9","10–49","50–99","100–149","150–199","200+"], val:function(d){ return d[1]; }}
+  };
+  var mode = "pc", sel = "GA";
+  var map = document.getElementById('tilemap');
+  var tiles = {};
+  Object.keys(GRID).forEach(function(ab){
+    var t = document.createElement('div');
+    t.className = 'tile';
+    t.style.gridColumn = String(GRID[ab][0] + 1);
+    t.style.gridRow = String(GRID[ab][1] + 1);
+    t.innerHTML = '<span class="ab">' + ab + '</span>';
+    t.addEventListener('click', function(){ sel = ab; paint(); });
+    map.appendChild(t); tiles[ab] = t;
+  });
+  function bin(v, cuts){ if (!v) return 0; for (var i = 0; i < cuts.length; i++) if (v < cuts[i]) return i + 1; return cuts.length + 1; }
+  function paint(){
+    var m = MODES[mode];
+    Object.keys(tiles).forEach(function(ab){
+      var d = DATA[ab];
+      var b = d ? bin(m.val(d), m.cuts) : 0;
+      tiles[ab].style.background = PAL[b];
+      tiles[ab].classList.toggle('none', !d);
+      tiles[ab].querySelector('.ab').style.color = (b >= 4) ? "#ffffff" : (d ? "#5b3a29" : "");
+      tiles[ab].classList.toggle('sel', ab === sel);
+    });
+    document.getElementById('mapLegend').innerHTML = m.names.map(function(n, i){ return '<i style="background:' + PAL[i] + '"></i>' + n; }).join(' ');
+    var p = document.getElementById('profile');
+    var d = DATA[sel];
+    if (!d) {
+      p.innerHTML = '<div class="pn">' + NAMES[sel] + '</div><div class="pr">No Waffle House</div><p style="margin:8px 0 0;font-size:13.5px;">Zero locations. You would have to cross a state line for hash browns.</p>';
+      return;
+    }
+    var times = d[2] / US_AVG;
+    p.innerHTML = '<div class="pn">' + d[0] + '</div><div class="pr">#' + (ranked.indexOf(sel) + 1) + ' by locations · #' + (rankPC.indexOf(sel) + 1) + ' per person</div>' +
+      '<div class="pgrid">' +
+      '<div><div class="v">' + d[1] + '</div><div class="l">locations</div></div>' +
+      '<div><div class="v">' + d[2] + '</div><div class="l">per 100k people</div></div>' +
+      '<div><div class="v">' + (d[1] / TOTAL * 100).toFixed(1) + '%</div><div class="l">of all Waffle Houses</div></div>' +
+      '<div><div class="v">' + (times >= 1 ? times.toFixed(1) + '×' : (times * 100).toFixed(0) + '%') + '</div><div class="l">' + (times >= 1 ? 'the US average' : 'of the US average') + '</div></div>' +
+      '</div>';
+  }
+  var mm = document.getElementById('mapMode');
+  Object.keys(MODES).forEach(function(k){
+    var b = document.createElement('button');
+    b.className = 'chip' + (k === mode ? ' active' : '');
+    b.textContent = MODES[k].label;
+    b.addEventListener('click', function(){ mode = k; mm.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('active'); }); b.classList.add('active'); paint(); });
+    mm.appendChild(b);
+  });
+  paint();
+
+  var NONE = ["Alaska","California","Connecticut","District of Columbia","Hawaii","Idaho","Iowa","Maine","Massachusetts","Michigan","Minnesota","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New York","North Dakota","Oregon","Rhode Island","South Dakota","Utah","Vermont","Washington","Wisconsin","Wyoming"];
+  var nc = document.getElementById('noneChips');
+  NONE.forEach(function(n){ var s = document.createElement('span'); s.className = 'pill'; s.textContent = n; nc.appendChild(s); });
+  var TWINS = [["Zaxby's",79],["Captain D's",75],["Hibbett",75],["Cato",72],["Citi Trends",69],["Cracker Barrel",67]];
+  var tc = document.getElementById('twinChips');
+  TWINS.forEach(function(t){ var s = document.createElement('span'); s.className = 'pill'; s.innerHTML = t[0] + '<b>' + t[1] + '%</b>'; tc.appendChild(s); });
+})();
+
+/* ============ PER MINUTE ============ */
+(function(){
+  var YEAR = 525600 * 60;
+  var ITEMS = [
+    {n:"Eggs", y:272e6}, {n:"Hash brown orders", y:153e6}, {n:"Waffles", y:124e6},
+    {n:"Strips of bacon", y:85e6}, {n:"Cups of coffee", y:58e6}, {n:"Chicken breasts", y:10e6}
+  ];
+  var host = document.getElementById('counters');
+  var els = [];
+  ITEMS.forEach(function(it){
+    var r = document.createElement('div');
+    r.className = 'counter-row';
+    r.innerHTML = '<div class="nm">' + it.n + '<small>' + (it.y / 1e6) + ' million a year</small></div><div class="num">0</div>';
+    host.appendChild(r);
+    els.push(r.querySelector('.num'));
+  });
+  var t0 = Date.now();
+  function tick(){
+    var s = (Date.now() - t0) / 1000;
+    ITEMS.forEach(function(it, i){ els[i].textContent = Math.floor(it.y / YEAR * s).toLocaleString('en-US'); });
+  }
+  setInterval(tick, 200); tick();
+
+  var pm = document.getElementById('perMin');
+  var maxPM = ITEMS[0].y / 525600;
+  ITEMS.forEach(function(it){
+    var v = it.y / 525600;
+    var r = 6 + 24 * Math.sqrt(v / maxPM);
+    var row = document.createElement('div');
+    row.className = 'counter-row';
+    row.innerHTML = '<div style="display:flex;align-items:center;gap:12px;"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="' + r.toFixed(1) + '" fill="#ffb4cd" stroke="#f0679a" stroke-width="2"/></svg><div class="nm">' + it.n + '<small>per minute</small></div></div><div class="num">' + Math.round(v).toLocaleString('en-US') + '</div>';
+    pm.appendChild(row);
+  });
+})();
+
+/* ============ HASH BROWN LAB ============ */
+(function(){
+  var TOPS = [
+    ["smothered","sautéed onions"],["covered","melted American cheese"],["chunked","hickory smoked ham"],["diced","grilled tomatoes"],
+    ["peppered","jalapeño peppers"],["capped","grilled mushrooms"],["topped","Bert's chili"],["country","sausage gravy"]
+  ];
+  var SIZES = ["Regular","Large","Triple"];
+  var size = 0, on = TOPS.map(function(){ return false; });
+  var sc = document.getElementById('sizeChips');
+  SIZES.forEach(function(s, i){
+    var b = document.createElement('button');
+    b.className = 'chip' + (i === 0 ? ' active' : '');
+    b.textContent = s;
+    b.addEventListener('click', function(){ size = i; sc.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('active'); }); b.classList.add('active'); render(); });
+    sc.appendChild(b);
+  });
+  var th = document.getElementById('toppings');
+  var btns = [];
+  TOPS.forEach(function(t, i){
+    var b = document.createElement('button');
+    b.className = 'top-btn';
+    b.innerHTML = '<div class="tn">' + t[0].charAt(0).toUpperCase() + t[0].slice(1) + '</div><div class="td">' + t[1] + '</div>';
+    b.addEventListener('click', function(){ on[i] = !on[i]; render(); });
+    th.appendChild(b); btns.push(b);
+  });
+  document.getElementById('allWay').addEventListener('click', function(){
+    var all = on.every(function(x){ return x; });
+    on = on.map(function(){ return !all; });
+    render();
+  });
+  function render(){
+    btns.forEach(function(b, i){ b.classList.toggle('on', on[i]); });
+    var picked = TOPS.filter(function(t, i){ return on[i]; }).map(function(t){ return t[0]; });
+    var name;
+    if (picked.length === 8) name = SIZES[size] + ' hash browns, ALL THE WAY';
+    else {
+      var words = ["scattered"].concat(picked);
+      var tail = words.length > 1 ? words.slice(0, -1).join(', ') + ' & ' + words[words.length - 1] : words[0];
+      name = SIZES[size] + ' hash browns, ' + tail;
+    }
+    document.getElementById('orderName').textContent = name;
+  }
+  render();
+})();
+
+/* ============ QUIZ ============ */
+(function(){
+  var QUIZ = [
+    {q:"Who came up with the Waffle House Index?", o:["Craig Fugate","Joe Rogers Sr.","Tom Forkner","Pat Warner"], a:0},
+    {q:"What does a YELLOW index mean?", o:["Restaurant closed","Limited menu","Full menu","Drive-thru only"], a:1},
+    {q:"How many Waffle Houses closed for Hurricane Irma in 2017?", o:["9","30","90","900"], a:2},
+    {q:"Which state has the most Waffle Houses per person?", o:["South Carolina","Alabama","Mississippi","Georgia"], a:3},
+    {q:"How many eggs does Waffle House serve a year?", o:["27 million","272 million","2.7 billion","27 billion"], a:1},
+    {q:"With 8 toppings and 3 sizes, how many hash brown combos do we count?", o:["24","768","40,320","1,572,864"], a:1}
+  ];
+  var st = {i:0, s:0};
+  var body = document.getElementById('quizBody');
+  function render(){
+    if (st.i >= QUIZ.length) {
+      var name, col, desc;
+      if (st.s <= 2) { name = "RED: CLOSED"; col = "#ff6b6b"; desc = "Severe damage to your Waffle House knowledge. Send help, and hash browns."; }
+      else if (st.s <= 4) { name = "YELLOW: LIMITED MENU"; col = "#e9a92a"; desc = "Running on a generator. Bacon, eggs and coffee, but not the full menu."; }
+      else { name = "GREEN: FULL MENU"; col = "#4cc38a"; desc = "Lights on, syrup flowing. FEMA would sleep easy in your town."; }
+      var mood = st.s <= 2 ? "red" : (st.s <= 4 ? "yellow" : "green");
+      body.innerHTML = '<div class="callout" style="text-align:center;border-color:' + col + ';">' +
+        '<div style="width:96px;margin:0 auto 6px;">' + mascot(mood) + '</div>' +
+        '<div class="mono" style="font-size:10px;color:#a0806b;margin-bottom:6px;">' + st.s + ' / ' + QUIZ.length + ' CORRECT</div>' +
+        '<div style="font-family:Fredoka,sans-serif;font-weight:700;font-size:23px;color:' + col + ';margin-bottom:8px;">' + name + '</div>' +
+        '<div style="font-size:14px;">' + desc + '</div></div>' +
+        '<button id="quizRestart" class="action-btn">RETAKE</button>';
+      document.getElementById('quizRestart').addEventListener('click', function(){ st = {i:0, s:0}; render(); });
+      return;
+    }
+    var it = QUIZ[st.i];
+    body.innerHTML = '<div class="mono" style="font-size:10px;color:#a0806b;margin-bottom:8px;">QUESTION ' + (st.i + 1) + ' OF ' + QUIZ.length + '</div>' +
+      '<div style="font-size:15px;font-weight:600;margin-bottom:12px;">' + it.q + '</div><div id="quizOpts"></div>';
+    var oh = document.getElementById('quizOpts');
+    it.o.forEach(function(opt, idx){
+      var b = document.createElement('button');
+      b.className = 'opt'; b.textContent = opt;
+      b.addEventListener('click', function(){ if (idx === it.a) st.s++; st.i++; render(); });
+      oh.appendChild(b);
+    });
+  }
+  render();
+})();
+</script>
+</body>
+</html>
