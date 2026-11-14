@@ -17,61 +17,89 @@
 <meta name="twitter:title" content="@dumbdashboards — all the dashboards">
 <meta name="twitter:description" content="Interactive dashboards on pop culture and sports.">
 <meta name="twitter:image" content="https://dumb-dashboards.github.io/dumb-dashboards/og-image.png">
-<meta name="theme-color" content="#121a17">
+<meta name="theme-color" content="#ffd84d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#121a17;--card:#1b2823;--card2:#223330;--ink:#f3efe3;--mute:#9fb0a8;--acc:#f0a83a;--line:#2d413b}
+:root{--bg:#fff7ec;--card:#ffffff;--ink:#2b2118;--mute:#7d6a5c;--line:#2b2118;--sun:#ffd84d;--soft:#fff1d6}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
-.wrap{max-width:960px;margin:0 auto;padding:28px 16px 56px}
-header{text-align:center;padding:12px 0 24px}
-.handle{color:var(--acc);letter-spacing:.18em;font-size:.78rem;font-weight:700}
-h1{margin:.3em 0 .2em;font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;color:var(--acc)}
-header p{margin:0 auto;max-width:520px;color:var(--mute)}
-.tools{display:flex;flex-direction:column;gap:12px;margin:8px 0 22px}
-input[type=search]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1rem}
-input[type=search]:focus{outline:2px solid var(--acc);outline-offset:1px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45;
+  background-image:radial-gradient(rgba(43,33,24,.07) 1.5px, transparent 1.5px);background-size:22px 22px}
+.hero{background:var(--sun);border-bottom:3px solid var(--ink);border-radius:0 0 36px 36px;transition:background .3s}
+.hero-in{max-width:960px;margin:0 auto;padding:26px 16px 22px;display:flex;align-items:center;gap:14px}
+.hero-text{flex:1;min-width:0}
+.handle{font-weight:900;letter-spacing:.2em;font-size:.76rem}
+h1{font-family:'Fredoka',sans-serif;font-weight:700;margin:.15em 0 .2em;font-size:clamp(2rem,7.4vw,3.3rem);line-height:1.02}
+.hero p{margin:0;max-width:460px;font-weight:700;font-size:.98rem}
+.mascot{flex:0 0 clamp(108px,30vw,170px);position:relative}
+.mascot svg{width:100%;height:auto;display:block;animation:bob 2.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}
+.bubble{position:absolute;right:74%;top:10px;background:#fff;border:3px solid var(--ink);border-radius:16px;padding:6px 10px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:.82rem;white-space:nowrap;box-shadow:0 3px 0 var(--ink)}
+.wrap{max-width:960px;margin:0 auto;padding:22px 16px 56px}
+.tools{display:flex;flex-direction:column;gap:12px;margin:0 0 22px}
+input[type=search]{width:100%;padding:13px 16px;border-radius:16px;border:3px solid var(--ink);background:#fff;color:var(--ink);font-size:1rem;font-family:inherit;font-weight:700;box-shadow:0 4px 0 var(--ink)}
+input[type=search]:focus{outline:3px solid var(--sun);outline-offset:2px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 13px;border-radius:999px;font-size:.88rem;cursor:pointer}
-.chip[aria-pressed=true]{background:var(--acc);color:#1a1a12;border-color:var(--acc);font-weight:700}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
-.card:target{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
-.thumb{display:block;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:var(--card2);border:1px solid var(--line)}
+.chip{border:2.5px solid var(--ink);background:#fff;color:var(--ink);padding:6px 13px;border-radius:999px;font-size:.9rem;cursor:pointer;font-family:'Fredoka',sans-serif;font-weight:600;display:inline-flex;align-items:center;gap:7px;box-shadow:0 3px 0 var(--ink)}
+.chip i{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);display:inline-block}
+.chip[aria-pressed=true]{background:var(--ink);color:#fff}
+.chip:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.count{font-family:'Fredoka',sans-serif;font-weight:600;color:var(--mute);font-size:.9rem;margin:-8px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:0 0 16px;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px;box-shadow:0 6px 0 var(--ink);overflow:hidden;transition:transform .15s}
+.card:hover{transform:translateY(-3px)}
+.card:target{box-shadow:0 0 0 4px var(--sun),0 6px 0 var(--ink)}
+.strip{height:12px;border-bottom:3px solid var(--ink)}
+.card > *:not(.strip){margin-left:16px;margin-right:16px}
+.thumb{display:block;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--soft);border:2.5px solid var(--ink);margin-top:6px;position:relative}
 .thumb img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
-.meta{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--mute)}
-.ep{color:var(--acc);font-weight:700;letter-spacing:.08em}
-.card h2{margin:0;font-size:1.08rem;line-height:1.25}
-.desc{margin:0;color:var(--mute);font-size:.9rem}
+.thumb .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.thumb .ph svg{height:86%;width:auto}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:.78rem}
+.ep{font-family:'Fredoka',sans-serif;font-weight:700;letter-spacing:.06em;background:var(--ink);color:#fff;border-radius:999px;padding:3px 10px}
+.tag{font-family:'Fredoka',sans-serif;font-weight:600;border:2px solid var(--ink);border-radius:999px;padding:2px 10px}
+.card h2{margin:0;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.18rem;line-height:1.2}
+.desc{margin:0;color:var(--mute);font-size:.92rem;font-weight:700}
 .actions{margin-top:auto;display:flex;gap:8px}
-.btn{flex:1;text-align:center;padding:10px 12px;border-radius:10px;font-size:.92rem;font-weight:700;text-decoration:none}
-.open{background:var(--acc);color:#1a1a12}
-.dl{background:var(--card2);color:var(--ink);border:1px solid var(--line)}
-.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.share{flex:0 0 auto;background:transparent;color:var(--ink);border:1px solid var(--line);cursor:pointer;font-family:inherit}
-.share:hover{border-color:var(--acc)}
-.empty{display:none;text-align:center;color:var(--mute);padding:32px 0}
-footer{margin-top:36px;text-align:center;color:var(--mute);font-size:.85rem}
-footer a{color:var(--acc)}
+.btn{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 12px;border-radius:14px;font-size:.92rem;font-weight:800;text-decoration:none;border:2.5px solid var(--ink);font-family:'Nunito',sans-serif;box-shadow:0 3px 0 var(--ink)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.open{background:var(--ink);color:#fff}
+.dl{background:#fff;color:var(--ink)}
+.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.share{flex:0 0 auto;background:var(--sun);color:var(--ink);cursor:pointer}
+.empty{display:none;text-align:center;color:var(--mute);padding:20px 0 32px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:1.1rem}
+.empty svg{width:130px;height:auto;display:block;margin:0 auto 8px}
+footer{margin-top:40px;text-align:center;color:var(--mute);font-size:.88rem;font-weight:700}
+footer svg{width:64px;height:auto;display:block;margin:0 auto 6px}
+footer a{color:var(--ink);font-weight:900}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="handle">@DUMBDASHBOARDS</div>
-    <h1>All the dashboards</h1>
-    <p>Data, pop culture and sports. Open them right here, or download the HTML and use them however you like.</p>
-  </header>
+<header class="hero" id="hero">
+  <div class="hero-in">
+    <div class="hero-text">
+      <div class="handle">@DUMBDASHBOARDS</div>
+      <h1>All the dumb dashboards</h1>
+      <p>Data, pop culture and sports. Open them right here, or download the HTML and use them however you like.</p>
+    </div>
+    <div class="mascot"><div class="bubble" id="bubble">Pick one!</div><div id="heroScreeny"></div></div>
+  </div>
+</header>
 
+<div class="wrap">
   <div class="tools">
     <input type="search" id="q" placeholder="Search a dashboard…" aria-label="Search a dashboard">
     <div class="chips" id="chips"></div>
   </div>
+  <div class="count" id="count"></div>
 
   <main class="grid" id="grid"></main>
-  <div class="empty" id="empty">No dashboards found.</div>
+  <div class="empty" id="empty"><span id="emptyScreeny"></span>No dashboards found.</div>
 
   <footer>
+    <span id="footScreeny"></span>
     Free to use, no commercial purposes. If you use them, please credit
     <a href="https://www.instagram.com/dumbdashboards/">@dumbdashboards</a>.
   </footer>
@@ -80,7 +108,8 @@ footer a{color:var(--acc)}
 <script>
 /* To add a dashboard, add one line below.
    file = name of the .html file in the repository, desc = one short line, ep = episode number (or "" if none),
-   tag = one of: Music, Sport, Film & TV, Anime & Games, Other. Newest go on top. */
+   tag = one of: Music, Sport, Film & TV, Anime & Games, Other. Newest go on top.
+   Thumbnail: thumbs/<file name without "-dashboard" and ".html">.jpg (a placeholder with Screeny shows if missing). */
 const DASHBOARDS = [
   {file:"wafflehouse-dashboard.html", ep:"25", title:"The Waffle House Index", tag:"Other", desc:"How America measures disasters in hash browns: storms, closures, a map of every state and the math behind 1.5 million combinations."},
   {file:"gta-dashboard.html", ep:"24", title:"GTA, Measured in Stupid Things", tag:"Anime & Games", desc:"Vehicles, fake brands, phone-keypad cheat codes and a 13-year wait, counted from game files and fan wikis."},
@@ -109,6 +138,89 @@ const DASHBOARDS = [
   {file:"trolley-game.html", ep:"01", title:"Trolley Tracks — The Impossible Dilemma", tag:"Other", desc:"12 impossible dilemmas across 4 flavors of chaos. Built for parties."}
 ];
 
+/* ---------- Screeny, the mascot ---------- */
+var INK = "#2b2118";
+
+/* Screeny drawn in its own 1080 box; screen = function returning svg for the screen area (x 310-770, y 350-710) */
+function screeny(screen){
+  var s = '';
+  s += '<ellipse cx="540" cy="905" rx="250" ry="32" fill="#000" opacity=".12"/>';
+  s += '<line x1="540" y1="300" x2="470" y2="195" stroke="' + INK + '" stroke-width="18" stroke-linecap="round"/>';
+  s += '<line x1="540" y1="300" x2="625" y2="185" stroke="' + INK + '" stroke-width="18" stroke-linecap="round"/>';
+  s += '<circle cx="470" cy="190" r="26" fill="#ff6fa5" stroke="' + INK + '" stroke-width="14"/><circle cx="628" cy="180" r="26" fill="#3fd0c9" stroke="' + INK + '" stroke-width="14"/>';
+  s += '<rect x="370" y="815" width="110" height="70" rx="30" fill="#fffaf0" stroke="' + INK + '" stroke-width="20"/>';
+  s += '<rect x="600" y="815" width="110" height="70" rx="30" fill="#fffaf0" stroke="' + INK + '" stroke-width="20"/>';
+  s += '<rect x="250" y="290" width="580" height="540" rx="110" fill="#fffaf0" stroke="' + INK + '" stroke-width="22"/>';
+  s += '<path d="M 300 770 Q 540 820 780 770" fill="none" stroke="#f1e6d2" stroke-width="22" stroke-linecap="round"/>';
+  s += '<rect x="310" y="350" width="460" height="360" rx="70" fill="#1f2a2a" stroke="' + INK + '" stroke-width="16"/>';
+  s += '<path d="M 350 390 Q 430 372 520 380" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="18" stroke-linecap="round"/>';
+  s += screen;
+  s += '<ellipse cx="285" cy="640" rx="26" ry="16" fill="#ff8fb3" opacity=".8"/><ellipse cx="795" cy="640" rx="26" ry="16" fill="#ff8fb3" opacity=".8"/>';
+  s += '<circle cx="380" cy="768" r="16" fill="#ffa24a" stroke="' + INK + '" stroke-width="10"/><circle cx="430" cy="768" r="16" fill="#7ad66f" stroke="' + INK + '" stroke-width="10"/>';
+  return s;
+}
+var G = "#7dff9b";
+function eyes(){ return '<rect x="410" y="440" width="56" height="70" rx="12" fill="' + G + '"/><rect x="614" y="440" width="56" height="70" rx="12" fill="' + G + '"/><rect x="418" y="448" width="18" height="18" rx="4" fill="#1f2a2a" opacity=".55"/><rect x="622" y="448" width="18" height="18" rx="4" fill="#1f2a2a" opacity=".55"/>'; }
+var SCREENS = {
+  hub: eyes() + '<path d="M 395 585 L 445 622 L 495 642 L 545 628 L 592 645 L 640 620 L 688 582" fill="none" stroke="' + G + '" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>',
+  movies: eyes() + '<path d="M 405 425 L 455 408 M 625 408 L 675 425" stroke="' + G + '" stroke-width="12" stroke-linecap="round"/>' +
+          '<path d="M 395 560 L 450 575 L 500 570 L 550 610 L 600 630 L 650 668 L 690 676" fill="none" stroke="#ff6f8f" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><circle cx="690" cy="676" r="12" fill="#ff6f8f"/>',
+  games: eyes() + '<rect x="400" y="585" width="280" height="62" rx="12" fill="none" stroke="' + G + '" stroke-width="10"/>' +
+          '<rect x="414" y="599" width="58" height="34" rx="5" fill="' + G + '"/><rect x="480" y="599" width="58" height="34" rx="5" fill="' + G + '"/><rect x="546" y="599" width="58" height="34" rx="5" fill="' + G + '"/><rect x="612" y="599" width="54" height="34" rx="5" fill="' + G + '" opacity=".22"/>',
+  sports: eyes() + '<path d="M 395 668 L 450 650 L 500 655 L 550 620 L 600 610 L 645 575" fill="none" stroke="#ffd84d" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="M 680 538 l 9 19 21 3 -15 15 4 21 -19 -10 -19 10 4 -21 -15 -15 21 -3 z" fill="#ffd84d"/>',
+  music: eyes() + '<rect x="402" y="610" width="34" height="50" rx="8" fill="' + G + '"/><rect x="452" y="580" width="34" height="80" rx="8" fill="#ff6fa5"/><rect x="502" y="560" width="34" height="100" rx="8" fill="' + G + '"/><rect x="552" y="590" width="34" height="70" rx="8" fill="#ffd84d"/><rect x="602" y="570" width="34" height="90" rx="8" fill="' + G + '"/><rect x="652" y="605" width="34" height="55" rx="8" fill="#3fd0c9"/>',
+  weird: '<path d="M 438 475 m -30 0 a 30 30 0 1 1 30 30 a 20 20 0 1 1 -20 -20 a 10 10 0 1 1 10 10" fill="none" stroke="' + G + '" stroke-width="10" stroke-linecap="round"/>' +
+         '<path d="M 642 475 m -30 0 a 30 30 0 1 1 30 30 a 20 20 0 1 1 -20 -20 a 10 10 0 1 1 10 10" fill="none" stroke="' + G + '" stroke-width="10" stroke-linecap="round"/>' +
+         '<ellipse cx="540" cy="620" rx="30" ry="36" fill="none" stroke="' + G + '" stroke-width="14"/>'
+};
+
+
+/* themed accessories, Screeny coordinates */
+var ACC = {
+  hub: '<circle cx="438" cy="475" r="66" fill="#ffffff" fill-opacity=".10" stroke="' + INK + '" stroke-width="16"/><circle cx="642" cy="475" r="66" fill="#ffffff" fill-opacity=".10" stroke="' + INK + '" stroke-width="16"/>' +
+       '<path d="M 504 470 Q 540 452 576 470" fill="none" stroke="' + INK + '" stroke-width="14" stroke-linecap="round"/>' +
+       '<line x1="372" y1="465" x2="312" y2="450" stroke="' + INK + '" stroke-width="12" stroke-linecap="round"/><line x1="708" y1="465" x2="768" y2="450" stroke="' + INK + '" stroke-width="12" stroke-linecap="round"/>',
+  sports: '<rect x="244" y="296" width="592" height="52" rx="22" fill="#ff6b6b" stroke="' + INK + '" stroke-width="14"/>' +
+          '<rect x="244" y="312" width="592" height="8" fill="#ffffff" opacity=".85"/><rect x="244" y="326" width="592" height="8" fill="#ffffff" opacity=".85"/>' +
+          '<path d="M 830 310 L 905 278 L 892 330 Z" fill="#ff6b6b" stroke="' + INK + '" stroke-width="12" stroke-linejoin="round"/><path d="M 830 334 L 900 360 L 870 392 Z" fill="#ff6b6b" stroke="' + INK + '" stroke-width="12" stroke-linejoin="round"/>' +
+          '<g transform="translate(790 868) scale(0.78)"><circle r="66" fill="#ffffff" stroke="' + INK + '" stroke-width="14"/><path d="M 0 -24 L 23 -7 L 14 20 L -14 20 L -23 -7 Z" fill="' + INK + '"/>' +
+          '<path d="M 0 -24 L 0 -60 M 23 -7 L 57 -18 M 14 20 L 35 50 M -14 20 L -35 50 M -23 -7 L -57 -18" stroke="' + INK + '" stroke-width="8" stroke-linecap="round"/></g>',
+  movies: '<rect x="372" y="428" width="140" height="96" rx="22" fill="#ff4d6d" fill-opacity=".85" stroke="' + INK + '" stroke-width="16"/>' +
+          '<rect x="568" y="428" width="140" height="96" rx="22" fill="#3fd0c9" fill-opacity=".85" stroke="' + INK + '" stroke-width="16"/>' +
+          '<path d="M 512 470 Q 540 452 568 470" fill="none" stroke="' + INK + '" stroke-width="14"/>' +
+          '<line x1="372" y1="456" x2="312" y2="440" stroke="' + INK + '" stroke-width="12" stroke-linecap="round"/><line x1="708" y1="456" x2="768" y2="440" stroke="' + INK + '" stroke-width="12" stroke-linecap="round"/>' +
+          '<g transform="translate(812 818) scale(0.8)"><circle cx="-40" cy="-78" r="30" fill="#fff4c9" stroke="' + INK + '" stroke-width="10"/><circle cx="0" cy="-92" r="32" fill="#fff4c9" stroke="' + INK + '" stroke-width="10"/><circle cx="40" cy="-78" r="30" fill="#fff4c9" stroke="' + INK + '" stroke-width="10"/>' +
+          '<path d="M -72 -66 L 72 -66 L 54 100 L -54 100 Z" fill="#ffffff" stroke="' + INK + '" stroke-width="14" stroke-linejoin="round"/>' +
+          '<path d="M -40 -66 L -30 100 M 0 -66 L 0 100 M 40 -66 L 30 100" stroke="#ff4d6d" stroke-width="18"/>' +
+          '<path d="M -72 -66 L 72 -66 L 54 100 L -54 100 Z" fill="none" stroke="' + INK + '" stroke-width="14" stroke-linejoin="round"/></g>',
+  games: '<g transform="translate(540 800)"><path d="M -170 -40 Q -170 -70 -130 -70 L 130 -70 Q 170 -70 170 -40 L 190 50 Q 200 100 150 100 Q 115 100 95 60 L -95 60 Q -115 100 -150 100 Q -200 100 -190 50 Z" fill="#c9b8ff" stroke="' + INK + '" stroke-width="16" stroke-linejoin="round"/>' +
+         '<rect x="-128" y="-30" width="20" height="60" rx="5" fill="' + INK + '"/><rect x="-148" y="-10" width="60" height="20" rx="5" fill="' + INK + '"/>' +
+         '<circle cx="105" cy="-18" r="15" fill="#ff6fa5" stroke="' + INK + '" stroke-width="7"/><circle cx="140" cy="8" r="15" fill="#7ad66f" stroke="' + INK + '" stroke-width="7"/><circle cx="70" cy="8" r="15" fill="#ffd84d" stroke="' + INK + '" stroke-width="7"/></g>' +
+         '<g transform="translate(790 190)" fill="#ff4d6d" stroke="' + INK + '" stroke-width="5"><rect x="0" y="0" width="22" height="22"/><rect x="22" y="-22" width="22" height="22"/><rect x="44" y="0" width="22" height="22"/><rect x="66" y="-22" width="22" height="22"/><rect x="88" y="0" width="22" height="22"/>' +
+         '<rect x="0" y="22" width="22" height="22"/><rect x="22" y="22" width="22" height="22"/><rect x="44" y="22" width="22" height="22"/><rect x="66" y="22" width="22" height="22"/><rect x="88" y="22" width="22" height="22"/>' +
+         '<rect x="22" y="44" width="22" height="22"/><rect x="44" y="44" width="22" height="22"/><rect x="66" y="44" width="22" height="22"/><rect x="44" y="66" width="22" height="22"/></g>',
+  music: '<path d="M 232 520 Q 232 210 540 210 Q 848 210 848 520" fill="none" stroke="' + INK + '" stroke-width="40" stroke-linecap="round"/>' +
+         '<path d="M 232 520 Q 232 210 540 210 Q 848 210 848 520" fill="none" stroke="#8ec5ff" stroke-width="18" stroke-linecap="round"/>' +
+         '<rect x="186" y="440" width="96" height="190" rx="40" fill="#8ec5ff" stroke="' + INK + '" stroke-width="16"/><rect x="798" y="440" width="96" height="190" rx="40" fill="#8ec5ff" stroke="' + INK + '" stroke-width="16"/>' +
+         '<g fill="' + INK + '" transform="translate(540 270) scale(0.86) translate(-540 -270)"><ellipse cx="150" cy="330" rx="26" ry="20"/><rect x="168" y="230" width="12" height="102"/><path d="M 168 230 q 40 10 46 50 q -16 -22 -46 -24 z"/>' +
+         '<ellipse cx="910" cy="300" rx="24" ry="18"/><ellipse cx="970" cy="282" rx="24" ry="18"/><rect x="926" y="200" width="11" height="100"/><rect x="984" y="182" width="11" height="100"/><path d="M 926 200 L 995 182 L 995 200 L 926 218 Z"/></g>',
+  weird: '<path d="M 400 312 L 430 290 L 455 312 L 482 286 L 510 310 L 540 284 L 570 310 L 598 286 L 625 312 L 652 290 L 680 312 L 560 110 Z" fill="#d6dbe2" stroke="' + INK + '" stroke-width="14" stroke-linejoin="round"/>' +
+         '<path d="M 470 270 L 548 140 M 600 270 L 570 160 M 520 230 L 590 230" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity=".8"/>' +
+         '<text x="190" y="300" font-family="Fredoka" font-weight="700" font-size="110" fill="' + INK + '">?</text><text x="860" y="420" font-family="Fredoka" font-weight="700" font-size="90" fill="' + INK + '" transform="rotate(14 880 390)">?</text>'
+};
+var CHEF = '<path d="M 400 300 L 400 240 Q 340 230 350 175 Q 362 120 425 135 Q 445 80 510 92 Q 545 60 590 92 Q 650 78 668 135 Q 735 122 735 180 Q 740 232 680 240 L 680 300 Z" fill="#ffffff" stroke="' + INK + '" stroke-width="16" stroke-linejoin="round"/>' +
+           '<path d="M 400 262 L 680 262" stroke="#f1e6d2" stroke-width="14"/>';
+
+
+const OUTFIT = {'All':'hub','Sport':'sports','Film & TV':'movies','Anime & Games':'games','Music':'music','Other':'weird'};
+const TAGCOL = {'All':'#ffd84d','Sport':'#ffa24a','Film & TV':'#ff8fb3','Anime & Games':'#5fd3c8','Music':'#8ec5ff','Other':'#b49cff'};
+const LINES = {'All':'Pick one!','Sport':'Game on!','Film & TV':'Grab the popcorn','Anime & Games':'Press start','Music':'Turn it up','Other':'Trust no data'};
+function screenySVG(tag){
+  const k = OUTFIT[tag] || 'hub';
+  return '<svg viewBox="130 90 820 840" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Screeny, the dumbdashboards mascot">' + screeny(SCREENS[k]) + ACC[k] + '</svg>';
+}
+
 const grid = document.getElementById('grid');
 const chipsEl = document.getElementById('chips');
 const q = document.getElementById('q');
@@ -118,6 +230,12 @@ let active = 'All';
 
 function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+function setMascot(){
+  document.getElementById('heroScreeny').innerHTML = screenySVG(active);
+  document.getElementById('bubble').textContent = LINES[active] || 'Pick one!';
+  document.getElementById('hero').style.background = TAGCOL[active] || '#ffd84d';
+}
+
 function render(){
   const term = q.value.trim().toLowerCase();
   const list = DASHBOARDS.filter(d =>
@@ -125,9 +243,11 @@ function render(){
     (!term || (d.title + ' ' + d.tag + ' ' + d.desc).toLowerCase().includes(term)));
   grid.innerHTML = list.map(d => {
     const id = d.ep ? 'ep' + parseInt(d.ep, 10) : d.file.replace('.html','');
+    const col = TAGCOL[d.tag] || '#ffd84d';
     return `<article class="card" id="${id}">
-      <a class="thumb" href="${esc(d.file)}" tabindex="-1" aria-hidden="true"><img src="thumbs/${esc(d.file.replace(/(-dashboard)?\.html$/,''))}.jpg" alt="" loading="lazy"></a>
-      <div class="meta"><span class="ep">${d.ep ? 'EP. ' + esc(d.ep) : ''}</span><span>${esc(d.tag)}</span></div>
+      <div class="strip" style="background:${col}"></div>
+      <a class="thumb" href="${esc(d.file)}" tabindex="-1" aria-hidden="true" style="background:${col}33"><img src="thumbs/${esc(d.file.replace(/(-dashboard)?\.html$/,''))}.jpg" alt="" loading="lazy" data-tag="${esc(d.tag)}"></a>
+      <div class="meta"><span class="ep">${d.ep ? 'EP. ' + esc(d.ep) : 'EXTRA'}</span><span class="tag" style="background:${col}">${esc(d.tag)}</span></div>
       <h2>${esc(d.title)}</h2>
       <p class="desc">${esc(d.desc)}</p>
       <div class="actions">
@@ -137,14 +257,20 @@ function render(){
       </div>
     </article>`;
   }).join('');
+  grid.querySelectorAll('.thumb img').forEach(img => img.addEventListener('error', () => {
+    const ph = document.createElement('div'); ph.className = 'ph'; ph.innerHTML = screenySVG(img.dataset.tag);
+    img.replaceWith(ph);
+  }, {once:true}));
   empty.style.display = list.length ? 'none' : 'block';
+  document.getElementById('count').textContent = list.length + (list.length === 1 ? ' dashboard' : ' dashboards') + (active === 'All' && !term ? ' and counting' : '');
 }
 
-chipsEl.innerHTML = tags.map(t => `<button type="button" class="chip" aria-pressed="${t===active}" data-t="${esc(t)}">${esc(t)}</button>`).join('');
+chipsEl.innerHTML = tags.map(t => `<button type="button" class="chip" aria-pressed="${t===active}" data-t="${esc(t)}"><i style="background:${TAGCOL[t] || '#ffd84d'}"></i>${esc(t)}</button>`).join('');
 chipsEl.addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   active = b.dataset.t;
   chipsEl.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.t === active));
+  setMascot();
   render();
 });
 grid.addEventListener('click', async e => {
@@ -157,6 +283,9 @@ grid.addEventListener('click', async e => {
   const old = b.textContent; b.textContent = 'Copied!'; setTimeout(() => b.textContent = old, 1500);
 });
 q.addEventListener('input', render);
+document.getElementById('emptyScreeny').innerHTML = screenySVG('Other');
+document.getElementById('footScreeny').innerHTML = screenySVG('All');
+setMascot();
 render();
 if (location.hash) { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
 </script>
