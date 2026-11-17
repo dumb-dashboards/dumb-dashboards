@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOES THE COLOR OF THE YEAR KNOW ANYTHING?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;1,9..144,600;1,9..144,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f6f2ea; --card:#fffdf8; --ink:#1f1c18; --dim:#7a7268; --line:#e4ddd0; --soft:#efe9de; }
+  *{ box-sizing:border-box; }
+  html{ background:var(--paper); }
+  html,body{ margin:0; padding:0; }
+  body{ min-height:100vh; background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; padding-bottom:48px; -webkit-font-smoothing:antialiased; }
+  .mono{ font-family:'DM Mono',monospace; }
+  .masthead{ max-width:720px; margin:0 auto; padding:22px 16px 6px; }
+  .kicker{ font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+  h1{ font-family:'Fraunces',serif; font-weight:800; font-size:clamp(32px,8.8vw,52px); line-height:1.0; margin:10px 0 10px; letter-spacing:-.5px; }
+  h1 em{ font-style:italic; font-weight:600; }
+  .sub{ font-size:14.5px; color:var(--dim); line-height:1.5; max-width:600px; }
+  .band{ max-width:720px; margin:16px auto 0; padding:0 16px; }
+  .band-inner{ display:flex; height:46px; border-radius:10px; overflow:hidden; box-shadow:0 2px 0 var(--line); }
+  .band-inner div{ flex:1; }
+  .band-labels{ display:flex; justify-content:space-between; font-family:'DM Mono',monospace; font-size:10px; color:var(--dim); margin-top:5px; }
+
+  .nav{ max-width:720px; margin:16px auto; display:flex; gap:7px; padding:0 16px; flex-wrap:wrap; }
+  .tab-btn{ font-family:'DM Sans',sans-serif; font-weight:700; font-size:13px; background:var(--card); color:var(--ink); border:1.5px solid var(--ink); border-radius:20px; padding:7px 14px; cursor:pointer; }
+  .tab-btn.active{ background:var(--ink); color:var(--paper); }
+  .panel{ display:none; max-width:720px; margin:0 auto; padding:0 16px; }
+  .panel.active{ display:block; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:14px; }
+  .card h2{ font-family:'Fraunces',serif; font-weight:800; font-size:23px; margin:0 0 8px; line-height:1.1; }
+  .card h2 em{ font-style:italic; font-weight:600; }
+  .card p{ font-size:14.5px; line-height:1.55; margin:8px 0; }
+  .src{ font-family:'DM Mono',monospace; font-size:9.5px; color:var(--dim); margin-top:10px; line-height:1.5; text-transform:uppercase; }
+  .callout{ background:var(--soft); border-radius:10px; padding:12px 14px; margin:12px 0; font-size:14px; line-height:1.5; }
+  .verdict{ font-family:'Fraunces',serif; font-weight:800; font-size:26px; line-height:1.1; margin:6px 0; }
+  .kpi-row{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+  .kpi{ flex:1; min-width:96px; background:var(--soft); border-radius:10px; padding:10px; }
+  .kpi .v{ font-family:'Fraunces',serif; font-weight:800; font-size:24px; line-height:1.05; }
+  .kpi .l{ font-family:'DM Mono',monospace; font-size:9px; color:var(--dim); text-transform:uppercase; margin-top:4px; line-height:1.35; }
+  .chip-btn{ font-family:'DM Mono',monospace; font-size:11px; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:20px; padding:6px 11px; cursor:pointer; }
+  .chip-btn.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .row{ display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 4px; }
+  .action-btn{ font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; background:var(--ink); color:var(--paper); border:none; border-radius:20px; padding:10px 18px; cursor:pointer; }
+
+  /* swatch chips */
+  .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
+  .sw{ background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 1px 0 var(--line), 0 0 0 1px var(--line); cursor:pointer; }
+  .sw .blk{ height:64px; display:flex; }
+  .sw .blk div{ flex:1; }
+  .sw .lab{ padding:7px 8px 8px; }
+  .sw .yr{ font-family:'DM Mono',monospace; font-size:10px; color:var(--dim); }
+  .sw .nm{ font-weight:700; font-size:12.5px; line-height:1.15; margin-top:1px; }
+  .sw.sel{ box-shadow:0 0 0 2.5px var(--ink); }
+  .decode{ margin-top:12px; }
+  .dec-row{ display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); }
+  .dec-row:last-child{ border-bottom:none; }
+  .dec-row .k{ font-family:'DM Mono',monospace; font-size:20px; flex:0 0 44px; }
+  .dec-row .t{ font-size:13.5px; line-height:1.4; }
+  .scale{ height:10px; border-radius:5px; background:linear-gradient(90deg,#f4f1ea,#1f1c18); position:relative; margin-top:6px; }
+  .scale i{ position:absolute; top:-4px; width:4px; height:18px; background:#e0412f; border-radius:2px; }
+
+  .yearcard{ background:var(--soft); border-radius:12px; padding:14px; margin-top:10px; }
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  .stat-grid .v{ font-family:'Fraunces',serif; font-weight:800; font-size:21px; }
+  .stat-grid .l{ font-family:'DM Mono',monospace; font-size:9px; color:var(--dim); text-transform:uppercase; }
+  input.yin{ font-family:'Fraunces',serif; font-weight:800; font-size:30px; width:140px; padding:6px 12px; border:1.5px solid var(--ink); border-radius:10px; background:#fff; color:var(--ink); }
+  input[type=color]{ width:64px; height:44px; border:1.5px solid var(--ink); border-radius:10px; background:#fff; padding:2px; cursor:pointer; }
+  .opt{ display:block; width:100%; text-align:left; background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:11px 14px; margin-bottom:8px; font-family:'Fraunces',serif; font-weight:800; font-size:18px; cursor:pointer; }
+  details summary{ font-family:'DM Mono',monospace; font-size:11px; color:var(--dim); cursor:pointer; }
+  details p{ font-size:12.5px; color:var(--dim); line-height:1.6; }
+  footer{ max-width:720px; margin:14px auto 0; padding:0 16px; font-family:'DM Mono',monospace; font-size:9.5px; color:var(--dim); text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="kicker">@dumbdashboards — ep. 26</div>
+  <h1>Does the Color of the Year <em>know anything?</em></h1>
+  <div class="sub">Every Pantone Color of the Year since 2000, decoded and tested against how each year actually went. Stock markets, consumer mood, the Doomsday Clock, competitive hot dog eating, and babies named Felicity.</div>
+</div>
+<div class="band"><div class="band-inner" id="band"></div><div class="band-labels"><span>2000</span><span>2013</span><span>2026</span></div></div>
+
+<div class="nav">
+  <button class="tab-btn active" data-tab="colors">The Colors</button>
+  <button class="tab-btn" data-tab="beige">Going Beige?</button>
+  <button class="tab-btn" data-tab="vibe">Vibe Index</button>
+  <button class="tab-btn" data-tab="oracle">Prophet or Mirror?</button>
+  <button class="tab-btn" data-tab="birth">Your Birthtone</button>
+  <button class="tab-btn" data-tab="game">Guess the Year</button>
+</div>
+
+<!-- COLORS -->
+<div class="panel active" id="panel-colors">
+  <div class="card">
+    <h2>27 years, <em>29 colors</em></h2>
+    <p>Two years got two colors (2016 and 2021). Tap a swatch to decode it.</p>
+    <div class="grid3" id="swatches"></div>
+  </div>
+  <div class="card" id="decodeCard">
+    <h2>The code is <em>the data</em></h2>
+    <p>Fashion and interiors codes like 11-4201 read as three pairs: lightness, hue, chroma.</p>
+    <div id="decode" class="decode"></div>
+    <div class="src">Code structure: Pantone FHI system as described by color references. Hex values are screen approximations, from Wikipedia and W3Schools listings.</div>
+  </div>
+</div>
+
+<!-- BEIGE -->
+<div class="panel" id="panel-beige">
+  <div class="card">
+    <h2>Is Pantone <em>going beige?</em></h2>
+    <p>After a brown (2025) and a white (2026), it looks like Pantone is losing interest in color. We measured every color's saturation.</p>
+    <div id="satChart"></div>
+    <div class="verdict" id="beigeVerdict"></div>
+    <p id="beigeText"></p>
+  </div>
+  <div class="card">
+    <h2>Lightness, <em>same story</em></h2>
+    <div id="lightChart"></div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">Cloud Dancer</div><div class="l">lightest color ever (2026)</div></div>
+      <div class="kpi"><div class="v">Ultimate Gray</div><div class="l">least saturated single color (2021, paired with a yellow)</div></div>
+    </div>
+    <div class="src">Saturation and lightness: HSL computed from each color's hex. Trend: correlation with the year.</div>
+  </div>
+</div>
+
+<!-- VIBE -->
+<div class="panel" id="panel-vibe">
+  <div class="card">
+    <h2>The <em>Vibe Index</em></h2>
+    <p>Two scores for every year, 2000 to 2025. <b>Serious</b>: S&amp;P 500 return, US consumer sentiment, world GDP growth, Doomsday Clock. <b>Stupid</b>: hot dogs eaten by the Nathan's champion, and baby girls named Felicity. Each measure is turned into a z-score, then averaged.</p>
+    <div class="row" id="compChips"></div>
+    <div id="vibeChart"></div>
+    <div class="yearcard" id="yearCard"></div>
+    <div class="src">Sources: S&amp;P 500 total return (Slickcharts, YCharts); University of Michigan sentiment, annual average (2024-25 averaged by us from monthly readings); World Bank GDP growth; Bulletin of the Atomic Scientists; Nathan's results (Wikipedia); SSA baby names (NameAlmanac).</div>
+  </div>
+  <div class="card">
+    <h2>The plot twist <em>that isn't</em></h2>
+    <p>Raw numbers say the serious and stupid indexes move in opposite directions: when the world does worse, America eats more hot dogs.</p>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v" id="rawR"></div><div class="l">raw correlation</div></div>
+      <div class="kpi"><div class="v" id="detR"></div><div class="l">after removing the time trend</div></div>
+    </div>
+    <div class="callout">It's the calendar. The Doomsday Clock keeps moving closer to midnight while hot dog records keep climbing, so anything measured over time looks related. Take the trend out and the link disappears.</div>
+  </div>
+</div>
+
+<!-- ORACLE -->
+<div class="panel" id="panel-oracle">
+  <div class="card">
+    <h2>Prophet <em>or mirror?</em></h2>
+    <p>Pantone picks each color in December. Does it <b>predict</b> the year ahead (prophet), or <b>reflect</b> the year that just ended (mirror)? Here is the strongest test we ran: color lightness against the serious index.</p>
+    <div class="row" id="oracleMode"></div>
+    <div id="oracleChart"></div>
+    <div class="callout" id="oracleText"></div>
+  </div>
+  <div class="card">
+    <h2>All 12 tests</h2>
+    <p>3 color measures × 2 indexes × prophet or mirror. Bigger dot, stronger correlation. None passes the random-color test.</p>
+    <div id="matrix"></div>
+    <div class="src">Random-color test: 20,000 shuffles of colors across years. "Beaten by chance" = share of shuffles at least as correlated as the real data.</div>
+  </div>
+  <div class="card">
+    <h2>The 2027 <em>Prophecy</em></h2>
+    <p>Pantone announces 2027 in early December. Pick a color and our (statistically useless) model forecasts the year.</p>
+    <div style="display:flex;gap:12px;align-items:center;margin:10px 0;"><input type="color" id="pick" value="#7fb3a3"><span class="mono" id="pickHex" style="font-size:13px;"></span></div>
+    <div class="row" id="presets"></div>
+    <div class="yearcard"><div class="mono" style="font-size:10px;color:var(--dim)">FORECAST FOR 2027</div><div class="verdict" id="forecast"></div><div style="font-size:13px;color:var(--dim)" id="forecastNote"></div></div>
+  </div>
+</div>
+
+<!-- BIRTHTONE -->
+<div class="panel" id="panel-birth">
+  <div class="card">
+    <h2>Your <em>Birthtone</em></h2>
+    <p>Like a birthstone, but with a Pantone code. Type the year you were born.</p>
+    <input class="yin" id="byear" type="number" min="1940" max="2026" value="1995">
+    <div id="birthOut"></div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="panel" id="panel-game">
+  <div class="card">
+    <h2>Guess <em>the year</em></h2>
+    <p>Eight colors, no names. Which year was it?</p>
+    <div id="game"></div>
+  </div>
+  <details style="margin-bottom:14px;">
+    <summary>Methodology and sources</summary>
+    <p>Colors: hex approximations of each Pantone Color of the Year (Wikipedia, W3Schools); 2026 Cloud Dancer #F0EEE9. Saturation, lightness and warmth come from HSL; warmth weights the hue's distance from orange by saturation. Years with two colors use the average. Indexes: each series is standardized over 1999-2025 and averaged; the Doomsday Clock counts seconds to midnight in force during the year. Prophet: color of year Y against index of Y. Mirror: color of year Y, chosen in December of Y-1, against index of Y-1. Significance via 20,000 random permutations. Nathan's switched from 12 to 10 minutes in 2008. Felicity is measured per 1,000 girls born. Correlation is not causation, and in this case it isn't even correlation.</p>
+  </details>
+  <footer>DOES THE COLOR OF THE YEAR KNOW ANYTHING? · @dumbdashboards · DECEMBER 2026 · NOT AFFILIATED WITH PANTONE</footer>
+</div>
+
+<script>
+var D = {"colors": {"2000": [{"n": "Cerulean", "c": "15-4020", "hex": "#9BB7D4", "h": 210.5, "s": 0.399, "l": 0.72}], "2001": [{"n": "Fuchsia Rose", "c": "17-2031", "hex": "#C74375", "h": 337.3, "s": 0.541, "l": 0.522}], "2002": [{"n": "True Red", "c": "19-1664", "hex": "#BF1932", "h": 351.0, "s": 0.769, "l": 0.424}], "2003": [{"n": "Aqua Sky", "c": "14-4811", "hex": "#7BC4C4", "h": 180.0, "s": 0.382, "l": 0.625}], "2004": [{"n": "Tigerlily", "c": "17-1456", "hex": "#E2583E", "h": 9.5, "s": 0.739, "l": 0.565}], "2005": [{"n": "Blue Turquoise", "c": "15-5217", "hex": "#53B0AE", "h": 178.7, "s": 0.371, "l": 0.508}], "2006": [{"n": "Sand Dollar", "c": "13-1106", "hex": "#DECDBE", "h": 28.1, "s": 0.327, "l": 0.808}], "2007": [{"n": "Chili Pepper", "c": "19-1557", "hex": "#9B1B30", "h": 350.2, "s": 0.703, "l": 0.357}], "2008": [{"n": "Blue Iris", "c": "18-3943", "hex": "#5A5B9F", "h": 239.1, "s": 0.277, "l": 0.488}], "2009": [{"n": "Mimosa", "c": "14-0848", "hex": "#F0C05A", "h": 40.8, "s": 0.833, "l": 0.647}], "2010": [{"n": "Turquoise", "c": "15-5519", "hex": "#45B5AA", "h": 174.1, "s": 0.448, "l": 0.49}], "2011": [{"n": "Honeysuckle", "c": "18-2120", "hex": "#D94F70", "h": 345.7, "s": 0.645, "l": 0.58}], "2012": [{"n": "Tangerine Tango", "c": "17-1463", "hex": "#DD4124", "h": 9.4, "s": 0.731, "l": 0.504}], "2013": [{"n": "Emerald", "c": "17-5641", "hex": "#009473", "h": 166.6, "s": 1.0, "l": 0.29}], "2014": [{"n": "Radiant Orchid", "c": "18-3224", "hex": "#B163A3", "h": 310.8, "s": 0.333, "l": 0.541}], "2015": [{"n": "Marsala", "c": "18-1438", "hex": "#955251", "h": 0.9, "s": 0.296, "l": 0.451}], "2016": [{"n": "Rose Quartz", "c": "13-1520", "hex": "#F7CAC9", "h": 1.3, "s": 0.742, "l": 0.878}, {"n": "Serenity", "c": "15-3919", "hex": "#92A8D1", "h": 219.0, "s": 0.406, "l": 0.696}], "2017": [{"n": "Greenery", "c": "15-0343", "hex": "#88B04B", "h": 83.8, "s": 0.402, "l": 0.492}], "2018": [{"n": "Ultra Violet", "c": "18-3838", "hex": "#5F4B8B", "h": 258.8, "s": 0.299, "l": 0.42}], "2019": [{"n": "Living Coral", "c": "16-1546", "hex": "#FF6F61", "h": 5.3, "s": 1.0, "l": 0.69}], "2020": [{"n": "Classic Blue", "c": "19-4052", "hex": "#0F4C81", "h": 207.9, "s": 0.792, "l": 0.282}], "2021": [{"n": "Ultimate Gray", "c": "17-5104", "hex": "#939597", "h": 210.0, "s": 0.019, "l": 0.584}, {"n": "Illuminating", "c": "13-0647", "hex": "#F5DF4D", "h": 52.1, "s": 0.894, "l": 0.631}], "2022": [{"n": "Very Peri", "c": "17-3938", "hex": "#6667AB", "h": 239.1, "s": 0.291, "l": 0.535}], "2023": [{"n": "Viva Magenta", "c": "18-1750", "hex": "#BB2649", "h": 345.9, "s": 0.662, "l": 0.441}], "2024": [{"n": "Peach Fuzz", "c": "13-1023", "hex": "#FFBE98", "h": 22.1, "s": 1.0, "l": 0.798}], "2025": [{"n": "Mocha Mousse", "c": "17-1230", "hex": "#A47864", "h": 18.7, "s": 0.26, "l": 0.518}], "2026": [{"n": "Cloud Dancer", "c": "11-4201", "hex": "#F0EEE9", "h": 42.9, "s": 0.189, "l": 0.927}]}, "feat": {"2000": {"light": 0.7196, "sat": 0.3986, "warm": -0.3986, "code_light": 15, "code_chroma": 20}, "2001": {"light": 0.5216, "sat": 0.541, "warm": 0.3276, "code_light": 17, "code_chroma": 31}, "2002": {"light": 0.4235, "sat": 0.7685, "warm": 0.5969, "code_light": 19, "code_chroma": 64}, "2003": {"light": 0.6255, "sat": 0.3822, "warm": -0.331, "code_light": 14, "code_chroma": 11}, "2004": {"light": 0.5647, "sat": 0.7387, "warm": 0.692, "code_light": 17, "code_chroma": 56}, "2005": {"light": 0.5078, "sat": 0.3705, "warm": -0.3166, "code_light": 15, "code_chroma": 17}, "2006": {"light": 0.8078, "sat": 0.3265, "warm": 0.3264, "code_light": 13, "code_chroma": 6}, "2007": {"light": 0.3569, "sat": 0.7033, "warm": 0.54, "code_light": 19, "code_chroma": 57}, "2008": {"light": 0.4882, "sat": 0.2771, "warm": -0.2421, "code_light": 18, "code_chroma": 43}, "2009": {"light": 0.6471, "sat": 0.8333, "warm": 0.8186, "code_light": 14, "code_chroma": 48}, "2010": {"light": 0.4902, "sat": 0.448, "warm": -0.3629, "code_light": 15, "code_chroma": 19}, "2011": {"light": 0.5804, "sat": 0.6449, "warm": 0.4611, "code_light": 18, "code_chroma": 20}, "2012": {"light": 0.5039, "sat": 0.7312, "warm": 0.6845, "code_light": 17, "code_chroma": 63}, "2013": {"light": 0.2902, "sat": 1.0, "warm": -0.7268, "code_light": 17, "code_chroma": 41}, "2014": {"light": 0.5412, "sat": 0.3333, "warm": 0.0623, "code_light": 18, "code_chroma": 24}, "2015": {"light": 0.451, "sat": 0.2957, "warm": 0.2583, "code_light": 18, "code_chroma": 38}, "2016": {"light": 0.7873, "sat": 0.5742, "warm": 0.1247, "code_light": 14, "code_chroma": 19.5}, "2017": {"light": 0.4922, "sat": 0.4024, "warm": 0.2379, "code_light": 15, "code_chroma": 43}, "2018": {"light": 0.4196, "sat": 0.2991, "warm": -0.1972, "code_light": 18, "code_chroma": 38}, "2019": {"light": 0.6902, "sat": 1.0, "warm": 0.9086, "code_light": 16, "code_chroma": 46}, "2020": {"light": 0.2824, "sat": 0.7917, "warm": -0.7911, "code_light": 19, "code_chroma": 52}, "2021": {"light": 0.6078, "sat": 0.4562, "warm": 0.4044, "code_light": 15, "code_chroma": 25.5}, "2022": {"light": 0.5353, "sat": 0.2911, "warm": -0.2543, "code_light": 17, "code_chroma": 38}, "2023": {"light": 0.4412, "sat": 0.6622, "warm": 0.4756, "code_light": 18, "code_chroma": 50}, "2024": {"light": 0.798, "sat": 1.0, "warm": 0.9906, "code_light": 13, "code_chroma": 23}, "2025": {"light": 0.5176, "sat": 0.2602, "warm": 0.2552, "code_light": 17, "code_chroma": 30}, "2026": {"light": 0.9275, "sat": 0.1892, "warm": 0.1844, "code_light": 11, "code_chroma": 1}}, "SP": {"1999": 21.04, "2000": -9.1, "2001": -11.89, "2002": -22.1, "2003": 28.68, "2004": 10.88, "2005": 4.91, "2006": 15.79, "2007": 5.49, "2008": -37.0, "2009": 26.46, "2010": 15.06, "2011": 2.11, "2012": 16.0, "2013": 32.39, "2014": 13.69, "2015": 1.38, "2016": 11.96, "2017": 21.83, "2018": -4.38, "2019": 31.49, "2020": 18.4, "2021": 28.71, "2022": -18.11, "2023": 26.29, "2024": 25.02, "2025": 17.88}, "UM": {"1999": 105.8, "2000": 107.6, "2001": 89.2, "2002": 89.6, "2003": 87.6, "2004": 95.2, "2005": 88.5, "2006": 87.3, "2007": 85.6, "2008": 63.7, "2009": 66.3, "2010": 71.8, "2011": 67.3, "2012": 76.6, "2013": 79.2, "2014": 84.1, "2015": 92.9, "2016": 91.9, "2017": 96.8, "2018": 98.4, "2019": 96.0, "2020": 81.6, "2021": 77.6, "2022": 59.0, "2023": 65.3, "2024": 72.5, "2025": 57.6}, "GDP": {"1999": 3.58, "2000": 4.57, "2001": 2.03, "2002": 2.32, "2003": 3.07, "2004": 4.5, "2005": 4.06, "2006": 4.49, "2007": 4.43, "2008": 2.09, "2009": -1.33, "2010": 4.52, "2011": 3.31, "2012": 2.75, "2013": 2.89, "2014": 3.17, "2015": 3.13, "2016": 2.79, "2017": 3.45, "2018": 3.29, "2019": 2.68, "2020": -2.89, "2021": 6.49, "2022": 3.44, "2023": 2.86, "2024": 2.9, "2025": 2.92}, "DOOM": {"1999": 540, "2000": 540, "2001": 540, "2002": 420, "2003": 420, "2004": 420, "2005": 420, "2006": 420, "2007": 300, "2008": 300, "2009": 300, "2010": 360, "2011": 360, "2012": 300, "2013": 300, "2014": 300, "2015": 180, "2016": 180, "2017": 150, "2018": 120, "2019": 120, "2020": 100, "2021": 100, "2022": 100, "2023": 90, "2024": 90, "2025": 89, "2026": 85}, "HD": {"1999": 21.5, "2000": 25.125, "2001": 50, "2002": 50.5, "2003": 44.5, "2004": 53.5, "2005": 49, "2006": 53.75, "2007": 66, "2008": 59, "2009": 68, "2010": 54, "2011": 62, "2012": 68, "2013": 69, "2014": 61, "2015": 62, "2016": 70, "2017": 72, "2018": 74, "2019": 71, "2020": 75, "2021": 76, "2022": 63, "2023": 62, "2024": 58, "2025": 70.5, "2026": 66}, "FEL": {"1999": 0.4, "2000": 0.35, "2001": 0.3, "2002": 0.28, "2003": 0.24, "2004": 0.21, "2005": 0.22, "2006": 0.25, "2007": 0.21, "2008": 0.23, "2009": 0.2, "2010": 0.2, "2011": 0.24, "2012": 0.25, "2013": 0.28, "2014": 0.35, "2015": 0.51, "2016": 0.52, "2017": 0.54, "2018": 0.53, "2019": 0.52, "2020": 0.5, "2021": 0.43, "2022": 0.42, "2023": 0.42, "2024": 0.39, "2025": 0.41}, "FELB": {"1999": 717, "2000": 634, "2001": 549, "2002": 499, "2003": 430, "2004": 379, "2005": 404, "2006": 468, "2007": 412, "2008": 433, "2009": 360, "2010": 358, "2011": 427, "2012": 437, "2013": 500, "2014": 626, "2015": 911, "2016": 922, "2017": 938, "2018": 896, "2019": 873, "2020": 809, "2021": 709, "2022": 696, "2023": 681, "2024": 631, "2025": 653}, "SER": {"1999": 1.095, "2000": 0.838, "2001": 0.093, "2002": -0.204, "2003": 0.596, "2004": 0.686, "2005": 0.414, "2006": 0.61, "2007": 0.222, "2008": -1.128, "2009": -0.662, "2010": 0.218, "2011": -0.225, "2012": -0.035, "2013": 0.269, "2014": 0.131, "2015": -0.089, "2016": -0.004, "2017": 0.273, "2018": -0.147, "2019": 0.236, "2020": -1.052, "2021": 0.372, "2022": -1.082, "2023": -0.429, "2024": -0.309, "2025": -0.685}, "STU": {"1999": -1.208, "2000": -1.286, "2001": -0.565, "2002": -0.632, "2003": -1.028, "2004": -0.818, "2005": -0.944, "2006": -0.638, "2007": -0.348, "2008": -0.526, "2009": -0.316, "2010": -0.842, "2011": -0.371, "2012": -0.103, "2013": 0.063, "2014": 0.062, "2015": 0.782, "2016": 1.126, "2017": 1.286, "2018": 1.318, "2019": 1.163, "2020": 1.228, "2021": 0.967, "2022": 0.436, "2023": 0.398, "2024": 0.12, "2025": 0.675}, "tests": {"serious|light": {"prophet_r": 0.303, "prophet_p": 0.136, "mirror_r": -0.176, "mirror_p": 0.382}, "serious|sat": {"prophet_r": -0.006, "prophet_p": 0.978, "mirror_r": -0.167, "mirror_p": 0.408}, "serious|warm": {"prophet_r": 0.064, "prophet_p": 0.757, "mirror_r": -0.296, "mirror_p": 0.138}, "stupid|light": {"prophet_r": -0.153, "prophet_p": 0.459, "mirror_r": -0.017, "mirror_p": 0.934}, "stupid|sat": {"prophet_r": 0.052, "prophet_p": 0.8, "mirror_r": -0.002, "mirror_p": 0.991}, "stupid|warm": {"prophet_r": 0.054, "prophet_p": 0.792, "mirror_r": -0.053, "mirror_p": 0.798}}, "rawr": -0.359, "detr": 0.095, "satTrend": -0.027, "lightTrend": 0.108, "reg": {"slope": 1.1639, "icpt": -0.6729}};
+var YEARS = []; for (var y = 2000; y <= 2026; y++) YEARS.push(y);
+var IY = []; for (var y2 = 2000; y2 <= 2025; y2++) IY.push(y2);
+function cols(y){ return D.colors[y]; }
+function main(y){ return D.colors[y][0].hex; }
+function lum(hex){ var r=parseInt(hex.substr(1,2),16),g=parseInt(hex.substr(3,2),16),b=parseInt(hex.substr(5,2),16); return (0.299*r+0.587*g+0.114*b)/255; }
+function fmt(v,d){ return (v>0?"+":"") + v.toFixed(d==null?2:d); }
+
+/* tabs */
+document.querySelectorAll('.tab-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.tab-btn').forEach(function(x){ x.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+    b.classList.add('active'); document.getElementById('panel-' + b.dataset.tab).classList.add('active');
+  });
+});
+
+/* band */
+(function(){
+  var h = '';
+  YEARS.forEach(function(y){
+    var c = cols(y);
+    if (c.length === 1) h += '<div title="' + y + '" style="background:' + c[0].hex + '"></div>';
+    else h += '<div title="' + y + '" style="background:linear-gradient(180deg,' + c[0].hex + ' 50%,' + c[1].hex + ' 50%)"></div>';
+  });
+  document.getElementById('band').innerHTML = h;
+})();
+
+/* swatches + decoder */
+(function(){
+  var host = document.getElementById('swatches');
+  var sel = 2026;
+  function decode(y){
+    var out = '';
+    cols(y).forEach(function(c){
+      var p = c.c.split('-'); var L = parseInt(p[0],10), H = p[1].substr(0,2), C = p[1].substr(2,2);
+      var pos = (L - 11) / 8 * 100;
+      out += '<div style="display:flex;gap:12px;align-items:center;margin:4px 0 6px;"><div style="width:46px;height:46px;border-radius:8px;background:' + c.hex + ';box-shadow:0 0 0 1px var(--line)"></div><div><div style="font-family:Fraunces,serif;font-weight:800;font-size:20px;line-height:1">' + c.n + '</div><div class="mono" style="font-size:11px;color:var(--dim)">' + y + ' · ' + c.c + ' · ' + c.hex + '</div></div></div>';
+      out += '<div class="dec-row"><div class="k">' + p[0] + '</div><div class="t" style="flex:1"><b>Lightness</b>, from 11 (palest) to 19 (darkest)<div class="scale"><i style="left:calc(' + pos + '% - 2px)"></i></div></div></div>';
+      out += '<div class="dec-row"><div class="k">' + H + '</div><div class="t"><b>Hue</b> position on Pantone\'s wheel. Screen hue: ' + Math.round(c.h) + '°</div></div>';
+      out += '<div class="dec-row"><div class="k">' + C + '</div><div class="t"><b>Chroma</b>, how intense the color is. Screen saturation: ' + Math.round(c.s * 100) + '%</div></div>';
+    });
+    document.getElementById('decode').innerHTML = out;
+  }
+  YEARS.slice().reverse().forEach(function(y){
+    var c = cols(y);
+    var d = document.createElement('div');
+    d.className = 'sw' + (y === sel ? ' sel' : '');
+    d.innerHTML = '<div class="blk">' + c.map(function(x){ return '<div style="background:' + x.hex + '"></div>'; }).join('') + '</div><div class="lab"><div class="yr">' + y + '</div><div class="nm">' + c.map(function(x){ return x.n; }).join(' + ') + '</div></div>';
+    d.addEventListener('click', function(){
+      host.querySelectorAll('.sw').forEach(function(s){ s.classList.remove('sel'); });
+      d.classList.add('sel'); decode(y);
+      document.getElementById('decodeCard').scrollIntoView({behavior:'smooth', block:'start'});
+    });
+    host.appendChild(d);
+  });
+  decode(sel);
+})();
+
+/* generic scatter: points [{x,y,color,label}] */
+function scatter(pts, opt){
+  var W = 340, H = 230, L = 34, R = 10, T = 12, B = 28;
+  var xs = pts.map(function(p){ return p.x; }), ys = pts.map(function(p){ return p.y; });
+  var x0 = opt.x0 != null ? opt.x0 : Math.min.apply(null, xs), x1 = opt.x1 != null ? opt.x1 : Math.max.apply(null, xs);
+  var y0 = opt.y0 != null ? opt.y0 : Math.min.apply(null, ys), y1 = opt.y1 != null ? opt.y1 : Math.max.apply(null, ys);
+  function X(v){ return L + (v - x0) / (x1 - x0) * (W - L - R); }
+  function Y(v){ return T + (1 - (v - y0) / (y1 - y0)) * (H - T - B); }
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;margin:6px 0">';
+  (opt.yt || []).forEach(function(t){ s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="#e4ddd0"/><text x="' + (L - 5) + '" y="' + (Y(t) + 3) + '" text-anchor="end" font-family="DM Mono" font-size="8.5" fill="#7a7268">' + (opt.yfmt ? opt.yfmt(t) : t) + '</text>'; });
+  (opt.xt || []).forEach(function(t){ s += '<text x="' + X(t) + '" y="' + (H - 9) + '" text-anchor="middle" font-family="DM Mono" font-size="8.5" fill="#7a7268">' + (opt.xfmt ? opt.xfmt(t) : t) + '</text>'; });
+  if (opt.fit) {
+    var mx = xs.reduce(function(a,b){return a+b;},0)/xs.length, my = ys.reduce(function(a,b){return a+b;},0)/ys.length;
+    var sl = xs.reduce(function(a,x,i){ return a + (x-mx)*(ys[i]-my); },0) / xs.reduce(function(a,x){ return a + (x-mx)*(x-mx); },0);
+    s += '<line x1="' + X(x0) + '" y1="' + Y(my + sl*(x0-mx)) + '" x2="' + X(x1) + '" y2="' + Y(my + sl*(x1-mx)) + '" stroke="#1f1c18" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  }
+  pts.forEach(function(p){ s += '<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="' + (p.r || 7) + '" fill="' + p.color + '" stroke="#1f1c18" stroke-opacity=".25" stroke-width="1"><title>' + (p.label || '') + '</title></circle>'; });
+  if (opt.xl) s += '<text x="' + (W - R) + '" y="' + (H - 1) + '" text-anchor="end" font-family="DM Mono" font-size="8.5" fill="#7a7268">' + opt.xl + '</text>';
+  return s + '</svg>';
+}
+
+/* beige */
+(function(){
+  var pts = [], ptsL = [];
+  YEARS.forEach(function(y){ cols(y).forEach(function(c){ pts.push({x:y, y:c.s, color:c.hex, label:y + ' ' + c.n}); ptsL.push({x:y, y:c.l, color:c.hex, label:y + ' ' + c.n}); }); });
+  document.getElementById('satChart').innerHTML = scatter(pts, {x0:1999, x1:2027, y0:0, y1:1, yt:[0,.25,.5,.75,1], yfmt:function(t){ return Math.round(t*100) + '%'; }, xt:[2000,2005,2010,2015,2020,2025], fit:true, xl:'SATURATION BY YEAR'});
+  document.getElementById('lightChart').innerHTML = scatter(ptsL, {x0:1999, x1:2027, y0:0, y1:1, yt:[0,.25,.5,.75,1], yfmt:function(t){ return Math.round(t*100) + '%'; }, xt:[2000,2005,2010,2015,2020,2025], fit:true, xl:'LIGHTNESS BY YEAR'});
+  document.getElementById('beigeVerdict').textContent = 'No.';
+  document.getElementById('beigeText').innerHTML = 'Saturation has no trend at all over 27 years (correlation with time: <b>' + D.satTrend.toFixed(2) + '</b>). The 2000s averaged 53%, the 2010s 57%, the 2020s 52%. Cloud Dancer is an outlier, not a direction.';
+})();
+
+/* vibe */
+(function(){
+  var W = 340, H = 250, L = 30, R = 10, T = 12, B = 46;
+  var comps = [
+    {k:'SP', n:'S&P 500', idx:'SER'}, {k:'UM', n:'Sentiment', idx:'SER'}, {k:'GDP', n:'GDP', idx:'SER'}, {k:'DOOM', n:'Doomsday', idx:'SER'},
+    {k:'HD', n:'Hot dogs', idx:'STU'}, {k:'FEL', n:'Felicitys', idx:'STU'}
+  ];
+  var on = {}; var sel = 2008;
+  function z(series){
+    var ys = []; for (var y = 1999; y <= 2025; y++) ys.push(series[y]);
+    var m = ys.reduce(function(a,b){return a+b;},0)/ys.length;
+    var sd = Math.sqrt(ys.reduce(function(a,b){return a+(b-m)*(b-m);},0)/ys.length);
+    var o = {}; for (var y2 = 1999; y2 <= 2025; y2++) o[y2] = (series[y2]-m)/sd; return o;
+  }
+  function X(y){ return L + (y - 2000) / 25 * (W - L - R); }
+  function Yv(v){ return T + (1 - (v + 2.5) / 5) * (H - T - B); }
+  function line(series, color, w, dash){
+    var d = IY.map(function(y, i){ return (i ? 'L' : 'M') + X(y).toFixed(1) + ' ' + Yv(Math.max(-2.5, Math.min(2.5, series[y]))).toFixed(1); }).join(' ');
+    return '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="' + w + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linejoin="round"/>';
+  }
+  function draw(){
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;margin:6px 0">';
+    [-2,-1,0,1,2].forEach(function(t){ s += '<line x1="' + L + '" x2="' + (W-R) + '" y1="' + Yv(t) + '" y2="' + Yv(t) + '" stroke="' + (t===0 ? '#bdb5a8' : '#e4ddd0') + '"/><text x="' + (L-5) + '" y="' + (Yv(t)+3) + '" text-anchor="end" font-family="DM Mono" font-size="8.5" fill="#7a7268">' + (t>0?'+':'') + t + '</text>'; });
+    comps.forEach(function(c){ if (on[c.k]) s += line(z(D[c.k]), c.idx === 'SER' ? '#8a8378' : '#d08c2f', 1.2, '3 3'); });
+    s += line(D.SER, '#1f1c18', 2.6) + line(D.STU, '#d08c2f', 2.6);
+    s += '<line x1="' + X(sel) + '" x2="' + X(sel) + '" y1="' + T + '" y2="' + (H-B) + '" stroke="#1f1c18" stroke-opacity=".25"/>';
+    IY.forEach(function(y){
+      var c = cols(y);
+      s += '<rect class="yb" data-y="' + y + '" x="' + (X(y)-5) + '" y="' + (H-B+8) + '" width="10" height="16" rx="2" fill="' + c[0].hex + '" stroke="' + (y===sel ? '#1f1c18' : 'none') + '" stroke-width="1.5" style="cursor:pointer"/>';
+    });
+    [2000,2005,2010,2015,2020,2025].forEach(function(y){ s += '<text x="' + X(y) + '" y="' + (H-6) + '" text-anchor="middle" font-family="DM Mono" font-size="8.5" fill="#7a7268">' + y + '</text>'; });
+    s += '<text x="' + L + '" y="' + (T+8) + '" font-family="DM Sans" font-weight="700" font-size="10" fill="#1f1c18">— serious</text><text x="' + (L+58) + '" y="' + (T+8) + '" font-family="DM Sans" font-weight="700" font-size="10" fill="#d08c2f">— stupid</text>';
+    s += '</svg>';
+    var host = document.getElementById('vibeChart'); host.innerHTML = s;
+    host.querySelectorAll('.yb').forEach(function(r){ r.addEventListener('click', function(){ sel = parseInt(r.getAttribute('data-y'),10); draw(); card(); }); });
+  }
+  function card(){
+    var y = sel, c = cols(y);
+    document.getElementById('yearCard').innerHTML =
+      '<div style="display:flex;gap:10px;align-items:center"><div style="width:34px;height:34px;border-radius:7px;background:' + c[0].hex + '"></div><div><div style="font-family:Fraunces,serif;font-weight:800;font-size:20px;line-height:1">' + y + ' · ' + c.map(function(x){return x.n;}).join(' + ') + '</div><div class="mono" style="font-size:10px;color:var(--dim)">SERIOUS ' + fmt(D.SER[y]) + ' · STUPID ' + fmt(D.STU[y]) + ' · TAP A COLOR BELOW THE CHART</div></div></div>' +
+      '<div class="stat-grid">' +
+      '<div><div class="v">' + fmt(D.SP[y],1) + '%</div><div class="l">S&amp;P 500</div></div>' +
+      '<div><div class="v">' + D.UM[y].toFixed(1) + '</div><div class="l">consumer sentiment</div></div>' +
+      '<div><div class="v">' + fmt(D.GDP[y],1) + '%</div><div class="l">world GDP growth</div></div>' +
+      '<div><div class="v">' + D.DOOM[y] + 's</div><div class="l">Doomsday Clock to midnight</div></div>' +
+      '<div><div class="v">' + D.HD[y] + '</div><div class="l">hot dogs, Nathan\'s winner</div></div>' +
+      '<div><div class="v">' + D.FELB[y] + '</div><div class="l">baby girls named Felicity</div></div></div>';
+  }
+  var ch = document.getElementById('compChips');
+  comps.forEach(function(c){
+    var b = document.createElement('button'); b.className = 'chip-btn'; b.textContent = c.n;
+    b.addEventListener('click', function(){ on[c.k] = !on[c.k]; b.classList.toggle('active'); draw(); });
+    ch.appendChild(b);
+  });
+  draw(); card();
+  document.getElementById('rawR').textContent = D.rawr.toFixed(2);
+  document.getElementById('detR').textContent = '+' + D.detr.toFixed(2);
+})();
+
+/* oracle */
+(function(){
+  var mode = 'prophet';
+  function render(){
+    var pts = [];
+    var range = mode === 'prophet' ? IY : YEARS;
+    range.forEach(function(y){ var iv = mode === 'prophet' ? D.SER[y] : D.SER[y-1]; pts.push({x:D.feat[y].light, y:iv, color:main(y), label:y}); });
+    document.getElementById('oracleChart').innerHTML = scatter(pts, {x0:.1, x1:1, y0:-1.4, y1:1.2, yt:[-1,0,1], yfmt:function(t){ return (t>0?'+':'') + t; }, xt:[.2,.4,.6,.8,1], xfmt:function(t){ return Math.round(t*100) + '%'; }, fit:true, xl:'COLOR LIGHTNESS'});
+    var t = D.tests['serious|light'];
+    var r = mode === 'prophet' ? t.prophet_r : t.mirror_r, p = mode === 'prophet' ? t.prophet_p : t.mirror_p;
+    document.getElementById('oracleText').innerHTML = (mode === 'prophet'
+      ? 'As a <b>prophet</b>: lighter colors come before slightly better years. Correlation <b>' + fmt(r) + '</b>, but random colors do at least this well <b>' + Math.round(p*100) + '%</b> of the time.'
+      : 'As a <b>mirror</b>: no pattern. Correlation <b>' + fmt(r) + '</b>; random colors match it <b>' + Math.round(p*100) + '%</b> of the time.') +
+      ' <b>Verdict: Pantone runs on vibes.</b>';
+  }
+  var om = document.getElementById('oracleMode');
+  [['prophet','Prophet: color vs that year'],['mirror','Mirror: color vs year before']].forEach(function(m){
+    var b = document.createElement('button'); b.className = 'chip-btn' + (m[0] === mode ? ' active' : ''); b.textContent = m[1];
+    b.addEventListener('click', function(){ mode = m[0]; om.querySelectorAll('.chip-btn').forEach(function(x){ x.classList.remove('active'); }); b.classList.add('active'); render(); });
+    om.appendChild(b);
+  });
+  render();
+
+  /* matrix */
+  var feats = [['light','Lightness'],['sat','Saturation'],['warm','Warmth']];
+  var s = '<svg viewBox="0 0 340 200" style="width:100%;display:block">';
+  var colsX = [150, 205, 260, 315];
+  [['Prophet','serious'],['Mirror','serious'],['Prophet','stupid'],['Mirror','stupid']].forEach(function(h, i){
+    s += '<text x="' + colsX[i] + '" y="18" text-anchor="middle" font-family="DM Mono" font-size="8.5" fill="#7a7268">' + h[0].toUpperCase() + '</text><text x="' + colsX[i] + '" y="30" text-anchor="middle" font-family="DM Mono" font-size="8.5" fill="#7a7268">' + h[1].toUpperCase() + '</text>';
+  });
+  feats.forEach(function(f, j){
+    var yy = 70 + j * 50;
+    s += '<text x="10" y="' + (yy + 4) + '" font-family="DM Sans" font-weight="700" font-size="13" fill="#1f1c18">' + f[1] + '</text>';
+    [['serious','prophet'],['serious','mirror'],['stupid','prophet'],['stupid','mirror']].forEach(function(c, i){
+      var t = D.tests[c[0] + '|' + f[0]]; var r = t[c[1] + '_r'];
+      var rad = 3 + Math.abs(r) * 40;
+      s += '<circle cx="' + colsX[i] + '" cy="' + yy + '" r="' + rad.toFixed(1) + '" fill="' + (r >= 0 ? '#d08c2f' : '#5b6f8a') + '" fill-opacity=".85"/>';
+      s += '<text x="' + colsX[i] + '" y="' + (yy + 24) + '" text-anchor="middle" font-family="DM Mono" font-size="8.5" fill="#1f1c18">' + fmt(r) + '</text>';
+    });
+  });
+  s += '</svg>';
+  document.getElementById('matrix').innerHTML = s;
+
+  /* prophecy */
+  var pick = document.getElementById('pick');
+  function hexToL(hex){ var r=parseInt(hex.substr(1,2),16)/255,g=parseInt(hex.substr(3,2),16)/255,b=parseInt(hex.substr(5,2),16)/255; return (Math.max(r,g,b)+Math.min(r,g,b))/2; }
+  function forecast(){
+    var hex = pick.value; document.getElementById('pickHex').textContent = hex.toUpperCase();
+    var v = D.reg.icpt + D.reg.slope * hexToL(hex);
+    var txt = v > .35 ? 'A genuinely good year' : v > 0 ? 'A fine year, probably' : v > -.35 ? 'Meh. Very meh.' : 'Buckle up';
+    document.getElementById('forecast').textContent = txt;
+    document.getElementById('forecastNote').innerHTML = 'Model score ' + fmt(v) + '. Based on lightness alone (r = ' + fmt(D.tests['serious|light'].prophet_r) + ', beaten by chance ' + Math.round(D.tests['serious|light'].prophet_p*100) + '% of the time). For entertainment only.';
+  }
+  pick.addEventListener('input', forecast);
+  var pr = document.getElementById('presets');
+  [['Something green','#5f9e6e'],['Butter yellow','#f3d77a'],['Deep teal','#1f5f66'],['Another white','#f4f1ea'],['Hot pink','#e2457a']].forEach(function(p){
+    var b = document.createElement('button'); b.className = 'chip-btn'; b.innerHTML = '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + p[1] + ';margin-right:5px;vertical-align:-1px"></span>' + p[0];
+    b.addEventListener('click', function(){ pick.value = p[1]; forecast(); });
+    pr.appendChild(b);
+  });
+  forecast();
+})();
+
+/* birthtone */
+(function(){
+  var inp = document.getElementById('byear'), out = document.getElementById('birthOut');
+  function render(){
+    var y = parseInt(inp.value, 10);
+    if (isNaN(y)) { out.innerHTML = ''; return; }
+    if (y < 2000) {
+      out.innerHTML = '<div class="yearcard"><div style="height:90px;border-radius:10px;background:linear-gradient(90deg,#3c3c3c,#9a9a9a,#dcdcdc)"></div><div class="verdict" style="margin-top:10px">Born in grayscale.</div><p style="font-size:14px;margin:4px 0">The Color of the Year started in 2000. Before that, apparently, the world had no color.</p>' + (y === 1999 ? '<p style="font-size:13.5px;color:var(--dim)">Small consolation: 717 American girls born in 1999 were named Felicity, the year after the TV series of the same name premiered.</p>' : '') + '</div>';
+      return;
+    }
+    if (y > 2026) { out.innerHTML = '<div class="yearcard"><div class="verdict">Not born yet.</div><p style="font-size:14px">Pantone announces 2027 in early December.</p></div>'; return; }
+    var c = cols(y);
+    var partial = y === 2026;
+    var blk = '<div style="display:flex;height:110px;border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line)">' + c.map(function(x){ return '<div style="flex:1;background:' + x.hex + '"></div>'; }).join('') + '</div>';
+    var html = '<div class="yearcard">' + blk +
+      '<div class="verdict" style="margin-top:10px">' + c.map(function(x){ return x.n; }).join(' + ') + '</div>' +
+      '<div class="mono" style="font-size:11px;color:var(--dim)">' + c.map(function(x){ return x.c + ' · ' + x.hex; }).join('  /  ') + '</div>';
+    if (!partial) {
+      var verdict = D.SER[y] > .35 ? 'a good year, by the numbers' : D.SER[y] > 0 ? 'an okay year' : D.SER[y] > -.35 ? 'a meh year' : 'a rough year';
+      html += '<p style="font-size:14px;margin:10px 0 2px">You were born in <b>' + verdict + '</b> (serious index ' + fmt(D.SER[y]) + ').</p>' +
+        '<div class="stat-grid">' +
+        '<div><div class="v">' + D.FELB[y] + '</div><div class="l">other babies named Felicity</div></div>' +
+        '<div><div class="v">' + D.HD[y] + '</div><div class="l">hot dogs, winning total that July 4th</div></div>' +
+        '<div><div class="v">' + fmt(D.SP[y],1) + '%</div><div class="l">S&amp;P 500 that year</div></div>' +
+        '<div><div class="v">' + D.DOOM[y] + 's</div><div class="l">Doomsday Clock to midnight</div></div></div>';
+    } else {
+      html += '<p style="font-size:14px;margin:10px 0 2px">The first white Color of the Year, and the year isn\'t over. So far: <b>' + D.HD[2026] + '</b> hot dogs on July 4th and the Doomsday Clock at <b>85 seconds</b>, the closest it has ever been.</p>';
+    }
+    out.innerHTML = html + '</div>';
+  }
+  inp.addEventListener('input', render); render();
+})();
+
+/* game */
+(function(){
+  var host = document.getElementById('game');
+  var st;
+  function shuffle(a){ for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function start(){ st = {round:0, score:0, pool:shuffle(YEARS.slice()).slice(0,8)}; next(); }
+  function next(){
+    if (st.round >= 8) {
+      var v = st.score <= 2 ? 'Color-blind (respectfully)' : st.score <= 5 ? 'Paint store intern' : 'Pantone Color Institute material';
+      host.innerHTML = '<div class="yearcard" style="text-align:center"><div class="mono" style="font-size:10px;color:var(--dim)">' + st.score + ' / 8 CORRECT</div><div class="verdict">' + v + '</div></div><button class="action-btn" id="again">PLAY AGAIN</button>';
+      document.getElementById('again').addEventListener('click', start);
+      return;
+    }
+    var y = st.pool[st.round];
+    var opts = [y]; var others = shuffle(YEARS.filter(function(x){ return x !== y; }));
+    opts = shuffle(opts.concat(others.slice(0,3)));
+    var c = cols(y);
+    host.innerHTML = '<div class="mono" style="font-size:10px;color:var(--dim);margin-bottom:8px">COLOR ' + (st.round + 1) + ' OF 8 · SCORE ' + st.score + '</div>' +
+      '<div style="display:flex;height:120px;border-radius:12px;overflow:hidden;margin-bottom:12px;box-shadow:0 0 0 1px var(--line)">' + c.map(function(x){ return '<div style="flex:1;background:' + x.hex + '"></div>'; }).join('') + '</div><div id="gopts"></div>';
+    var go = document.getElementById('gopts');
+    opts.forEach(function(o){
+      var b = document.createElement('button'); b.className = 'opt'; b.textContent = o;
+      b.addEventListener('click', function(){
+        if (o === y) st.score++;
+        b.style.background = o === y ? '#d9efd9' : '#f6d9d4';
+        go.querySelectorAll('.opt').forEach(function(x){ x.disabled = true; if (parseInt(x.textContent,10) === y) x.style.background = '#d9efd9'; });
+        var info = document.createElement('div'); info.className = 'mono'; info.style.cssText = 'font-size:11px;color:var(--dim);margin:4px 0 10px';
+        info.textContent = y + ': ' + c.map(function(x){ return x.n; }).join(' + ');
+        go.appendChild(info);
+        setTimeout(function(){ st.round++; next(); }, 1100);
+      });
+      go.appendChild(b);
+    });
+  }
+  start();
+})();
+</script>
+</body>
+</html>
